@@ -1,271 +1,55 @@
 <!DOCTYPE html>
-<html lang="af">
+<html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FishLog</title>
-<meta name="theme-color" content="#0b1220">
-
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
 <style>
-body{margin:0;font-family:Arial;background:#0b1220;color:white}
-header{padding:15px;text-align:center;background:#111a30;font-weight:bold}
-nav{display:flex;justify-content:space-around;background:#162040;padding:10px;flex-wrap:wrap}
-nav button{background:none;border:none;color:white;font-size:13px}
+body{background:#0b1220;color:white;font-family:Arial;margin:0}
+header{padding:15px;text-align:center;background:#162040}
+button{width:100%;padding:12px;margin-top:8px;background:#2c5cff;color:white;border:none;border-radius:8px}
 section{padding:15px;display:none}
 section.active{display:block}
-input,select,textarea,button{width:100%;padding:10px;margin-top:8px;border-radius:8px;border:none}
-button{background:#2c5cff;color:white;font-weight:bold}
-.card{background:#162040;padding:10px;border-radius:10px;margin-bottom:10px}
-img{width:100%;border-radius:8px}
-#map{height:400px;border-radius:12px}
-.small{font-size:12px;opacity:0.7}
+.card{background:#162040;padding:10px;border-radius:8px;margin-top:10px}
 </style>
 </head>
-
 <body>
 
 <header>FishLog</header>
 
-<nav>
-<button onclick="showTab('log')">Logboek</button>
-<button onclick="showTab('add')">Add</button>
-<button onclick="showTab('map')">Map</button>
-<button onclick="showTab('stats')">Stats</button>
-<button onclick="showTab('share')">Share</button>
-</nav>
+<button onclick="show('log')">Logboek</button>
+<button onclick="show('add')">Add</button>
 
 <section id="log" class="active"></section>
 
 <section id="add">
-<label>Spesie</label>
-<select id="species">
-<option>Kabeljou</option>
-<option>Geelstert</option>
-<option>Bonnie</option>
-<option>Rooi roman</option>
-<option>Snapper</option>
-<option>Silver (Bastermeid)</option>
-<option>Rooi steenbras</option>
-<option>Yellowbelly Rockcod</option>
-</select>
-
-<label>Lengte (cm)</label>
-<input id="length" type="number">
-
-<label>Gewig (kg)</label>
-<input id="weight" type="number">
-
-<label>Plek naam</label>
-<input id="place">
-
-<label>Foto</label>
-<input id="photo" type="file" accept="image/*" capture="environment">
-
-<label>Koördinate</label>
-<button onclick="getGPS()">Kry GPS</button>
-<input id="coords" readonly>
-
-<label>Notas</label>
-<textarea id="notes"></textarea>
-
-<button onclick="saveCatch()">Save</button>
-</section>
-
-<section id="map">
-  <label>Filter spesie</label>
-  <select id="mapFilter" onchange="initMap()">
-    <option value="ALL">Alles</option>
-    <option value="Kabeljou">Kabeljou</option>
-    <option value="Geelstert">Geelstert</option>
-    <option value="Bonnie">Bonnie</option>
-    <option value="Rooi roman">Rooi roman</option>
-    <option value="Snapper">Snapper</option>
-    <option value="Silver (Bastermeid)">Silver (Bastermeid)</option>
-    <option value="Rooi steenbras">Rooi steenbras</option>
-    <option value="Yellowbelly Rockcod">Yellowbelly Rockcod</option>
-  </select>
-
-  <div id="map" style="margin-top:10px"></div>
-</section>
-
-<section id="stats"></section>
-
-<section id="share">
-<button onclick="exportData()">Export JSON</button>
-<textarea id="importBox" placeholder="Plak JSON hier"></textarea>
-<button onclick="importData()">Import</button>
+<button onclick="addTest()">Add Test Vang</button>
 </section>
 
 <script>
-let map;
-let markers=[];
- 
-function showTab(id){
-  document.querySelectorAll("section").forEach(s=>s.classList.remove("active"));
-  document.getElementById(id).classList.add("active");
-
-  if(id==="map"){
-    initMap();
-    setTimeout(()=>{ 
-      if(map) map.invalidateSize(true);
-    }, 300);
-  }
-
-  if(id==="stats"){
-    renderStats();
-  }
-}
-function getGPS(){
-if(navigator.geolocation){
-navigator.geolocation.getCurrentPosition(pos=>{
-document.getElementById("coords").value=
-pos.coords.latitude.toFixed(6)+", "+pos.coords.longitude.toFixed(6);
-});
-}else{alert("GPS nie beskikbaar")}
+function show(id){
+document.querySelectorAll("section").forEach(s=>s.classList.remove("active"));
+document.getElementById(id).classList.add("active");
 }
 
-function saveCatch(){
-let species=document.getElementById("species").value;
-let length=document.getElementById("length").value;
-let weight=document.getElementById("weight").value;
-let place=document.getElementById("place").value;
-let notes=document.getElementById("notes").value;
-let coords=document.getElementById("coords").value;
-let photo=document.getElementById("photo").files[0];
-
-if(!coords){alert("Kry eers GPS");return;}
-
-let reader=new FileReader();
-reader.onload=function(e){
-let catches=JSON.parse(localStorage.getItem("fishlog")||"[]");
-catches.push({
-species,length,weight,place,notes,coords,
-photo:e.target.result,
-date:new Date().toLocaleString()
-});
-localStorage.setItem("fishlog",JSON.stringify(catches));
-loadLog();
-}
-if(photo){reader.readAsDataURL(photo);}else{reader.onload({target:{result:null}});}
+function addTest(){
+let data=JSON.parse(localStorage.getItem("fishlog")||"[]");
+data.push({species:"Test Fish",date:new Date().toLocaleString()});
+localStorage.setItem("fishlog",JSON.stringify(data));
+load();
 }
 
-function loadLog(){
+function load(){
 let log=document.getElementById("log");
-let catches=JSON.parse(localStorage.getItem("fishlog")||"[]");
+let data=JSON.parse(localStorage.getItem("fishlog")||"[]");
 log.innerHTML="";
-catches.reverse().forEach((c,i)=>{
-log.innerHTML+=`
-...
-${c.coords}<br>
-<a href="https://www.google.com/maps?q=${encodeURIComponent(c.coords)}" target="_blank">
-Open in Google Maps
-</a><br>
-...
-`;
-${c.length?c.length+"cm ":""}${c.weight?c.weight+"kg":""}
-${c.photo?`<img src="${c.photo}">`:""}
-${c.notes||""}
-<button onclick="deleteCatch(${i})">Delete</button>
-</div>`;
+data.forEach(d=>{
+log.innerHTML+=`<div class="card">${d.species}<br>${d.date}</div>`;
 });
 }
 
-function deleteCatch(i){
-let catches=JSON.parse(localStorage.getItem("fishlog")||"[]");
-catches.splice(i,1);
-localStorage.setItem("fishlog",JSON.stringify(catches));
-loadLog();
-}
- if(map){ initMap(); }
-
-  function initMap(){
-  let catches = JSON.parse(localStorage.getItem("fishlog")||"[]");
-const f = document.getElementById("mapFilter") ? document.getElementById("mapFilter").value : "ALL";
-if(f !== "ALL"){
-  catches = catches.filter(c => c.species === f);
-}
-
-  if(!map){
-    map = L.map('map').setView([-34.37,21.42], 10);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18}).addTo(map);
-  }
-
-  // Remove old markers
-  map.eachLayer(layer => {
-    if(layer instanceof L.Marker) map.removeLayer(layer);
-  });
-
-  // Add markers again
-  catches.forEach(c=>{
-    if(c.coords){
-      const parts=c.coords.split(",");
-      const lat=parseFloat(parts[0]);
-      const lon=parseFloat(parts[1]);
-      if(Number.isFinite(lat) && Number.isFinite(lon)){
-        L.marker([lat,lon]).addTo(map).bindPopup(c.species);
-      }
-    }
-  });
-
-  // Zoom to points
-  const points = catches
-    .filter(c=>c.coords)
-    .map(c=>{
-      const p=c.coords.split(",");
-      return [parseFloat(p[0]), parseFloat(p[1])];
-    })
-    .filter(p=>Number.isFinite(p[0]) && Number.isFinite(p[1]));
-
-  if(points.length >= 2){
-    map.fitBounds(points, {padding:[20,20]});
-  } else if(points.length === 1){
-    map.setView(points[0], 13);
-  }
-  }
-
-function renderStats(){
-  let stats=document.getElementById("stats");
-  let catches=JSON.parse(localStorage.getItem("fishlog")||"[]");
-
-  let total=catches.length;
-
-  // counts per species
-  let counts = {};
-  catches.forEach(c => {
-    counts[c.species] = (counts[c.species] || 0) + 1;
-  });
-
-  let rows = Object.entries(counts)
-    .sort((a,b)=>b[1]-a[1])
-    .map(([name,count]) => `<div class="card"><b>${name}</b>: ${count}</div>`)
-    .join("");
-
-  stats.innerHTML = `
-    <div class="card"><b>Totaal vangste:</b> ${total}</div>
-    <div class="small">Per spesie:</div>
-    ${rows || '<div class="card">Nog geen data nie.</div>'}
-  `;
-     }
-
-function exportData(){
-let data=localStorage.getItem("fishlog");
-let blob=new Blob([data],{type:"application/json"});
-let url=URL.createObjectURL(blob);
-let a=document.createElement("a");
-a.href=url;a.download="fishlog.json";a.click();
-}
-
-function importData(){
-let txt=document.getElementById("importBox").value;
-localStorage.setItem("fishlog",txt);
-loadLog();
-}
-
-loadLog();
+load();
 </script>
 
 </body>
-  </html>
+</html>
