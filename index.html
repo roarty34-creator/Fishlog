@@ -1,40 +1,218 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="af">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <meta name="theme-color" content="#0b1220" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FishLog</title>
+  <meta name="theme-color" content="#0b1220">
   <link rel="manifest" href="manifest.webmanifest">
+
   <style>
-    body{font-family:system-ui;margin:0;background:#0b1220;color:#e7eefc}
-    header{padding:16px 16px 10px;border-bottom:1px solid rgba(255,255,255,.08)}
-    h1{margin:0;font-size:18px}
-    .tabs{display:flex;gap:8px;padding:12px 16px}
-    .tab{padding:10px 12px;border:1px solid rgba(255,255,255,.12);border-radius:12px;background:#121b33;color:#e7eefc}
-    .tab.active{outline:2px solid rgba(120,170,255,.6)}
-    main{padding:0 16px 18px}
-    .card{background:#121b33;border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:14px;margin:12px 0}
-    label{display:block;margin:10px 0 6px;font-size:13px;opacity:.9}
-    input,select,textarea,button{width:100%;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:#0f1730;color:#e7eefc}
-    textarea{min-height:90px}
-    button{background:#2c5cff;border:none;font-weight:700}
-    button.secondary{background:#223055;border:1px solid rgba(255,255,255,.14)}
-    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    .listItem{display:flex;gap:12px;align-items:center}
-    .thumb{width:56px;height:56px;border-radius:12px;background:#0f1730;border:1px solid rgba(255,255,255,.12);overflow:hidden;display:flex;align-items:center;justify-content:center}
-    .thumb img{width:100%;height:100%;object-fit:cover}
-    .muted{opacity:.75;font-size:12px}
-    .pill{display:inline-block;padding:4px 8px;border-radius:999px;background:rgba(44,92,255,.2);border:1px solid rgba(44,92,255,.35);font-size:12px;margin-left:8px}
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #0b1220;
+      color: white;
+    }
+
+    header {
+      padding: 15px;
+      text-align: center;
+      background: #111a30;
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    nav {
+      display: flex;
+      justify-content: space-around;
+      background: #162040;
+      padding: 10px;
+    }
+
+    nav button {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 14px;
+    }
+
+    section {
+      padding: 15px;
+      display: none;
+    }
+
+    section.active {
+      display: block;
+    }
+
+    input, select, textarea, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 8px;
+      border-radius: 8px;
+      border: none;
+      font-size: 14px;
+    }
+
+    button {
+      background: #2c5cff;
+      color: white;
+      font-weight: bold;
+    }
+
+    .card {
+      background: #162040;
+      padding: 10px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+    }
+
+    img {
+      width: 100%;
+      border-radius: 8px;
+    }
   </style>
 </head>
-<body>
-<header>
-  <h1>FishLog <span class="pill">Offline</span></h1>
-  <div class="muted">Log jou vis + foto + GPS. Alles bly op jou foon.</div>
-</header>
 
-<div class="tabs">
-  <button class="tab active" id="tLog">Logboek</button>
-  <button class="tab" id="tAdd">Add Vang</button>
-  <button class="tab" id
+<body>
+
+<header>FishLog</header>
+
+<nav>
+  <button onclick="showTab('log')">Logboek</button>
+  <button onclick="showTab('add')">Add Vang</button>
+  <button onclick="showTab('species')">Spesies</button>
+</nav>
+
+<section id="log" class="active"></section>
+
+<section id="add">
+  <label>Spesie</label>
+  <select id="species">
+    <option>Kabeljou</option>
+    <option>Geelstert</option>
+    <option>Bonnie</option>
+    <option>Rooi roman</option>
+    <option>Snapper</option>
+    <option>Silver (Bastermeid)</option>
+    <option>Rooi steenbras</option>
+    <option>Yellowbelly Rockcod</option>
+  </select>
+
+  <label>Lengte (cm)</label>
+  <input id="length" type="number">
+
+  <label>Gewig (kg)</label>
+  <input id="weight" type="number">
+
+  <label>Foto</label>
+  <input id="photo" type="file" accept="image/*" capture="environment">
+
+  <label>Koördinate</label>
+  <button onclick="getGPS()">Kry GPS</button>
+  <input id="coords" readonly>
+
+  <label>Notas</label>
+  <textarea id="notes"></textarea>
+
+  <button onclick="saveCatch()">Save</button>
+</section>
+
+<section id="species">
+  <div class="card">
+    <b>Kabeljou</b><br>
+    Max ±180cm / ±75kg
+  </div>
+  <div class="card">
+    <b>Geelstert</b><br>
+    Skoolvis, vinnig.
+  </div>
+  <div class="card">
+    <b>Rooi steenbras</b><br>
+    Stadig groeiend, beskerm.
+  </div>
+</section>
+
+<script>
+function showTab(id) {
+  document.querySelectorAll("section").forEach(sec => sec.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+}
+
+function getGPS() {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(function(position) {
+      document.getElementById("coords").value =
+        position.coords.latitude.toFixed(6) + ", " +
+        position.coords.longitude.toFixed(6);
+    }, function() {
+      alert("GPS kon nie verkry word nie.");
+    });
+  } else {
+    alert("GPS nie ondersteun nie.");
+  }
+}
+
+function saveCatch() {
+  let species = document.getElementById("species").value;
+  let length = document.getElementById("length").value;
+  let weight = document.getElementById("weight").value;
+  let notes = document.getElementById("notes").value;
+  let coords = document.getElementById("coords").value;
+  let photo = document.getElementById("photo").files[0];
+
+  if (!coords) {
+    alert("Kry eers GPS.");
+    return;
+  }
+
+  let reader = new FileReader();
+  reader.onload = function(e) {
+    let catches = JSON.parse(localStorage.getItem("fishlog") || "[]");
+    catches.push({
+      species,
+      length,
+      weight,
+      notes,
+      coords,
+      photo: e.target.result,
+      date: new Date().toLocaleString()
+    });
+    localStorage.setItem("fishlog", JSON.stringify(catches));
+    loadLog();
+    showTab("log");
+  };
+
+  if (photo) {
+    reader.readAsDataURL(photo);
+  } else {
+    reader.onload({target:{result:null}});
+  }
+}
+
+function loadLog() {
+  let log = document.getElementById("log");
+  let catches = JSON.parse(localStorage.getItem("fishlog") || "[]");
+  log.innerHTML = "";
+
+  catches.reverse().forEach(c => {
+    log.innerHTML += `
+      <div class="card">
+        <b>${c.species}</b><br>
+        ${c.date}<br>
+        ${c.coords}<br>
+        ${c.length ? "Lengte: " + c.length + "cm<br>" : ""}
+        ${c.weight ? "Gewig: " + c.weight + "kg<br>" : ""}
+        ${c.photo ? "<img src='"+c.photo+"'>" : ""}
+        ${c.notes ? "<br>"+c.notes : ""}
+      </div>
+    `;
+  });
+}
+
+loadLog();
+</script>
+
+</body>
+</html>
