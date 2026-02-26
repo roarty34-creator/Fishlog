@@ -180,7 +180,11 @@ loadLog();
  if(map){ initMap(); }
 
   function initMap(){
-  const catches = JSON.parse(localStorage.getItem("fishlog")||"[]");
+  let catches = JSON.parse(localStorage.getItem("fishlog")||"[]");
+const f = document.getElementById("mapFilter") ? document.getElementById("mapFilter").value : "ALL";
+if(f !== "ALL"){
+  catches = catches.filter(c => c.species === f);
+}
 
   if(!map){
     map = L.map('map').setView([-34.37,21.42], 10);
