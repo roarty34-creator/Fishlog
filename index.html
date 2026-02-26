@@ -164,6 +164,7 @@ catches.splice(i,1);
 localStorage.setItem("fishlog",JSON.stringify(catches));
 loadLog();
 }
+ if(map){ initMap(); }
 
   function initMap(){
   const catches = JSON.parse(localStorage.getItem("fishlog")||"[]");
@@ -207,11 +208,28 @@ loadLog();
   }
 
 function renderStats(){
-let stats=document.getElementById("stats");
-let catches=JSON.parse(localStorage.getItem("fishlog")||"[]");
-let total=catches.length;
-stats.innerHTML=`<div class="card">Totaal vangste: ${total}</div>`;
-}
+  let stats=document.getElementById("stats");
+  let catches=JSON.parse(localStorage.getItem("fishlog")||"[]");
+
+  let total=catches.length;
+
+  // counts per species
+  let counts = {};
+  catches.forEach(c => {
+    counts[c.species] = (counts[c.species] || 0) + 1;
+  });
+
+  let rows = Object.entries(counts)
+    .sort((a,b)=>b[1]-a[1])
+    .map(([name,count]) => `<div class="card"><b>${name}</b>: ${count}</div>`)
+    .join("");
+
+  stats.innerHTML = `
+    <div class="card"><b>Totaal vangste:</b> ${total}</div>
+    <div class="small">Per spesie:</div>
+    ${rows || '<div class="card">Nog geen data nie.</div>'}
+  `;
+     }
 
 function exportData(){
 let data=localStorage.getItem("fishlog");
