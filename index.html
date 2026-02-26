@@ -163,6 +163,9 @@ log.innerHTML+=`
 ${c.date}<br>
 ${c.place||""}<br>
 ${c.coords}<br>
+<a href="https://www.google.com/maps?q=${encodeURIComponent(c.coords)}" target="_blank" style="color:#7aa8ff">
+Open in Google Maps
+</a><br>
 ${c.length?c.length+"cm ":""}${c.weight?c.weight+"kg":""}
 ${c.photo?`<img src="${c.photo}">`:""}
 ${c.notes||""}
