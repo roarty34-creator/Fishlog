@@ -75,7 +75,20 @@ img{width:100%;border-radius:8px}
 </section>
 
 <section id="map">
-<div id="map"></div>
+  <label>Filter spesie</label>
+  <select id="mapFilter" onchange="initMap()">
+    <option value="ALL">Alles</option>
+    <option value="Kabeljou">Kabeljou</option>
+    <option value="Geelstert">Geelstert</option>
+    <option value="Bonnie">Bonnie</option>
+    <option value="Rooi roman">Rooi roman</option>
+    <option value="Snapper">Snapper</option>
+    <option value="Silver (Bastermeid)">Silver (Bastermeid)</option>
+    <option value="Rooi steenbras">Rooi steenbras</option>
+    <option value="Yellowbelly Rockcod">Yellowbelly Rockcod</option>
+  </select>
+
+  <div id="map" style="margin-top:10px"></div>
 </section>
 
 <section id="stats"></section>
