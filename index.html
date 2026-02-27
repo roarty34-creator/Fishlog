@@ -322,13 +322,15 @@ function deleteCatchById(id){
       window._fishMarkers = L.layerGroup().addTo(window._fishMap);
     }
 
-    window._fishMarkers.clearLayers();
-    const all = JSON.parse(localStorage.getItem(KEY) || "[]");
+  window._fishMarkers.clearLayers();
+
+const all = JSON.parse(localStorage.getItem(KEY) || "[]");
 const selectedTrip = document.getElementById("tripFilter")?.value || "ALL";
 const catches = (selectedTrip !== "ALL")
   ? all.filter(c => (c.trip || "Geen Trip") === selectedTrip)
   : all;
-    const points = [];
+
+const points = [];
 
     catches.forEach(c=>{
       if(!c.coords) return;
@@ -346,7 +348,8 @@ const catches = (selectedTrip !== "ALL")
 
   function renderStats(){
     const box = document.getElementById("statsBox");
-    const catches = JSON.parse(localStorage.getItem(KEY) || "[]");
+
+    
     if(!catches.length){ box.innerHTML = "Nog geen vangste nie."; return; }
 
     const total = catches.length;
