@@ -213,7 +213,95 @@
   function loadLog(){
     const log = document.getElementById("log");
     const catches = JSON.parse(localStorage.getItem(KEY) || "[]");
+function renderStats(){
+  const box = document.getElementById("statsBox");
+  const catches = JSON.parse(localStorage.getItem(KEY) || "[]");
+  if(!box) return;
 
+  if(!catches.length){
+    box.innerHTML = "Nog geen vangste nie.";
+    return;
+  }
+
+  const total = catches.length;
+
+  const bySpecies = {};
+  const byPlace = {};
+  let biggestLen = null;
+  let biggestW = null;
+
+  catches.forEach(c=>{
+    const s = c.species || "Onbekend";
+    bySpecies[s] = bySpecies[s] || {count:0, lenSum:0, lenN:0, wSum:0, wN:0, maxLen:null, maxW:null};
+    bySpecies[s].count++;
+
+    if(Number.isFinite(c.length)){
+      bySpecies[s].lenSum += c.length; bySpecies[s].lenN++;
+      if(!bySpecies[s].maxLen || c.length > bySpecies[s].maxLen.length) bySpecies[s].maxLen = c;
+      if(!biggestLen || c.length > biggestLen.length) biggestLen = c;
+    }
+    if(Number.isFinite(c.weight)){
+      bySpecies[s].wSum += c.weight; bySpecies[s].wN++;
+      if(!bySpecies[s].maxW || c.weight > bySpecies[s].maxW.weight) bySpecies[s].maxW = c;
+      if(!biggestW || c.weight > biggestW.weight) biggestW = c;
+    }
+
+    const p = (c.place && c.place.trim()) ? c.place.trim() : "";
+    if(p) byPlace[p] = (byPlace[p] || 0) + 1;
+  });
+
+  const fmt1 = (n)=> (Math.round(n * 10) / 10).toString();
+
+  const speciesRows = Object.entries(bySpecies)
+    .sort((a,b)=>b[1].count - a[1].count)
+    .map(([name, st])=>{
+      const avgLen = st.lenN ? fmt1(st.lenSum / st.lenN) + " cm" : "—";
+      const avgW   = st.wN ? fmt1(st.wSum / st.wN) + " kg" : "—";
+      const bestLen = st.maxLen ? (st.maxLen.length + " cm") : "—";
+      const bestW   = st.maxW ? (st.maxW.weight + " kg") : "—";
+      return `
+        <div class="card" style="margin-top:10px">
+          <b>${name}</b><br>
+          <span class="small">Vangste: <b>${st.count}</b></span><br>
+          <span class="small">Gem. lengte: <b>${avgLen}</b> | Beste: <b>${bestLen}</b></span><br>
+          <span class="small">Gem. gewig: <b>${avgW}</b> | Beste: <b>${bestW}</b></span>
+        </div>
+      `;
+    }).join("");
+
+  const spots = Object.entries(byPlace)
+    .sort((a,b)=>b[1]-a[1])
+    .slice(0,5)
+    .map(([p,n])=>`<div style="margin-top:6px"><b>${p}</b>: ${n}</div>`)
+    .join("");
+
+  const last5 = catches.slice().reverse().slice(0,5)
+    .map(c=>`<div style="margin-top:6px"><b>${c.species || "Onbekend"}</b> — ${c.date || ""}${c.place ? (" • " + c.place) : ""}</div>`)
+    .join("");
+
+  box.innerHTML = `
+    <div class="card" style="margin-top:10px"><b>Totaal vangste:</b> ${total}</div>
+
+    <div class="card" style="margin-top:10px">
+      <b>Rekords</b><br>
+      <div class="small"><b>Grootste lengte:</b> ${biggestLen ? (biggestLen.species + " — " + biggestLen.length + " cm") : "Geen lengte data"}</div>
+      <div class="small"><b>Grootste gewig:</b> ${biggestW ? (biggestW.species + " — " + biggestW.weight + " kg") : "Geen gewig data"}</div>
+    </div>
+
+    <div class="card" style="margin-top:10px">
+      <b>Top spots</b>
+      <div class="small">${spots || "Nog geen plek name nie."}</div>
+    </div>
+
+    <div class="card" style="margin-top:10px">
+      <b>Laaste 5 vangste</b>
+      <div class="small">${last5}</div>
+    </div>
+
+    <div class="small" style="margin-top:12px"><b>Per spesie</b> (counts + gemiddeldes)</div>
+    ${speciesRows}
+  `;
+}
     if(!catches.length){
       log.innerHTML = `<div class="card"><b>Nog geen vangste nie.</b><div class="small">Gaan na “Add Vang”.</div></div>`;
       return;
