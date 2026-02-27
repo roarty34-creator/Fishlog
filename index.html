@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+5<!DOCTYPE html>
 <html lang="af">
 <head>
   <meta charset="UTF-8" />
@@ -116,9 +116,14 @@
 <script>
   const KEY = "fishlog";
 
-  function showTab(id){
-    document.querySelectorAll("section").forEach(s=>s.classList.remove("active"));
-    document.getElementById(id).classList.add("active");
+  function showTab(tab){
+  document.querySelectorAll("section").forEach(s=>s.classList.remove("active"));
+  document.getElementById(tab).classList.add("active");
+
+  if(tab === "log") loadLog();
+  if(tab === "map") initMap();
+  if(tab === "stats") renderStats();
+  }
 
     document.getElementById("btnLog").classList.toggle("active", id==="log");
     document.getElementById("btnAdd").classList.toggle("active", id==="add");
