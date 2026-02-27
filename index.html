@@ -126,6 +126,7 @@
 
     if(id==="log") loadLog();
     if(id==="map"){
+      if(id==="stats") renderStats();
       initMap();
       setTimeout(()=>{ if(window._fishMap) window._fishMap.invalidateSize(true); }, 300);
     }
