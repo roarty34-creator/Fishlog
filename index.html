@@ -203,4 +203,69 @@
           ${c.coords ? (`<button class="secondary" type="button" onclick="window.open('${mapsUrl}','_blank')" style="margin-top:8px">Open in Google Maps</button>`) : ""}
           ${Number.isFinite(c.length) ? ("<div class='small'>Lengte: <b>"+c.length+" cm</b></div>") : ""}
           ${Number.isFinite(c.weight) ? ("<div class='small'>Gewig: <b>"+c.weight+" kg</b></div>") : ""}
-          ${c.photo ? (`<img class="
+          ${c.photo ? (`<img class="thumb" src="${c.photo}" alt="foto">`) : ""}
+          ${c.notes ? ("<div class='small' style='margin-top:8px'>"+c.notes+"</div>") : ""}
+          <button class="danger" type="button" onclick="deleteCatch(${i})" style="margin-top:10px">Delete</button>
+        </div>
+      `;
+    });
+  }
+
+  function initMap(){
+    if(!window.L){ alert("Map library het nie gelaai nie. Reload."); return; }
+
+    if(!window._fishMap){
+      window._fishMap = L.map("mapBox").setView([-34.37, 21.42], 10);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 18 }).addTo(window._fishMap);
+      window._fishMarkers = L.layerGroup().addTo(window._fishMap);
+    }
+
+    window._fishMarkers.clearLayers();
+    const catches = JSON.parse(localStorage.getItem(KEY) || "[]");
+    const points = [];
+
+    catches.forEach(c=>{
+      if(!c.coords) return;
+      const parts = c.coords.split(",");
+      const lat = parseFloat(parts[0]);
+      const lon = parseFloat(parts[1]);
+      if(!Number.isFinite(lat) || !Number.isFinite(lon)) return;
+      points.push([lat,lon]);
+      L.marker([lat,lon]).addTo(window._fishMarkers).bindPopup(`<b>${c.species||""}</b><br>${c.date||""}<br>${c.place||""}`);
+    });
+
+    if(points.length>=2) window._fishMap.fitBounds(points, {padding:[20,20]});
+    else if(points.length===1) window._fishMap.setView(points[0], 13);
+  }
+
+  function renderStats(){
+    const box = document.getElementById("statsBox");
+    const catches = JSON.parse(localStorage.getItem(KEY) || "[]");
+    if(!catches.length){ box.innerHTML = "Nog geen vangste nie."; return; }
+
+    const total = catches.length;
+    const counts = {};
+    let biggestLen=null, biggestW=null;
+
+    catches.forEach(c=>{
+      const s = c.species || "Onbekend";
+      counts[s]=(counts[s]||0)+1;
+      if(Number.isFinite(c.length) && (!biggestLen || c.length>biggestLen.length)) biggestLen=c;
+      if(Number.isFinite(c.weight) && (!biggestW || c.weight>biggestW.weight)) biggestW=c;
+    });
+
+    const per = Object.entries(counts).sort((a,b)=>b[1]-a[1])
+      .map(([s,n])=>`<div style="margin-top:6px"><b>${s}</b>: ${n}</div>`).join("");
+
+    box.innerHTML = `
+      <div><b>Totaal vangste:</b> ${total}</div><br>
+      <div><b>Grootste lengte:</b> ${biggestLen ? (biggestLen.species+" — "+biggestLen.length+" cm") : "—"}</div>
+      <div><b>Grootste gewig:</b> ${biggestW ? (biggestW.species+" — "+biggestW.weight+" kg") : "—"}</div><br>
+      <div><b>Per spesie:</b><br>${per}</div>
+    `;
+  }
+
+  loadLog();
+</script>
+</body>
+</html>
