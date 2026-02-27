@@ -5,113 +5,129 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>FishLog</title>
   <meta name="theme-color" content="#0b1220" />
+
+  <!-- Map (Leaflet) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
   <style>
-   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script> body{margin:0;font-family:Arial,system-ui;background:#0b1220;color:#e7eefc}
-    header{padding:15px;text-align:center;background:#162040;font-weight:900}
-    nav{display:flex;gap:8px;justify-content:center;background:#111a30;padding:10px}
-    nav button{padding:10px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.14);background:#162040;color:#fff;font-weight:800}
-    nav button.active{outline:2px solid rgba(44,92,255,.7)}
+    :root{
+      --bg:#0b1220; --panel:#111a30; --card:#162040;
+      --line:rgba(255,255,255,.12); --text:#e7eefc; --muted:rgba(231,238,252,.75);
+      --brand:#2c5cff; --danger:#ff3b3b;
+      --r:12px;
+    }
+    body{margin:0;font-family:Arial,system-ui;background:var(--bg);color:var(--text)}
+    header{padding:15px;text-align:center;background:var(--card);font-weight:900}
+    nav{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;background:var(--panel);padding:10px;border-bottom:1px solid var(--line)}
+    nav button{
+      padding:10px 12px;border-radius:999px;border:1px solid var(--line);
+      background:var(--card);color:#fff;font-weight:900
+    }
+    nav button.active{outline:2px solid rgba(44,92,255,.75)}
+    main{max-width:720px;margin:0 auto}
     section{padding:15px;display:none}
     section.active{display:block}
-    .card{background:#162040;padding:12px;border-radius:12px;margin-top:10px;border:1px solid rgba(255,255,255,.10)}
-    label{display:block;margin:10px 0 6px;opacity:.85;font-size:13px}
-    input,select,textarea,button{width:100%;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:#0f1730;color:#e7eefc}
+    .card{background:var(--card);padding:12px;border-radius:var(--r);margin-top:10px;border:1px solid var(--line)}
+    label{display:block;margin:10px 0 6px;color:var(--muted);font-size:13px}
+    input,select,textarea,button{width:100%;padding:12px;border-radius:10px;border:1px solid var(--line);background:#0f1730;color:var(--text)}
     textarea{min-height:90px}
-    button.primary{background:#2c5cff;border:none;font-weight:900}
-    button.secondary{background:#23345c;font-weight:800}<
-
-button id="btnMap" onclick="show('map')">Map</button>
+    button.primary{background:var(--brand);border:none;font-weight:900}
+    button.secondary{background:#23345c;font-weight:900}
+    button.danger{background:var(--danger);border:none;font-weight:900}
     .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    .thumb{width:100%;border-radius:10px;margin-top:8px;border:1px solid rgba(255,255,255,.10)}
-    a{color:#7aa8ff}
-    .small{font-size:12px;opacity:.75;margin-top:8px}
+    .thumb{width:100%;border-radius:10px;margin-top:8px;border:1px solid var(--line)}
+    .small{font-size:12px;color:var(--muted);margin-top:8px}
+    #mapBox{height:420px;border-radius:12px;border:1px solid var(--line);overflow:hidden}
   </style>
 </head>
 
 <body>
-<header>FishLog V5 TEST</header>
+<header>FishLog</header>
 
 <nav>
   <button id="btnLog" class="active" onclick="show('log')">Logboek</button>
   <button id="btnAdd" onclick="show('add')">Add Vang</button>
   <button id="btnMap" onclick="show('map')">Map</button>
 </nav>
-<section id="map">
-  <div class="card">
-    <b>Map View</b>
-    <div class="small">Pins = jou vangste</div>
-    <div id="mapBox" style="height:400px;border-radius:12px;margin-top:10px"></div>
-  </div>
-</section>
 
+<main>
+  <section id="log" class="active"></section>
 
-<section id="add">
-  <label>Spesie</label>
-  <select id="species">
-    <option>Kabeljou</option>
-    <option>Geelstert</option>
-    <option>Bonnie</option>
-    <option>Rooi roman</option>
-    <option>Snapper</option>
-    <option>Silver (Bastermeid)</option>
-    <option>Rooi steenbras</option>
-    <option>Yellowbelly Rockcod</option>
-  </select>
+  <section id="add">
+    <label>Spesie</label>
+    <select id="species">
+      <option>Kabeljou</option>
+      <option>Geelstert</option>
+      <option>Bonnie</option>
+      <option>Rooi roman</option>
+      <option>Snapper</option>
+      <option>Silver (Bastermeid)</option>
+      <option>Rooi steenbras</option>
+      <option>Yellowbelly Rockcod</option>
+    </select>
 
-  <div class="row">
-    <div>
-      <label>Lengte (cm) – opsioneel</label>
-      <input id="length" inputmode="decimal" placeholder="bv. 78" />
+    <div class="row">
+      <div>
+        <label>Lengte (cm) – opsioneel</label>
+        <input id="length" inputmode="decimal" placeholder="bv. 78" />
+      </div>
+      <div>
+        <label>Gewig (kg) – opsioneel</label>
+        <input id="weight" inputmode="decimal" placeholder="bv. 6.5" />
+      </div>
     </div>
-    <div>
-      <label>Gewig (kg) – opsioneel</label>
-      <input id="weight" inputmode="decimal" placeholder="bv. 6.5" />
+
+    <label>Plek naam (opsioneel)</label>
+    <input id="place" placeholder="bv. Stilbaai / Goukou mond" />
+
+    <label>Foto</label>
+    <input id="photo" type="file" accept="image/*" capture="environment" />
+
+    <label>Koördinate</label>
+    <div class="row">
+      <button class="secondary" type="button" onclick="getGPS()">Kry GPS</button>
+      <input id="coords" readonly placeholder="lat, lon" />
     </div>
-  </div>
 
-  <label>Plek naam (opsioneel)</label>
-  <input id="place" placeholder="bv. Stilbaai / Goukou mond" />
+    <label>Notas</label>
+    <textarea id="notes" placeholder="aas/lure, gety, wind, ens."></textarea>
 
-  <label>Foto</label>
-  <input id="photo" type="file" accept="image/*" capture="environment" />
+    <div class="row">
+      <button class="primary" type="button" onclick="saveCatch()">Save</button>
+      <button class="secondary" type="button" onclick="clearForm()">Clear</button>
+    </div>
 
-  <label>Koördinate</label>
-  <div class="row">
-    <button class="secondary" type="button" onclick="getGPS()">Kry GPS</button>
-    <input id="coords" readonly placeholder="lat, lon" />
-  </div>
+    <div class="small">Tip: As GPS nie vra nie, gee Location permission vir die site.</div>
+  </section>
 
-  <label>Notas</label>
-  <textarea id="notes" placeholder="aas/lure, gety, wind, ens."></textarea>
-
-  <div class="row">
-    <button class="primary" type="button" onclick="saveCatch()">Save</button>
-    <button class="secondary" type="button" onclick="clearForm()">Clear</button>
-  </div>
-
-  <div class="small">Tip: As GPS nie vra nie, gee Location permission vir die site.</div>
-</section>
+  <section id="map">
+    <div class="card">
+      <b>Map View</b>
+      <div class="small">Pins = jou vangste</div>
+      <div id="mapBox" style="margin-top:10px"></div>
+      <div class="small">As jy nie kaart sien nie, maak seker jou data/internet is aan (tiles laai online).</div>
+    </div>
+  </section>
+</main>
 
 <script>
   const KEY = "fishlog";
 
   function show(id){
-  document.querySelectorAll("section").forEach(s=>s.classList.remove("active"));
-  document.getElementById(id).classList.add("active");
+    document.querySelectorAll("section").forEach(s=>s.classList.remove("active"));
+    document.getElementById(id).classList.add("active");
 
-  document.getElementById("btnLog").classList.toggle("active", id==="log");
-  document.getElementById("btnAdd").classList.toggle("active", id==="add");
-  if(document.getElementById("btnMap")){
+    document.getElementById("btnLog").classList.toggle("active", id==="log");
+    document.getElementById("btnAdd").classList.toggle("active", id==="add");
     document.getElementById("btnMap").classList.toggle("active", id==="map");
-  }
 
-  if(id==="log") loadLog();
-  if(id==="map"){
-    initMap();
-    setTimeout(()=>{ if(window._fishMap) window._fishMap.invalidateSize(true); }, 300);
+    if(id==="log") loadLog();
+    if(id==="map"){
+      initMap();
+      setTimeout(()=>{ if(window._fishMap) window._fishMap.invalidateSize(true); }, 300);
+    }
   }
-}
 
   function safeNum(v){
     if(!v) return null;
@@ -155,34 +171,22 @@ button id="btnMap" onclick="show('map')">Map</button>
     const coords = document.getElementById("coords").value.trim();
     const photoFile = document.getElementById("photo").files[0];
 
-    if(!coords){
-      alert("Kry eers GPS koördinate.");
-      return;
-    }
-    if(!photoFile){
-      alert("Neem/kies eers ’n foto.");
-      return;
-    }
+    if(!coords){ alert("Kry eers GPS koördinate."); return; }
+    if(!photoFile){ alert("Neem/kies eers ’n foto."); return; }
 
     const photo = await fileToDataUrl(photoFile);
 
     const catches = JSON.parse(localStorage.getItem(KEY) || "[]");
-
-    // Hou backwards compatibility: ou “Test Fish” items bly, nuwe items kry meer fields
     catches.push({
-      species,
-      length,
-      weight,
-      place,
-      notes,
-      coords,
-      photo,
+      species, length, weight, place, notes, coords, photo,
       date: new Date().toLocaleString()
     });
-
     localStorage.setItem(KEY, JSON.stringify(catches));
+
     clearForm();
     show("log");
+
+    if(window._fishMap){ initMap(); }
   }
 
   function clearForm(){
@@ -196,14 +200,13 @@ button id="btnMap" onclick="show('map')">Map</button>
 
   function deleteCatch(indexFromNewest){
     const catches = JSON.parse(localStorage.getItem(KEY) || "[]");
-    // log wys nuutste eerste, so ons delete volgens daardie view
     const realIndex = catches.length - 1 - indexFromNewest;
     if(realIndex < 0) return;
     catches.splice(realIndex, 1);
     localStorage.setItem(KEY, JSON.stringify(catches));
     loadLog();
+    if(window._fishMap){ initMap(); }
   }
-  if(window._fishMap){ initMap(); }
 
   function loadLog(){
     const log = document.getElementById("log");
@@ -212,39 +215,6 @@ button id="btnMap" onclick="show('map')">Map</button>
     if(!catches.length){
       log.innerHTML = `<div class="card"><b>Nog geen vangste nie.</b><div class="small">Gaan na “Add Vang”.</div></div>`;
       return;
-    }
-    function initMap(){
-  const catches = JSON.parse(localStorage.getItem(KEY) || "[]");
-
-  // maak map 1 keer
-  if(!window._fishMap){
-    window._fishMap = L.map('mapBox').setView([-34.37, 21.42], 10);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(window._fishMap);
-    window._fishMarkers = L.layerGroup().addTo(window._fishMap);
-  }
-
-  // refresh markers
-  window._fishMarkers.clearLayers();
-
-  const points = [];
-  catches.forEach(c=>{
-    if(!c.coords) return;
-    const parts = c.coords.split(",");
-    const lat = parseFloat(parts[0]);
-    const lon = parseFloat(parts[1]);
-    if(!Number.isFinite(lat) || !Number.isFinite(lon)) return;
-
-    points.push([lat, lon]);
-    L.marker([lat, lon])
-      .addTo(window._fishMarkers)
-      .bindPopup(`<b>${c.species || ""}</b><br>${c.date || ""}<br>${c.place || ""}`);
-  });
-
-  if(points.length >= 2){
-    window._fishMap.fitBounds(points, { padding:[20,20] });
-  } else if(points.length === 1){
-    window._fishMap.setView(points[0], 13);
-  }
     }
 
     log.innerHTML = "";
@@ -261,10 +231,46 @@ button id="btnMap" onclick="show('map')">Map</button>
           ${Number.isFinite(c.weight) ? ("<div class='small'>Gewig: <b>" + c.weight + " kg</b></div>") : ""}
           ${c.photo ? (`<img class="thumb" src="${c.photo}" alt="foto">`) : ""}
           ${c.notes ? ("<div class='small' style='margin-top:8px'>" + c.notes + "</div>") : ""}
-          <button class="secondary" type="button" onclick="deleteCatch(${i})" style="margin-top:10px;background:#ff3b3b">Delete</button>
+          <button class="danger" type="button" onclick="deleteCatch(${i})" style="margin-top:10px">Delete</button>
         </div>
       `;
     });
+  }
+
+  function initMap(){
+    const catches = JSON.parse(localStorage.getItem(KEY) || "[]");
+
+    if(!window.L){
+      alert("Map library het nie gelaai nie. Probeer reload.");
+      return;
+    }
+
+    if(!window._fishMap){
+      window._fishMap = L.map('mapBox').setView([-34.37, 21.42], 10);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(window._fishMap);
+      window._fishMarkers = L.layerGroup().addTo(window._fishMap);
+    }
+
+    window._fishMarkers.clearLayers();
+
+    const points = [];
+    catches.forEach(c=>{
+      if(!c.coords) return;
+      const parts = c.coords.split(",");
+      const lat = parseFloat(parts[0]);
+      const lon = parseFloat(parts[1]);
+      if(!Number.isFinite(lat) || !Number.isFinite(lon)) return;
+
+      points.push([lat, lon]);
+      L.marker([lat, lon]).addTo(window._fishMarkers)
+        .bindPopup(`<b>${c.species || ""}</b><br>${c.date || ""}<br>${(c.place || "")}`);
+    });
+
+    if(points.length >= 2){
+      window._fishMap.fitBounds(points, { padding:[20,20] });
+    } else if(points.length === 1){
+      window._fishMap.setView(points[0], 13);
+    }
   }
 
   // init
