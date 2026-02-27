@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="af">
 <head>
-  <link rel="manifest" href="manifest.webmanifest">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>FishLog</title>
   <meta name="theme-color" content="#0b1220" />
+  <link rel="manifest" href="manifest.webmanifest">
 
   <!-- Map (Leaflet) -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -15,8 +15,7 @@
     :root{
       --bg:#0b1220; --panel:#111a30; --card:#162040;
       --line:rgba(255,255,255,.12); --text:#e7eefc; --muted:rgba(231,238,252,.75);
-      --brand:#2c5cff; --danger:#ff3b3b;
-      --r:12px;
+      --brand:#2c5cff; --danger:#ff3b3b; --r:12px;
     }
     body{margin:0;font-family:Arial,system-ui;background:var(--bg);color:var(--text)}
     header{padding:15px;text-align:center;background:var(--card);font-weight:900}
@@ -108,7 +107,13 @@
       <b>Map View</b>
       <div class="small">Pins = jou vangste</div>
       <div id="mapBox" style="margin-top:10px"></div>
-      <div class="small">As jy nie kaart sien nie, maak seker jou data/internet is aan (tiles laai online).</div>
+    </div>
+  </section>
+
+  <section id="stats">
+    <div class="card">
+      <b>Stats</b>
+      <div id="statsBox" class="small" style="margin-top:8px"></div>
     </div>
   </section>
 </main>
@@ -123,13 +128,11 @@
     document.getElementById("btnLog").classList.toggle("active", id==="log");
     document.getElementById("btnAdd").classList.toggle("active", id==="add");
     document.getElementById("btnMap").classList.toggle("active", id==="map");
+    document.getElementById("btnStats").classList.toggle("active", id==="stats");
 
     if(id==="log") loadLog();
-    if(id==="map"){
-      if(id==="stats") renderStats();
-      initMap();
-      setTimeout(()=>{ if(window._fishMap) window._fishMap.invalidateSize(true); }, 300);
-    }
+    if(id==="map"){ initMap(); setTimeout(()=>{ if(window._fishMap) window._fishMap.invalidateSize(true); }, 300); }
+    if(id==="stats") renderStats();
   }
 
   function safeNum(v){
@@ -139,19 +142,14 @@
   }
 
   function getGPS(){
-    if(!navigator.geolocation){
-      alert("GPS nie ondersteun op hierdie browser nie.");
-      return;
-    }
+    if(!navigator.geolocation){ alert("GPS nie ondersteun op hierdie browser nie."); return; }
     navigator.geolocation.getCurrentPosition(
       (pos)=>{
         const lat = pos.coords.latitude.toFixed(6);
         const lon = pos.coords.longitude.toFixed(6);
         document.getElementById("coords").value = `${lat}, ${lon}`;
       },
-      ()=>{
-        alert("Kon nie GPS kry nie. Check Location permission vir die site.");
-      },
+      ()=>{ alert("Kon nie GPS kry nie. Check Location permission vir die site."); },
       { enableHighAccuracy:true, timeout:15000 }
     );
   }
@@ -180,194 +178,5 @@
     const photo = await fileToDataUrl(photoFile);
 
     const catches = JSON.parse(localStorage.getItem(KEY) || "[]");
-    catches.push({
-      species, length, weight, place, notes, coords, photo,
-      date: new Date().toLocaleString()
-    });
+    catches.push({ species, length, weight, place, notes, coords, photo, date: new Date().toLocaleString() });
     localStorage.setItem(KEY, JSON.stringify(catches));
-
-    clearForm();
-    show("log");
-
-    if(window._fishMap){ initMap(); }
-  }
-
-  function clearForm(){
-    document.getElementById("length").value = "";
-    document.getElementById("weight").value = "";
-    document.getElementById("place").value = "";
-    document.getElementById("notes").value = "";
-    document.getElementById("coords").value = "";
-    document.getElementById("photo").value = "";
-  }
-
-  function deleteCatch(indexFromNewest){
-    const catches = JSON.parse(localStorage.getItem(KEY) || "[]");
-    const realIndex = catches.length - 1 - indexFromNewest;
-    if(realIndex < 0) return;
-    catches.splice(realIndex, 1);
-    localStorage.setItem(KEY, JSON.stringify(catches));
-    loadLog();
-    if(window._fishMap){ initMap(); }
-  }
-
-  function loadLog(){
-    const log = document.getElementById("log");
-    const catches = JSON.parse(localStorage.getItem(KEY) || "[]");
-  }
-  
-function renderStats(){
-  const box = document.getElementById("statsBox");
-  const catches = JSON.parse(localStorage.getItem(KEY) || "[]");
-  if(!box) return;
-
-  if(!catches.length){
-    box.innerHTML = "Nog geen vangste nie.";
-    return;
-  }
-
-  const total = catches.length;
-
-  const bySpecies = {};
-  const byPlace = {};
-  let biggestLen = null;
-  let biggestW = null;
-
-  catches.forEach(c=>{
-    const s = c.species || "Onbekend";
-    bySpecies[s] = bySpecies[s] || {count:0, lenSum:0, lenN:0, wSum:0, wN:0, maxLen:null, maxW:null};
-    bySpecies[s].count++;
-
-    if(Number.isFinite(c.length)){
-      bySpecies[s].lenSum += c.length; bySpecies[s].lenN++;
-      if(!bySpecies[s].maxLen || c.length > bySpecies[s].maxLen.length) bySpecies[s].maxLen = c;
-      if(!biggestLen || c.length > biggestLen.length) biggestLen = c;
-    }
-    if(Number.isFinite(c.weight)){
-      bySpecies[s].wSum += c.weight; bySpecies[s].wN++;
-      if(!bySpecies[s].maxW || c.weight > bySpecies[s].maxW.weight) bySpecies[s].maxW = c;
-      if(!biggestW || c.weight > biggestW.weight) biggestW = c;
-    }
-
-    const p = (c.place && c.place.trim()) ? c.place.trim() : "";
-    if(p) byPlace[p] = (byPlace[p] || 0) + 1;
-  });
-
-  const fmt1 = (n)=> (Math.round(n * 10) / 10).toString();
-
-  const speciesRows = Object.entries(bySpecies)
-    .sort((a,b)=>b[1].count - a[1].count)
-    .map(([name, st])=>{
-      const avgLen = st.lenN ? fmt1(st.lenSum / st.lenN) + " cm" : "—";
-      const avgW   = st.wN ? fmt1(st.wSum / st.wN) + " kg" : "—";
-      const bestLen = st.maxLen ? (st.maxLen.length + " cm") : "—";
-      const bestW   = st.maxW ? (st.maxW.weight + " kg") : "—";
-      return `
-        <div class="card" style="margin-top:10px">
-          <b>${name}</b><br>
-          <span class="small">Vangste: <b>${st.count}</b></span><br>
-          <span class="small">Gem. lengte: <b>${avgLen}</b> | Beste: <b>${bestLen}</b></span><br>
-          <span class="small">Gem. gewig: <b>${avgW}</b> | Beste: <b>${bestW}</b></span>
-        </div>
-      `;
-    }).join("");
-
-  const spots = Object.entries(byPlace)
-    .sort((a,b)=>b[1]-a[1])
-    .slice(0,5)
-    .map(([p,n])=>`<div style="margin-top:6px"><b>${p}</b>: ${n}</div>`)
-    .join("");
-
-  const last5 = catches.slice().reverse().slice(0,5)
-    .map(c=>`<div style="margin-top:6px"><b>${c.species || "Onbekend"}</b> — ${c.date || ""}${c.place ? (" • " + c.place) : ""}</div>`)
-    .join("");
-
-  box.innerHTML = `
-    <div class="card" style="margin-top:10px"><b>Totaal vangste:</b> ${total}</div>
-
-    <div class="card" style="margin-top:10px">
-      <b>Rekords</b><br>
-      <div class="small"><b>Grootste lengte:</b> ${biggestLen ? (biggestLen.species + " — " + biggestLen.length + " cm") : "Geen lengte data"}</div>
-      <div class="small"><b>Grootste gewig:</b> ${biggestW ? (biggestW.species + " — " + biggestW.weight + " kg") : "Geen gewig data"}</div>
-    </div>
-
-    <div class="card" style="margin-top:10px">
-      <b>Top spots</b>
-      <div class="small">${spots || "Nog geen plek name nie."}</div>
-    </div>
-
-    <div class="card" style="margin-top:10px">
-      <b>Laaste 5 vangste</b>
-      <div class="small">${last5}</div>
-    </div>
-
-    <div class="small" style="margin-top:12px"><b>Per spesie</b> (counts + gemiddeldes)</div>
-    ${speciesRows}
-  `;
-}
-    if(!catches.length){
-      log.innerHTML = `<div class="card"><b>Nog geen vangste nie.</b><div class="small">Gaan na “Add Vang”.</div></div>`;
-      return;
-    }
-
-    log.innerHTML = "";
-    catches.slice().reverse().forEach((c, i) => {
-      const mapsUrl = c.coords ? ("https://www.google.com/maps?q=" + encodeURIComponent(c.coords)) : "";
-      log.innerHTML += `
-        <div class="card">
-          <b>${c.species || "Onbekend"}</b><br>
-          <span class="small">${c.date || ""}</span><br>
-          ${c.place ? (c.place + "<br>") : ""}
-          ${c.coords ? (c.coords + "<br>") : ""}
-          ${c.coords ? (`<button class="secondary" type="button" onclick="window.open('${mapsUrl}','_blank')" style="margin-top:8px">Open in Google Maps</button>`) : ""}
-          ${Number.isFinite(c.length) ? ("<div class='small'>Lengte: <b>" + c.length + " cm</b></div>") : ""}
-          ${Number.isFinite(c.weight) ? ("<div class='small'>Gewig: <b>" + c.weight + " kg</b></div>") : ""}
-          ${c.photo ? (`<img class="thumb" src="${c.photo}" alt="foto">`) : ""}
-          ${c.notes ? ("<div class='small' style='margin-top:8px'>" + c.notes + "</div>") : ""}
-          <button class="danger" type="button" onclick="deleteCatch(${i})" style="margin-top:10px">Delete</button>
-        </div>
-      `;
-    });
-  }
-
-  function initMap(){
-    const catches = JSON.parse(localStorage.getItem(KEY) || "[]");
-
-    if(!window.L){
-      alert("Map library het nie gelaai nie. Probeer reload.");
-      return;
-    }
-
-    if(!window._fishMap){
-      window._fishMap = L.map('mapBox').setView([-34.37, 21.42], 10);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(window._fishMap);
-      window._fishMarkers = L.layerGroup().addTo(window._fishMap);
-    }
-
-    window._fishMarkers.clearLayers();
-
-    const points = [];
-    catches.forEach(c=>{
-      if(!c.coords) return;
-      const parts = c.coords.split(",");
-      const lat = parseFloat(parts[0]);
-      const lon = parseFloat(parts[1]);
-      if(!Number.isFinite(lat) || !Number.isFinite(lon)) return;
-
-      points.push([lat, lon]);
-      L.marker([lat, lon]).addTo(window._fishMarkers)
-        .bindPopup(`<b>${c.species || ""}</b><br>${c.date || ""}<br>${(c.place || "")}`);
-    });
-
-    if(points.length >= 2){
-      window._fishMap.fitBounds(points, { padding:[20,20] });
-    } else if(points.length === 1){
-      window._fishMap.setView(points[0], 13);
-    }
-  }
-
-  // init
-  loadLog();
-</script>
-</body>
-</html>
