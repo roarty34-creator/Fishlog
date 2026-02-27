@@ -199,12 +199,44 @@
   }
 
   function loadLog(){
-    const log = document.getElementById("log");
-    const catches = JSON.parse(localStorage.getItem(KEY) || "[]");
-    if(!catches.length){
-      log.innerHTML = `<div class="card"><b>Nog geen vangste nie.</b><div class="small">Gaan na “Add Vang”.</div></div>`;
-      return;
-    }
+  const wrap = document.getElementById("logList") || document.getElementById("log");
+  const catches = JSON.parse(localStorage.getItem(KEY) || "[]");
+
+  // Build/refresh filter dropdown
+  ensureTripsUI();
+
+  const filter = document.getElementById("tripFilter");
+  const selectedTrip = filter ? filter.value : "ALL";
+
+  const filtered = (selectedTrip && selectedTrip !== "ALL")
+    ? catches.filter(c => (c.trip || "Geen Trip") === selectedTrip)
+    : catches;
+
+  if(!filtered.length){
+    wrap.innerHTML = `<div class="card"><b>Nog geen vangste nie.</b><div class="small">Gaan na “Add Vang”.</div></div>`;
+    return;
+  }
+
+  wrap.innerHTML = "";
+  filtered.slice().reverse().forEach((c,i)=>{
+    const mapsUrl = "https://www.google.com/maps?q=" + encodeURIComponent(c.coords || "");
+    wrap.innerHTML += `
+      <div class="card">
+        <b>${c.species || "Onbekend"}</b><br>
+        <span class="small">${c.date || ""}</span><br>
+        <div class="small"><b>Trip:</b> ${(c.trip || "Geen Trip")}</div>
+        ${c.place ? (c.place + "<br>") : ""}
+        ${c.coords ? (c.coords + "<br>") : ""}
+        ${c.coords ? (`<button class="secondary" type="button" onclick="window.open('${mapsUrl}','_blank')" style="margin-top:8px">Open in Google Maps</button>`) : ""}
+        ${Number.isFinite(c.length) ? ("<div class='small'>Lengte: <b>"+c.length+" cm</b></div>") : ""}
+        ${Number.isFinite(c.weight) ? ("<div class='small'>Gewig: <b>"+c.weight+" kg</b></div>") : ""}
+        ${c.photo ? (`<img class="thumb" src="${c.photo}" alt="foto">`) : ""}
+        ${c.notes ? ("<div class='small' style='margin-top:8px'>"+c.notes+"</div>") : ""}
+        <button class="danger" type="button" onclick="deleteCatchById('${c.id}')" style="margin-top:10px">Delete</button>
+      </div>
+    `;
+  });
+  }
 
     log.innerHTML = "";
     catches.slice().reverse().forEach((c,i)=>{
