@@ -1,11 +1,11 @@
 {
   "name": "FishLog",
   "short_name": "FishLog",
-  "start_url": ".",
+  "start_url": "/fishlog/",
+  "scope": "/fishlog/",
   "display": "standalone",
   "background_color": "#0b1220",
   "theme_color": "#0b1220",
-  "orientation": "portrait",
   "icons": [
     {
       "src": "icon-192.png",
