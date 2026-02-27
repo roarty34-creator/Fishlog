@@ -242,16 +242,16 @@ function clearTripFilter(){
   if(tripFilter) tripFilter.value = "ALL";
   loadLog();
 }
-  function deleteCatch(indexFromNewest){
-    const catches = JSON.parse(localStorage.getItem(KEY) || "[]");
-    const realIndex = catches.length - 1 - indexFromNewest;
-    if(realIndex < 0) return;
-    catches.splice(realIndex, 1);
-    localStorage.setItem(KEY, JSON.stringify(catches));
-    loadLog();
-    if(window._fishMap) initMap();
-    renderStats();
-  }
+function deleteCatchById(id){
+  const catches = JSON.parse(localStorage.getItem(KEY) || "[]");
+  const idx = catches.findIndex(c=>c.id===id);
+  if(idx === -1) return;
+  catches.splice(idx, 1);
+  localStorage.setItem(KEY, JSON.stringify(catches));
+  loadLog();
+  if(window._fishMap) initMap();
+  renderStats();
+}
 
   function loadLog(){
   const wrap = document.getElementById("logList") || document.getElementById("log");
