@@ -46,7 +46,17 @@
 </nav>
 
 <main>
-  <section id="log" class="active"></section>
+  <section id="log" class="active">
+  <div class="card">
+    <b>Filter</b>
+    <div class="row" style="margin-top:10px">
+      <select id="tripFilter" onchange="loadLog()"></select>
+      <button class="secondary" type="button" onclick="clearTripFilter()">All trips</button>
+    </div>
+    <div class="small">Kies ’n trip om net daai vangste te sien.</div>
+  </div>
+  <div id="logList"></div>
+  </section>
 
   <section id="add">
     <label>Spesie</label>
