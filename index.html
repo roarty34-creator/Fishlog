@@ -186,7 +186,57 @@
       if(el) el.value = "";
     });
   }
+function getTrips(){
+  return JSON.parse(localStorage.getItem(KEY+"_trips") || "[]");
+}
+function setTrips(trips){
+  localStorage.setItem(KEY+"_trips", JSON.stringify(trips));
+}
 
+function ensureTripsUI(){
+  // Ensure at least one default trip exists
+  let trips = getTrips();
+  if(!trips.length){
+    trips = ["Stilbaai Trip"];
+    setTrips(trips);
+  }
+
+  // Add screen dropdown
+  const tripSelect = document.getElementById("tripSelect");
+  if(tripSelect){
+    tripSelect.innerHTML = trips.map(t=>`<option>${t}</option>`).join("");
+  }
+
+  // Log filter dropdown
+  const tripFilter = document.getElementById("tripFilter");
+  if(tripFilter){
+    const current = tripFilter.value || "ALL";
+    tripFilter.innerHTML = `<option value="ALL">All trips</option>` + trips.map(t=>`<option value="${t}">${t}</option>`).join("");
+    // keep selection if possible
+    if([...tripFilter.options].some(o=>o.value===current)) tripFilter.value = current;
+  }
+}
+
+function newTrip(){
+  const name = prompt("Trip naam? bv. Stilbaai 10 Maart");
+  if(!name) return;
+  const clean = name.trim();
+  if(!clean) return;
+
+  const trips = getTrips();
+  if(!trips.includes(clean)) trips.push(clean);
+  setTrips(trips);
+  ensureTripsUI();
+
+  const tripSelect = document.getElementById("tripSelect");
+  if(tripSelect) tripSelect.value = clean;
+}
+
+function clearTripFilter(){
+  const tripFilter = document.getElementById("tripFilter");
+  if(tripFilter) tripFilter.value = "ALL";
+  loadLog();
+}
   function deleteCatch(indexFromNewest){
     const catches = JSON.parse(localStorage.getItem(KEY) || "[]");
     const realIndex = catches.length - 1 - indexFromNewest;
