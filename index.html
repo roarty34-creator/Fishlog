@@ -203,6 +203,7 @@ button id="btnMap" onclick="show('map')">Map</button>
     localStorage.setItem(KEY, JSON.stringify(catches));
     loadLog();
   }
+  if(window._fishMap){ initMap(); }
 
   function loadLog(){
     const log = document.getElementById("log");
