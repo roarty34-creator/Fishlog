@@ -2,6 +2,7 @@
 {
   "name": "FishLog",
   "short_name": "FishLog",
+"id": "/fishlog/?v=3",
   "start_url": "/fishlog/",
   "scope": "/fishlog/",
   "display": "standalone",
