@@ -97,12 +97,21 @@ button id="btnMap" onclick="show('map')">Map</button>
   const KEY = "fishlog";
 
   function show(id){
-    document.querySelectorAll("section").forEach(s=>s.classList.remove("active"));
-    document.getElementById(id).classList.add("active");
-    document.getElementById("btnLog").classList.toggle("active", id==="log");
-    document.getElementById("btnAdd").classList.toggle("active", id==="add");
-    if(id==="log") loadLog();
+  document.querySelectorAll("section").forEach(s=>s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+
+  document.getElementById("btnLog").classList.toggle("active", id==="log");
+  document.getElementById("btnAdd").classList.toggle("active", id==="add");
+  if(document.getElementById("btnMap")){
+    document.getElementById("btnMap").classList.toggle("active", id==="map");
   }
+
+  if(id==="log") loadLog();
+  if(id==="map"){
+    initMap();
+    setTimeout(()=>{ if(window._fishMap) window._fishMap.invalidateSize(true); }, 300);
+  }
+}
 
   function safeNum(v){
     if(!v) return null;
