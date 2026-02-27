@@ -212,6 +212,39 @@ button id="btnMap" onclick="show('map')">Map</button>
       log.innerHTML = `<div class="card"><b>Nog geen vangste nie.</b><div class="small">Gaan na “Add Vang”.</div></div>`;
       return;
     }
+    function initMap(){
+  const catches = JSON.parse(localStorage.getItem(KEY) || "[]");
+
+  // maak map 1 keer
+  if(!window._fishMap){
+    window._fishMap = L.map('mapBox').setView([-34.37, 21.42], 10);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(window._fishMap);
+    window._fishMarkers = L.layerGroup().addTo(window._fishMap);
+  }
+
+  // refresh markers
+  window._fishMarkers.clearLayers();
+
+  const points = [];
+  catches.forEach(c=>{
+    if(!c.coords) return;
+    const parts = c.coords.split(",");
+    const lat = parseFloat(parts[0]);
+    const lon = parseFloat(parts[1]);
+    if(!Number.isFinite(lat) || !Number.isFinite(lon)) return;
+
+    points.push([lat, lon]);
+    L.marker([lat, lon])
+      .addTo(window._fishMarkers)
+      .bindPopup(`<b>${c.species || ""}</b><br>${c.date || ""}<br>${c.place || ""}`);
+  });
+
+  if(points.length >= 2){
+    window._fishMap.fitBounds(points, { padding:[20,20] });
+  } else if(points.length === 1){
+    window._fishMap.setView(points[0], 13);
+  }
+    }
 
     log.innerHTML = "";
     catches.slice().reverse().forEach((c, i) => {
