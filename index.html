@@ -323,7 +323,11 @@ function deleteCatchById(id){
     }
 
     window._fishMarkers.clearLayers();
-    const catches = JSON.parse(localStorage.getItem(KEY) || "[]");
+    const all = JSON.parse(localStorage.getItem(KEY) || "[]");
+const selectedTrip = document.getElementById("tripFilter")?.value || "ALL";
+const catches = (selectedTrip !== "ALL")
+  ? all.filter(c => (c.trip || "Geen Trip") === selectedTrip)
+  : all;
     const points = [];
 
     catches.forEach(c=>{
