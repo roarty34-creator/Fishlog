@@ -173,7 +173,11 @@
     const photo = await fileToDataUrl(photoFile);
     const catches = JSON.parse(localStorage.getItem(KEY) || "[]");
     const trip = (document.getElementById("tripSelect")?.value) || "Geen Trip";
-    catches.push({ species, length, weight, place, notes, coords, photo, date: new Date().toLocaleString() });
+    catches.push({
+  id: crypto.randomUUID ? crypto.randomUUID() : (Date.now()+"_"+Math.random()),
+  species, length, weight, place, notes, coords, photo, trip,
+  date: new Date().toLocaleString()
+});
     localStorage.setItem(KEY, JSON.stringify(catches));
 
     clearForm();
