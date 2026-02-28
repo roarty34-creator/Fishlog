@@ -388,15 +388,19 @@ const points = [];
       <div><b>Per spesie:</b><br>${per}</div>
     `;
   }
-  <script>
-document.addEventListener("DOMContentLoaded", function(){
-  ensureTripsUI();
-  loadLog();
-  window.showTab = showTab;
-window.loadLog = loadLog;
-window.initMap = initMap;
-window.renderStats = renderStats;
-});
+<script>
+  // TEST: wys dat JS loop
+  document.body.insertAdjacentHTML(
+    "afterbegin",
+    '<div style="padding:8px;background:#ff3b3b;color:#fff;font-weight:900;text-align:center">JS OK</div>'
+  );
+
+  // As hierdie functions bestaan, roep hulle
+  document.addEventListener("DOMContentLoaded", function () {
+    if (typeof ensureTripsUI === "function") ensureTripsUI();
+    if (typeof loadLog === "function") loadLog();
+  });
 </script>
+
 </body>
 </html>
