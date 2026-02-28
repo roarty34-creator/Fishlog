@@ -116,14 +116,14 @@
 <script>
   const KEY = "fishlog";
 
-  function showTab(tab){
+function showTab(tab){
   document.querySelectorAll("section").forEach(s=>s.classList.remove("active"));
   document.getElementById(tab).classList.add("active");
 
   if(tab === "log") loadLog();
-  if(tab === "map") initMap();
+  if(tab === "folder") initMap();   // ← BELANGRIK as jou Map onder "Folder" sit
   if(tab === "stats") renderStats();
-  }
+}
 
     document.getElementById("btnLog").classList.toggle("active", id==="log");
     document.getElementById("btnAdd").classList.toggle("active", id==="add");
