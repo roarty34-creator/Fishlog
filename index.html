@@ -768,6 +768,10 @@ const photoFile =
     el("btnGPS").addEventListener("click", getGPS);
 
     el("btnClearFilter").addEventListener("click", clearTripFilter);
+      const cam = document.getElementById("photoCam");
+const gal = document.getElementById("photoGal");
+if(cam) cam.addEventListener("change", updatePhotoHint);
+if(gal) gal.addEventListener("change", updatePhotoHint);
 
     el("tripFilter").addEventListener("change", () => {
       loadLog();
