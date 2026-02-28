@@ -483,8 +483,8 @@ const g = el("photoGal"); if(g) g.value = "";
 
       // Photo optional
       let photoData = null;
-      const cam = el("photoCam");
-const gal = el("photoGal");
+    const cam = document.getElementById("photoCam");
+const gal = document.getElementById("photoGal");
 
 const photoFile =
   (cam && cam.files && cam.files[0]) ? cam.files[0] :
