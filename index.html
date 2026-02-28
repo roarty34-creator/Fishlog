@@ -222,11 +222,12 @@ function loadLog(){
   <div class="small">${c.date}</div>
   </div>`;
  });
-}
- function editCatch(id){
+function editCatch(id){
+  alert("Edit druk: " + id);
+
   const catches = getAll();
   const c = catches.find(x => x.id == id);
-  if(!c){
+  ...
     alert("Catch nie gevind nie.");
     return;
   }
