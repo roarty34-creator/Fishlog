@@ -1,342 +1,464 @@
 <!DOCTYPE html>
 <html lang="af">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FishLog</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FishLog</title>
 
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 
-<style>
-:root{
- --bg:#0b1220;
- --card:#162040;
- --text:#e7eefc;
- --brand:#2c5cff;
-}
-
-body{
- margin:0;
- font-family:Arial, sans-serif;
- background:var(--bg);
- color:var(--text);
-}
-
-main{padding:15px;max-width:600px;margin:auto}
-
-button{
- padding:10px 14px;
- border-radius:8px;
- border:none;
- background:var(--brand);
- color:white;
-}
-
-.secondary{background:#444}
-
-.card{
- background:var(--card);
- padding:12px;
- border-radius:12px;
- margin-top:12px;
-}
-
-input,select,textarea{
- width:100%;
- padding:8px;
- margin-top:4px;
- border-radius:6px;
- border:none;
-}
-
-#map{height:300px;margin-top:10px;border-radius:12px}
-
-img{max-width:100%;border-radius:8px;margin-top:6px}
-.small{font-size:12px;opacity:.7;margin-top:4px}
-nav{display:flex;gap:8px;margin-bottom:10px}
-</style>
+  <style>
+    :root{
+      --bg:#0b1220;
+      --card:#162040;
+      --text:#e7eefc;
+      --brand:#2c5cff;
+      --muted:rgba(231,238,252,.7);
+      --danger:#ff3b3b;
+    }
+    body{
+      margin:0;
+      font-family:Arial, sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
+    main{padding:15px;max-width:700px;margin:auto}
+    nav{display:flex;gap:8px;margin-bottom:10px}
+    button{
+      padding:10px 14px;
+      border-radius:8px;
+      border:none;
+      background:var(--brand);
+      color:white;
+      font-weight:600;
+    }
+    .secondary{background:#444}
+    .danger{background:var(--danger)}
+    .card{
+      background:var(--card);
+      padding:12px;
+      border-radius:12px;
+      margin-top:12px;
+    }
+    input,select,textarea{
+      width:100%;
+      padding:8px;
+      margin-top:4px;
+      border-radius:6px;
+      border:none;
+      box-sizing:border-box;
+    }
+    label{display:block;margin-top:10px}
+    .row{display:flex;gap:8px;align-items:center}
+    .small{font-size:12px;color:var(--muted);margin-top:6px}
+    #map{height:300px;margin-top:10px;border-radius:12px}
+    img{max-width:100%;border-radius:8px;margin-top:6px}
+  </style>
 </head>
 
 <body>
 <main>
 
-<nav>
-<button onclick="show('log')">Log</button>
-<button onclick="show('add')">Add</button>
-<button onclick="show('stats')">Stats</button>
-</nav>
+  <nav>
+    <button type="button" onclick="show('log')">Log</button>
+    <button type="button" onclick="show('add')">Add</button>
+    <button type="button" onclick="show('stats')">Stats</button>
+  </nav>
 
-<section id="log">
-<div class="card">
-<b>Filter</b>
-<select id="tripFilter" onchange="loadLog()">
-<option>All trips</option>
-</select>
-</div>
-<div id="list"></div>
-</section>
+  <!-- LOG -->
+  <section id="log">
+    <div class="card">
+      <b>Filter</b>
+      <select id="tripFilter"></select>
+      <div class="small">Kies ’n trip om net daai vangste te sien.</div>
+    </div>
+    <div id="list"></div>
+  </section>
 
-<section id="add" style="display:none">
-<div class="card">
+  <!-- ADD / EDIT -->
+  <section id="add" style="display:none">
+    <div class="card">
+      <b id="formTitle">Add catch</b>
 
-<label>Spesie</label>
-<input id="species">
+      <label>Spesie</label>
+      <input id="species" placeholder="bv. Kabeljou">
 
-<label>Trip</label>
-<input id="trip">
+      <label>Trip</label>
+      <input id="trip" placeholder="bv. Stilbaai boot / Strand">
 
-<label>Lengte (cm)</label>
-<input id="length">
+      <label>Lengte (cm)</label>
+      <input id="length" inputmode="numeric" placeholder="bv. 78">
 
-<label>Gewig (kg)</label>
-<input id="weight">
+      <label>Gewig (kg)</label>
+      <input id="weight" inputmode="decimal" placeholder="bv. 6.5">
 
-<label>Plek</label>
-<input id="place">
+      <label>Plek</label>
+      <input id="place" placeholder="bv. Stilbaai / Goukou mond">
 
-<label>Koördinate</label>
-<div style="display:flex;gap:6px">
-<button type="button" class="secondary" onclick="getGPS()">Kry GPS</button>
-<input id="coords" placeholder="lat, lon" readonly>
-</div>
+      <label>Koördinate</label>
+      <div class="row">
+        <button type="button" class="secondary" onclick="getGPS()">Kry GPS</button>
+        <input id="coords" placeholder="lat, lon" readonly>
+      </div>
+      <div class="small">Tip: GPS werk net as jy Location permission aan het.</div>
 
-<label>Foto</label>
-<div style="display:flex;gap:6px">
-<button type="button" onclick="document.getElementById('cam').click()">Camera</button>
-<button type="button" class="secondary" onclick="document.getElementById('gal').click()">Gallery</button>
-</div>
-<input id="cam" type="file" accept="image/*" capture="environment" hidden>
-<input id="gal" type="file" accept="image/*" hidden>
+      <label>Foto</label>
+      <div class="row">
+        <button type="button" onclick="document.getElementById('cam').click()">Camera</button>
+        <button type="button" class="secondary" onclick="document.getElementById('gal').click()">Gallery</button>
+      </div>
+      <input id="cam" type="file" accept="image/*" capture="environment" hidden>
+      <input id="gal" type="file" accept="image/*" hidden>
 
-<div id="photoPreview"></div>
+      <div id="photoPreview"></div>
 
-<label>Notas</label>
-<textarea id="notes"></textarea>
+      <label>Notas</label>
+      <textarea id="notes" placeholder="aas/lure, gety, wind, ens."></textarea>
 
-<button onclick="saveCatch()">Save</button>
+      <div class="row" style="margin-top:12px">
+        <button type="button" onclick="saveCatch()">Save</button>
+        <button type="button" class="secondary" onclick="clearForm(); show('log')">Cancel</button>
+      </div>
 
-</div>
+      <div class="small" id="statusText"></div>
+    </div>
 
-<div id="map"></div>
+    <div id="map"></div>
+  </section>
 
-</section>
+  <!-- STATS -->
+  <section id="stats" style="display:none">
+    <div class="card">
+      <b>Stats</b>
+      <div id="statsBox" class="small"></div>
 
- <section id="stats" style="display:none">
-<div class="card">
-<b>Stats</b>
-<div id="statsBox"></div>
+      <hr style="margin:12px 0;opacity:.2">
 
-<hr style="margin:12px 0;opacity:.2">
-
-<button onclick="exportData()">Export Backup</button>
-<button class="secondary" onclick="document.getElementById('importFile').click()">Import Backup</button>
-<input type="file" id="importFile" accept="application/json" hidden>
-
-</div>
- </section>
+      <div class="row">
+        <button type="button" onclick="exportData()">Export Backup</button>
+        <button type="button" class="secondary" onclick="document.getElementById('importFile').click()">Import Backup</button>
+        <input type="file" id="importFile" accept="application/json" hidden>
+      </div>
+    </div>
+  </section>
 
 </main>
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
 <script>
+  const KEY = "fishlog";
+  let editingId = null;
+  let map = null;
 
-const KEY="fishlog";
- let editingId = null;
+  const el = (id) => document.getElementById(id);
+  const species = el("species");
+  const trip = el("trip");
+  const length = el("length");
+  const weight = el("weight");
+  const place = el("place");
+  const coords = el("coords");
+  const notes = el("notes");
+  const photoPreview = el("photoPreview");
+  const tripFilter = el("tripFilter");
 
-function show(id){
- document.querySelectorAll("section").forEach(s=>s.style.display="none");
- document.getElementById(id).style.display="block";
- if(id==="stats") renderStats();
- if(id==="add") initMap();
-}
-
-function getAll(){
- return JSON.parse(localStorage.getItem(KEY)||"[]");
-}
-
-function saveAll(data){
- localStorage.setItem(KEY,JSON.stringify(data));
-}
- 
-function saveCatch(){
- const data=getAll();
-
- const photo=window._photo||"";
-
-data.push({
-  id: Date.now().toString(),
-  species: species.value,
-  trip: trip.value || "Geen",
-  length: Number(length.value) || null,
-  weight: Number(weight.value) || null,
-  place: place.value,
-  coords: coords.value,
-  notes: notes.value,
-  photo: photo,
-  date: new Date().toLocaleDateString()
-});
-
-
- saveAll(data);
- alert("Saved!");
- clearForm();
- loadLog();
- renderStats();
-}
-
-function clearForm(){
- document.querySelectorAll("#add input,#add textarea").forEach(i=>i.value="");
- photoPreview.innerHTML="";
- window._photo=null;
-}
-
-function loadLog(){
- const list=document.getElementById("list");
- list.innerHTML="";
- const data=getAll();
-
- data.slice().reverse().forEach(c=>{
-  list.innerHTML+=`
-  list.innerHTML += `
-  <div class="card">
-    <b>${c.species}</b> - ${c.trip}<br>
-    ${c.length? c.length+"cm " : ""}${c.weight? c.weight+"kg" : ""}<br>
-    ${c.place || ""}<br>
-    ${c.coords || ""}<br>
-    ${c.photo ? `<img src="${c.photo}" style="width:100%;border-radius:12px;margin-top:8px">` : ""}
-
- <div class="row" style="margin-top:10px;gap:8px">
-  <button type="button" class="secondary" onclick="editCatch('${c.id}')">Edit</button>
-  <button type="button" class="danger" onclick="deleteCatch('${c.id}')">Delete</button>
-</div>
-
-    <div class="small">${c.date || ""}</div>
-  </div>
-`;
-  <div class="card">
-  <b>${c.species}</b> - ${c.trip}<br>
-  ${c.length||""}cm ${c.weight||""}kg<br>
-  ${c.place}<br>
-  ${c.photo?'<img src="'+c.photo+'">':""}
-  <div class="small">${c.date}</div>
-  </div>`;
- });
-function editCatch(id){
-  alert("Edit druk: " + id);
-
-  const catches = getAll();
-  const c = catches.find(x => x.id == id);
-  ...
-    alert("Catch nie gevind nie.");
-    return;
+  function setStatus(msg){
+    el("statusText").textContent = msg || "";
   }
 
-  editingId = id;
+  function show(id){
+    document.querySelectorAll("section").forEach(s => s.style.display="none");
+    el(id).style.display="block";
 
-  species.value = c.species || "";
-  trip.value = c.trip || "";
-  length.value = c.length || "";
-  weight.value = c.weight || "";
-  place.value = c.place || "";
-  coords.value = c.coords || "";
-  notes.value = c.notes || "";
-show('add');
- }
-function renderStats(){
- const data=getAll();
- const box=document.getElementById("statsBox");
- if(!data.length){box.innerHTML="No catches yet.";return;}
-
- let total=data.length;
- let biggest=0;
- data.forEach(c=>{if(c.length>biggest)biggest=c.length;});
-
- box.innerHTML=`
- Total catches: ${total}<br>
- Biggest length: ${biggest} cm
- `;
-}
-
-function getGPS(){
- if(!navigator.geolocation){
-  alert("GPS nie beskikbaar nie");
-  return;
- }
-
- navigator.geolocation.getCurrentPosition(
-  pos=>{
-   const lat=pos.coords.latitude.toFixed(6);
-   const lon=pos.coords.longitude.toFixed(6);
-   coords.value=lat+", "+lon;
-  },
-  ()=>alert("Kon nie ligging kry nie")
- );
-}
-
-document.getElementById("cam").addEventListener("change",handlePhoto);
-document.getElementById("gal").addEventListener("change",handlePhoto);
-
-function handlePhoto(e){
- const file=e.target.files[0];
- if(!file)return;
- const reader=new FileReader();
- reader.onload=function(){
-  window._photo=reader.result;
-  photoPreview.innerHTML='<img src="'+reader.result+'">';
- }
- reader.readAsDataURL(file);
-}
-
-let map;
-
-function initMap(){
- if(map) return;
- map=L.map("map").setView([-34.37,20.85],10);
- L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map);
-}
-
-loadLog();
-function exportData(){
-  const data = localStorage.getItem(KEY);
-  if(!data){
-    alert("Geen data om te export nie.");
-    return;
+    if(id === "log") loadLog();
+    if(id === "stats") renderStats();
+    if(id === "add") initMap();
   }
 
-  const blob = new Blob([data], {type:"application/json"});
-  const url = URL.createObjectURL(blob);
+  function getAll(){
+    try { return JSON.parse(localStorage.getItem(KEY) || "[]"); }
+    catch { return []; }
+  }
 
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "fishlog-backup.json";
-  a.click();
+  function saveAll(data){
+    localStorage.setItem(KEY, JSON.stringify(data));
+  }
 
-  URL.revokeObjectURL(url);
-}
+  function ensureTripFilter(){
+    const data = getAll();
+    const trips = Array.from(new Set(data.map(c => (c.trip || "Geen").trim() || "Geen"))).values()).sort();
 
-document.getElementById("importFile").addEventListener("change", function(e){
-  const file = e.target.files[0];
-  if(!file) return;
+    const current = tripFilter.value || "ALL";
+    tripFilter.innerHTML = "";
 
-  const reader = new FileReader();
-  reader.onload = function(){
-    try{
-      const data = JSON.parse(reader.result);
-      localStorage.setItem(KEY, JSON.stringify(data));
-      alert("Backup suksesvol ingevoer!");
-      loadLog();
-      renderStats();
-    }catch{
-      alert("Ongeldige backup file.");
+    const optAll = document.createElement("option");
+    optAll.value = "ALL";
+    optAll.textContent = "All trips";
+    tripFilter.appendChild(optAll);
+
+    trips.forEach(t => {
+      const o = document.createElement("option");
+      o.value = t;
+      o.textContent = t;
+      tripFilter.appendChild(o);
+    });
+
+    // restore selection if possible
+    if([...tripFilter.options].some(o => o.value === current)) tripFilter.value = current;
+    else tripFilter.value = "ALL";
+  }
+
+  function saveCatch(){
+    const data = getAll();
+    const photo = window._photo || "";
+
+    const item = {
+      id: editingId ? editingId : Date.now().toString(),
+      species: (species.value || "").trim(),
+      trip: (trip.value || "Geen").trim() || "Geen",
+      length: length.value ? Number(length.value) : null,
+      weight: weight.value ? Number(weight.value) : null,
+      place: (place.value || "").trim(),
+      coords: (coords.value || "").trim(),
+      notes: (notes.value || "").trim(),
+      photo: photo,
+      date: new Date().toLocaleDateString()
+    };
+
+    if(!item.species){
+      alert("Skryf asb ’n spesie in.");
+      return;
     }
-  };
- reader.readAsText(file);
-});
 
- window.editCatch = editCatch;
-window.deleteCatch = deleteCatch;
- })();
+    if(editingId){
+      const idx = data.findIndex(x => x.id === editingId);
+      if(idx >= 0) data[idx] = item;
+      else data.push(item);
+      alert("Updated!");
+    } else {
+      data.push(item);
+      alert("Saved!");
+    }
+
+    saveAll(data);
+    clearForm();
+    ensureTripFilter();
+    loadLog();
+    renderStats();
+    show("log");
+  }
+
+  function clearForm(){
+    editingId = null;
+    el("formTitle").textContent = "Add catch";
+    species.value = "";
+    trip.value = "";
+    length.value = "";
+    weight.value = "";
+    place.value = "";
+    coords.value = "";
+    notes.value = "";
+    photoPreview.innerHTML = "";
+    window._photo = null;
+    setStatus("");
+  }
+
+  function loadLog(){
+    ensureTripFilter();
+
+    const list = el("list");
+    list.innerHTML = "";
+    const data = getAll();
+
+    const filter = tripFilter.value;
+    const filtered = (filter && filter !== "ALL")
+      ? data.filter(c => (c.trip || "Geen") === filter)
+      : data;
+
+    if(!filtered.length){
+      list.innerHTML = `<div class="card"><b>No catches yet.</b><div class="small">Gaan na Add en save jou eerste catch.</div></div>`;
+      return;
+    }
+
+    filtered.slice().reverse().forEach(c => {
+      const card = document.createElement("div");
+      card.className = "card";
+
+      const lenTxt = c.length ? `${c.length}cm` : "";
+      const wTxt = c.weight ? `${c.weight}kg` : "";
+      const topLine = [lenTxt, wTxt].filter(Boolean).join(" ");
+
+      card.innerHTML = `
+        <b>${escapeHtml(c.species || "")}</b> - ${escapeHtml(c.trip || "Geen")}<br>
+        ${topLine ? escapeHtml(topLine) + "<br>" : ""}
+        ${c.place ? escapeHtml(c.place) + "<br>" : ""}
+        ${c.coords ? escapeHtml(c.coords) + "<br>" : ""}
+        ${c.photo ? `<img src="${c.photo}" alt="photo">` : ""}
+
+        <div class="row" style="margin-top:10px">
+          <button type="button" class="secondary" onclick="editCatch('${c.id}')">Edit</button>
+          <button type="button" class="danger" onclick="deleteCatch('${c.id}')">Delete</button>
+        </div>
+
+        <div class="small">${escapeHtml(c.date || "")}</div>
+      `;
+      list.appendChild(card);
+    });
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, m => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+    }[m]));
+  }
+
+  function editCatch(id){
+    // toets: jy kan hierdie alert later delete
+    // alert("Edit druk: " + id);
+
+    const data = getAll();
+    const c = data.find(x => x.id === id);
+    if(!c){
+      alert("Catch nie gevind nie.");
+      return;
+    }
+
+    editingId = id;
+    el("formTitle").textContent = "Edit catch";
+
+    species.value = c.species || "";
+    trip.value = c.trip || "";
+    length.value = c.length ?? "";
+    weight.value = c.weight ?? "";
+    place.value = c.place || "";
+    coords.value = c.coords || "";
+    notes.value = c.notes || "";
+
+    window._photo = c.photo || "";
+    photoPreview.innerHTML = c.photo ? `<img src="${c.photo}" alt="photo">` : "";
+
+    show("add");
+    setStatus("Jy edit nou ’n bestaande catch. Druk Save om te update.");
+  }
+
+  function deleteCatch(id){
+    if(!confirm("Delete hierdie catch?")) return;
+    const data = getAll().filter(x => x.id !== id);
+    saveAll(data);
+    ensureTripFilter();
+    loadLog();
+    renderStats();
+  }
+
+  function renderStats(){
+    const data = getAll();
+    const box = el("statsBox");
+    if(!data.length){
+      box.textContent = "No catches yet.";
+      return;
+    }
+    let biggest = 0;
+    data.forEach(c => {
+      const v = Number(c.length) || 0;
+      if(v > biggest) biggest = v;
+    });
+    box.innerHTML = `
+      Total catches: ${data.length}<br>
+      Biggest length: ${biggest} cm
+    `;
+  }
+
+  function getGPS(){
+    if(!navigator.geolocation){
+      alert("GPS nie beskikbaar nie");
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        const lat = pos.coords.latitude.toFixed(6);
+        const lon = pos.coords.longitude.toFixed(6);
+        coords.value = lat + ", " + lon;
+      },
+      err => {
+        alert("Kon nie ligging kry nie. Check Location permission op jou phone.");
+      },
+      { enableHighAccuracy:true, timeout:12000, maximumAge:0 }
+    );
+  }
+
+  el("cam").addEventListener("change", handlePhoto);
+  el("gal").addEventListener("change", handlePhoto);
+
+  function handlePhoto(e){
+    const file = e.target.files && e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = function(){
+      window._photo = reader.result;
+      photoPreview.innerHTML = `<img src="${reader.result}" alt="photo">`;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function initMap(){
+    if(map) return;
+    map = L.map("map").setView([-34.37, 20.85], 10);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19
+    }).addTo(map);
+  }
+
+  function exportData(){
+    const data = localStorage.getItem(KEY);
+    if(!data){
+      alert("Geen data om te export nie.");
+      return;
+    }
+    const blob = new Blob([data], {type:"application/json"});
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "fishlog-backup.json";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+
+    URL.revokeObjectURL(url);
+  }
+
+  el("importFile").addEventListener("change", function(e){
+    const file = e.target.files && e.target.files[0];
+    if(!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(){
+      try{
+        const data = JSON.parse(reader.result);
+        if(!Array.isArray(data)) throw new Error("not array");
+        saveAll(data);
+        alert("Backup suksesvol ingevoer!");
+        ensureTripFilter();
+        loadLog();
+        renderStats();
+        show("log");
+      } catch {
+        alert("Ongeldige backup file.");
+      }
+    };
+    reader.readAsText(file);
+  });
+
+  // maak functions bereikbaar vir onclick=""
+  window.show = show;
+  window.saveCatch = saveCatch;
+  window.getGPS = getGPS;
+  window.exportData = exportData;
+  window.editCatch = editCatch;
+  window.deleteCatch = deleteCatch;
+
+  // init
+  ensureTripFilter();
+  loadLog();
 </script>
 </body>
-</html>
+ </html>
