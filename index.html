@@ -248,16 +248,15 @@
         </div>
         <label>Foto</label>
 
-<div class="row" style="gap:8px;">
-  <button class="secondary" type="button" onclick="openCamera()">Neem foto</button>
-  <button class="secondary" type="button" onclick="openGallery()">Kies uit gallery</button>
+<div class="row">
+  <button id="btnCam" class="secondary" type="button">Camera</button>
+  <button id="btnGal" class="secondary" type="button">Gallery</button>
 </div>
 
-<input id="photoCam" type="file" accept="image/*" capture="environment" style="display:none" />
-<input id="photoGal" type="file" accept="image/*" style="display:none" />
+<input id="camPick" type="file" accept="image/*" capture="environment" style="display:none">
+<input id="galPick" type="file" accept="image/*" style="display:none">
 
-<div id="photoHint" class="small" style="margin-top:8px;">Geen foto gekies nie.</div>
-
+<div id="photoHint" class="small">Geen foto gekies nie.</div>
       <label>Koördinate</label>
       <div class="row">
         <button class="secondary" id="btnGPS" type="button">Kry GPS</button>
