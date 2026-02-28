@@ -222,9 +222,9 @@ function loadLog(){
   </div>`;
  });
 }
-function editCatch(id){
-  const catches = JSON.parse(localStorage.getItem(KEY) || "[]");
-  const c = catches.find(x => x.id === id);
+ function editCatch(id){
+  const catches = getAll();
+  const c = catches.find(x => x.id == id);
   if(!c){
     alert("Catch nie gevind nie.");
     return;
@@ -232,18 +232,16 @@ function editCatch(id){
 
   editingId = id;
 
-  document.getElementById("species").value = c.species || "";
-  document.getElementById("trip").value    = c.trip || "";
-  document.getElementById("length").value  = c.length ?? "";
-  document.getElementById("weight").value  = c.weight ?? "";
-  document.getElementById("place").value   = c.place || "";
-  document.getElementById("coords").value  = c.coords || "";
-  document.getElementById("notes").value   = c.notes || "";
+  species.value = c.species || "";
+  trip.value = c.trip || "";
+  length.value = c.length || "";
+  weight.value = c.weight || "";
+  place.value = c.place || "";
+  coords.value = c.coords || "";
+  notes.value = c.notes || "";
 
-  window._editPhoto = c.photo || null;
-
-  show("add");
-}
+  show('add');  
+ }
 function renderStats(){
  const data=getAll();
  const box=document.getElementById("statsBox");
