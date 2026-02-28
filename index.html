@@ -74,10 +74,18 @@ section.active{display:block;}
 <label>Plek</label>
 <input id="place">
 
+<label>Koördinate</label>
+<div class="row">
+  <button type="button" class="secondary" onclick="getGPS()">Kry GPS</button>
+<input id="coords" placeholder="lat, lon" readonly>
+</div>
+<div class="small">Maak seker Location is aan.</div>
+
 <label>Foto</label>
 <div class="row">
-<button type="button" onclick="document.getElementById('camPick').click()">Camera</button>
-<button type="button" class="secondary" onclick="document.getElementById('galPick').click()">Gallery</button>
+<button type="button" class="secondary" onclick="getGPS()">
+  Kry GPS
+</button>
 </div>
 
 <input id="camPick" type="file" accept="image/*" capture="environment" style="display:none">
