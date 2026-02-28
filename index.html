@@ -64,14 +64,7 @@
   <section id="add" style="display:none">
     <div class="card">
       <label>Spesie</label>
-      <input id="species" placeholder="bv. Kabeljou" />
-
-<label>Trip</label>
-<div style="display:flex;gap:6px;align-items:center">
-  <select id="trip"></select>
-  <button type="button" class="secondary" onclick="newTrip()">New</button>
-</div>
-<div class="small">Kies ’n bestaande trip of maak ’n nuwe een.</div>
+      <input id="species" placeholder="bv. Kabeljou" 
 
       <label>Lengte (cm)</label>
       <input id="length" type="number" inputmode="decimal" placeholder="bv. 78" />
@@ -427,7 +420,11 @@ loadLog();
   }
 
   // start
-  show("log");
+fillTripSelect();
+loadLog();
+show("log");
+})();
+    show("log");
 })();
 </script>
 </body>
