@@ -456,7 +456,13 @@ async function fileToDataUrl(file){
 
       // Photo optional
       let photoData = null;
-      const photoFile = el("photo").files && el("photo").files[0] ? el("photo").files[0] : null;
+      const cam = el("photoCam");
+const gal = el("photoGal");
+
+const photoFile =
+  (cam && cam.files && cam.files[0]) ? cam.files[0] :
+  (gal && gal.files && gal.files[0]) ? gal.files[0] :
+  null;
       if(photoFile){
         photoData = await fileToDataUrl(photoFile);
       }
