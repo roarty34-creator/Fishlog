@@ -168,7 +168,27 @@
   function saveAll(data){
     localStorage.setItem(KEY, JSON.stringify(data));
   }
+function getTrips(){
+  const data = getAll();
+  const set = new Set();
+  data.forEach(c => set.add((c.trip || "Geen").trim()));
+  set.add("Geen");
+  return Array.from(set).filter(Boolean).sort((a,b)=>a.localeCompare(b));
+}
 
+function fillTripSelect(selected){
+  const sel = document.getElementById("trip");
+  if(!sel) return;
+  const trips = getTrips();
+  sel.innerHTML = trips.map(t => `<option value="${t}">${t}</option>`).join("");
+  sel.value = selected && trips.includes(selected) ? selected : "Geen";
+}
+
+function newTrip(){
+  const name = prompt("Naam van nuwe Trip?");
+  if(!name) return;
+  fillTripSelect(name.trim());
+}
   function clearForm(){
     editingId = null;
     species.value = "";
