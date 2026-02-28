@@ -35,7 +35,13 @@
     #mapBox{height:420px;border-radius:12px;border:1px solid var(--line);overflow:hidden}
   </style>
 </head>
-
+<script>
+  // Start app when page is ready
+  document.addEventListener("DOMContentLoaded", function(){
+    if (typeof ensureTripsUI === "function") ensureTripsUI();
+    if (typeof loadLog === "function") loadLog();
+  });
+</script>
 <body>
 <header>FishLog</header>
 
