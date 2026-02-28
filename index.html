@@ -807,6 +807,13 @@ document.getElementById("galPick")?.addEventListener("change", (e)=>{
     window._pickedPhoto = file;
   }
 });
+document.getElementById("galPick")?.addEventListener("change", (e)=>{
+  const file = e.target.files?.[0];
+  if(file){
+    document.getElementById("photoHint").textContent = "Gekies: " + file.name;
+    window._pickedPhoto = file;
+  }
+});
 })();
 </script>
 
