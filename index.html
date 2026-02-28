@@ -170,7 +170,7 @@
   function saveAll(data){
     localStorage.setItem(KEY, JSON.stringify(data));
   }
-function getTrips(){
+ function getTrips(){
   const data = getAll();
   const set = new Set();
   data.forEach(c => set.add((c.trip || "Geen").trim()));
