@@ -433,9 +433,11 @@ loadLog();
 fillTripSelect();
 loadLog();
 show("log");
-})();
-    show("log");
-})();
+
+window.show = show;
+})(); 
 </script>
+</script>
+  window.show = show;
 </body>
 </html>
