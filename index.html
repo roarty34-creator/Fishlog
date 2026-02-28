@@ -331,8 +331,12 @@ document.getElementById("importFile").addEventListener("change", function(e){
       alert("Ongeldige backup file.");
     }
   };
-  reader.readAsText(file);
+ reader.readAsText(file);
 });
+
+ window.editCatch = editCatch;
+window.deleteCatch = deleteCatch;
+ })();
 </script>
 </body>
 </html>
