@@ -165,7 +165,7 @@ function saveCatch(){
  const photo=window._photo||"";
 
 data.push({
- id: crypto.randomUUID(), // ✅ voeg hierdie by
+  id: Date.now().toString(),
   species: species.value,
   trip: trip.value || "Geen",
   length: Number(length.value) || null,
@@ -176,6 +176,7 @@ data.push({
   photo: photo,
   date: new Date().toLocaleDateString()
 });
+
 
  saveAll(data);
  alert("Saved!");
