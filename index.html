@@ -247,13 +247,17 @@
           <label>Plek naam</label>
           <input id="place" placeholder="bv. Stilbaai / Goukou mond" />
         </div>
-        <div>
-<label>Foto</label>
+        <label>Foto</label>
+
 <div class="row" style="gap:8px;">
-  <input id="photoCam" type="file" accept="image/*" capture="environment" />
-  <input id="photoGal" type="file" accept="image/*" />
+  <button class="secondary" type="button" onclick="openCamera()">Neem foto</button>
+  <button class="secondary" type="button" onclick="openGallery()">Kies uit gallery</button>
 </div>
-<div class="small">Links = Camera • Regs = Gallery</div>
+
+<input id="photoCam" type="file" accept="image/*" capture="environment" style="display:none" />
+<input id="photoGal" type="file" accept="image/*" style="display:none" />
+
+<div id="photoHint" class="small" style="margin-top:8px;">Geen foto gekies nie.</div>
 
       <label>Koördinate</label>
       <div class="row">
