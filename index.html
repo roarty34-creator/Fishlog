@@ -283,13 +283,11 @@
     if(idx >= 0) data[idx] = item;
     else data.push(item);
 
-    saveAll(data);
-    fillTripFilter();
-    loadLog();
-    renderStats();
-    clearForm();
-    show("log");
-    alert("Saved!");
+saveAll(data);
+clearForm();
+fillTripSelect();
+setStatus("Saved!");
+show("add");   // bly op Add
   }
   window.saveCatch = saveCatch;
 
