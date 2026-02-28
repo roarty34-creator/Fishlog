@@ -126,7 +126,10 @@ function showTab(tab){
   document.querySelectorAll("section").forEach(s=>s.classList.remove("active"));
   document.getElementById(tab).classList.add("active");
 
-  if(tab === "log") loadLog();
+  if(tab === "log"){
+  ensureTripsUI();
+  loadLog();
+  }
   if(tab === "folder") initMap();   // ← BELANGRIK as jou Map onder "Folder" sit
   if(tab === "stats") renderStats();
 }
