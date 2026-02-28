@@ -248,10 +248,12 @@
           <input id="place" placeholder="bv. Stilbaai / Goukou mond" />
         </div>
         <div>
-          <label>Foto</label>
-        <input id="photo" type="file" accept="image/*" />
-        </div>
-      </div>
+<label>Foto</label>
+<div class="row" style="gap:8px;">
+  <input id="photoCam" type="file" accept="image/*" capture="environment" />
+  <input id="photoGal" type="file" accept="image/*" />
+</div>
+<div class="small">Links = Camera • Regs = Gallery</div>
 
       <label>Koördinate</label>
       <div class="row">
