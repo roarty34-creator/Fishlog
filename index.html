@@ -342,7 +342,28 @@
       trips = ["Stilbaai Trip"];
       setTrips(trips);
     }
+function openCamera(){
+  const cam = document.getElementById("photoCam");
+  if(cam) cam.click();
+}
 
+function openGallery(){
+  const gal = document.getElementById("photoGal");
+  if(gal) gal.click();
+}
+
+function updatePhotoHint(){
+  const cam = document.getElementById("photoCam");
+  const gal = document.getElementById("photoGal");
+  const hint = document.getElementById("photoHint");
+  if(!hint) return;
+
+  const f = (cam && cam.files && cam.files[0]) ? cam.files[0]
+        : (gal && gal.files && gal.files[0]) ? gal.files[0]
+        : null;
+
+  hint.textContent = f ? ("Gekies: " + f.name) : "Geen foto gekies nie.";
+}
     // Trip select (Add screen)
     const tripSelect = el("tripSelect");
     if(tripSelect){
