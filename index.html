@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="af">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FishLog</title>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+
+<style>
+:root{
+ --bg:#0b1220;
+ --card:#162040;
+ --text:#e7eefc;
+ --brand:#2c5cff;
+}
+
+body{
+ margin:0;
+ font-family:Arial, sans-serif;
+ background:var(--bg);
+ color:var(--text);
+}
+
+main{padding:15px;max-width:600px;margin:auto}
+
+button{
+ padding:10px 14px;
+ border-radius:8px;
+ border:none;
+ background:var(--brand);
+ color:white;
+}
+
+.secondary{background:#444}
+
+.card{
+ background:var(--card);
+ padding:12px;
+ border-radius:12px;
+ margin-top:12px;
+}
+
+input,select,textarea{
+ width:100%;
+ padding:8px;
+ margin-top:4px;
+ border-radius:6px;
+ border:none;
+}
+
+#map{height:300px;margin-top:10px;border-radius:12px}
+
+img{max-width:100%;border-radius:8px;margin-top:6px}
+.small{font-size:12px;opacity:.7;margin-top:4px}
+nav{display:flex;gap:8px;margin-bottom:10px}
+</style>
+</head>
+
+<body>
+<main>
+
+<nav>
+<button onclick="show('log')">Log</button>
+<button onclick="show('add')">Add</button>
+<button onclick="show('stats')">Stats</button>
+</nav>
+
+<section id="log">
+<div class="card">
+<b>Filter</b>
+<select id="tripFilter" onchange="loadLog()">
+<option>All trips</option>
+</select>
+</div>
+<div id="list"></div>
+</section>
+
+<section id="add" style="display:none">
+<div class="card">
+
+<label>Spesie</label>
+<input id="species">
+
+<label>Trip</label>
+<input id="trip">
+
+<label>Lengte (cm)</label>
+<input id="length">
+
+<label>Gewig (kg)</label>
+<input id="weight">
+
+<label>Plek</label>
+<input id="place">
+
+<label>Koördinate</label>
+<div style="display:flex;gap:6px">
+<button type="button" class="secondary" onclick="getGPS()">Kry GPS</button>
+<input id="coords" placeholder="lat, lon" readonly>
+</div>
+
+<label>Foto</label>
+<div style="display:flex;gap:6px">
+<button type="button" onclick="document.getElementById('cam').click()">Camera</button>
+<button type="button" class="secondary" onclick="document.getElementById('gal').click()">Gallery</button>
+</div>
+<input id="cam" type="file" accept="image/*" capture="environment" hidden>
+<input id="gal" type="file" accept="image/*" hidden>
+
+<div id="photoPreview"></div>
+
+<label>Notas</label>
+<textarea id="notes"></textarea>
+
+<button onclick="saveCatch()">Save</button>
+
+</div>
+
+<div id="map"></div>
+
+</section>
+
+<section id="stats" style="display:none">
+<div class="card">
+<b>Stats</b>
+<div id="statsBox"></div>
+</div>
+</section>
+
+</main>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<script>
+
+const KEY="fishlog";
+
+function show(id){
+ document.querySelectorAll("section").forEach(s=>s.style.display="none");
+ document.getElementById(id).style.display="block";
+ if(id==="stats") renderStats();
+ if(id==="add") initMap();
+}
+
+function getAll(){
+ return JSON.parse(localStorage.getItem(KEY)||"[]");
+}
+
+function saveAll(data){
+ localStorage.setItem(KEY,JSON.stringify(data));
+}
+
+function saveCatch(){
+ const data=getAll();
+
+ const photo=window._photo||"";
+
+ data.push({
+ species:species.value,
+ trip:trip.value||"Geen",
+ length:Number(length.value)||null,
+ weight:Number(weight.value)||null,
+ place:place.value,
+ coords:coords.value,
+ notes:notes.value,
+ photo:photo,
+ date:new Date().toLocaleDateString()
+ });
+
+ saveAll(data);
+ alert("Saved!");
+ clearForm();
+ loadLog();
+ renderStats();
+}
+
+function clearForm(){
+ document.querySelectorAll("#add input,#add textarea").forEach(i=>i.value="");
+ photoPreview.innerHTML="";
+ window._photo=null;
+}
+
+function loadLog(){
+ const list=document.getElementById("list");
+ list.innerHTML="";
+ const data=getAll();
+
+ data.slice().reverse().forEach(c=>{
+  list.innerHTML+=`
+  <div class="card">
+  <b>${c.species}</b> - ${c.trip}<br>
+  ${c.length||""}cm ${c.weight||""}kg<br>
+  ${c.place}<br>
+  ${c.photo?'<img src="'+c.photo+'">':""}
+  <div class="small">${c.date}</div>
+  </div>`;
+ });
+}
+
+function renderStats(){
+ const data=getAll();
+ const box=document.getElementById("statsBox");
+ if(!data.length){box.innerHTML="No catches yet.";return;}
+
+ let total=data.length;
+ let biggest=0;
+ data.forEach(c=>{if(c.length>biggest)biggest=c.length;});
+
+ box.innerHTML=`
+ Total catches: ${total}<br>
+ Biggest length: ${biggest} cm
+ `;
+}
+
+function getGPS(){
+ if(!navigator.geolocation){
+  alert("GPS nie beskikbaar nie");
+  return;
+ }
+
+ navigator.geolocation.getCurrentPosition(
+  pos=>{
+   const lat=pos.coords.latitude.toFixed(6);
+   const lon=pos.coords.longitude.toFixed(6);
+   coords.value=lat+", "+lon;
+  },
+  ()=>alert("Kon nie ligging kry nie")
+ );
+}
+
+document.getElementById("cam").addEventListener("change",handlePhoto);
+document.getElementById("gal").addEventListener("change",handlePhoto);
+
+function handlePhoto(e){
+ const file=e.target.files[0];
+ if(!file)return;
+ const reader=new FileReader();
+ reader.onload=function(){
+  window._photo=reader.result;
+  photoPreview.innerHTML='<img src="'+reader.result+'">';
+ }
+ reader.readAsDataURL(file);
+}
+
+let map;
+
+function initMap(){
+ if(map) return;
+ map=L.map("map").setView([-34.37,20.85],10);
+ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map);
+}
+
+loadLog();
+
+</script>
+</body>
+</html>
