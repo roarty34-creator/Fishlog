@@ -121,12 +121,19 @@ nav{display:flex;gap:8px;margin-bottom:10px}
 
 </section>
 
-<section id="stats" style="display:none">
+ <section id="stats" style="display:none">
 <div class="card">
 <b>Stats</b>
 <div id="statsBox"></div>
+
+<hr style="margin:12px 0;opacity:.2">
+
+<button onclick="exportData()">Export Backup</button>
+<button class="secondary" onclick="document.getElementById('importFile').click()">Import Backup</button>
+<input type="file" id="importFile" accept="application/json" hidden>
+
 </div>
-</section>
+ </section>
 
 </main>
 
@@ -252,7 +259,42 @@ function initMap(){
 }
 
 loadLog();
+function exportData(){
+  const data = localStorage.getItem(KEY);
+  if(!data){
+    alert("Geen data om te export nie.");
+    return;
+  }
 
+  const blob = new Blob([data], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "fishlog-backup.json";
+  a.click();
+
+  URL.revokeObjectURL(url);
+}
+
+document.getElementById("importFile").addEventListener("change", function(e){
+  const file = e.target.files[0];
+  if(!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(){
+    try{
+      const data = JSON.parse(reader.result);
+      localStorage.setItem(KEY, JSON.stringify(data));
+      alert("Backup suksesvol ingevoer!");
+      loadLog();
+      renderStats();
+    }catch{
+      alert("Ongeldige backup file.");
+    }
+  };
+  reader.readAsText(file);
+});
 </script>
 </body>
 </html>
