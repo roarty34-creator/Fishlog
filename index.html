@@ -204,10 +204,10 @@ function loadLog(){
     ${c.coords || ""}<br>
     ${c.photo ? `<img src="${c.photo}" style="width:100%;border-radius:12px;margin-top:8px">` : ""}
 
-    <div class="row" style="margin-top:10px;gap:8px">
-      <button type="button" class="secondary" onclick="editCatch('${c.id}')">Edit</button>
-      <button type="button" class="danger" onclick="deleteCatch('${c.id}')">Delete</button>
-    </div>
+ <div class="row" style="margin-top:10px;gap:8px">
+  <button type="button" class="secondary" onclick="editCatch('${c.id}')">Edit</button>
+  <button type="button" class="danger" onclick="deleteCatch('${c.id}')">Delete</button>
+</div>
 
     <div class="small">${c.date || ""}</div>
   </div>
@@ -221,7 +221,28 @@ function loadLog(){
   </div>`;
  });
 }
+function editCatch(id){
+  const catches = JSON.parse(localStorage.getItem(KEY) || "[]");
+  const c = catches.find(x => x.id === id);
+  if(!c){
+    alert("Catch nie gevind nie.");
+    return;
+  }
 
+  editingId = id;
+
+  document.getElementById("species").value = c.species || "";
+  document.getElementById("trip").value    = c.trip || "";
+  document.getElementById("length").value  = c.length ?? "";
+  document.getElementById("weight").value  = c.weight ?? "";
+  document.getElementById("place").value   = c.place || "";
+  document.getElementById("coords").value  = c.coords || "";
+  document.getElementById("notes").value   = c.notes || "";
+
+  window._editPhoto = c.photo || null;
+
+  show("add");
+}
 function renderStats(){
  const data=getAll();
  const box=document.getElementById("statsBox");
