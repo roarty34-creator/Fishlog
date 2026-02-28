@@ -1,21 +1,3 @@
-<!DOCTYPE html>
-<html lang="af">
-<head>
-<style>
-root{--bg:#0b1220;--panel:#111a30;--card:#162040;--line:rgba(255,255,255,.12);--text:#e7eefc;--muted:rgba(231,238,252,.75);--brand:#2c5cff;--danger:#ff3b3b;}
-body{margin:0;font-family:Arial,system-ui;background:var(--bg);color:var(--text);}
-</style>
-</head>
-<body>
-<header>FishLog</header>
-
-<nav>
-  <button id="btnLog" class="active" onclick="showTab('log')">Logboek</button>
-  <button id="btnAdd" onclick="showTab('add')">Add Vang</button>
-  <button id="btnMap" onclick="showTab('map')">Map</button>
-  <button id="btnStats" onclick="showTab('stats')">Stats</button>
-</nav>
-
 <main>
   <section id="log" class="active">
   <div class="card">
@@ -87,28 +69,31 @@ body{margin:0;font-family:Arial,system-ui;background:var(--bg);color:var(--text)
 <script>
   const KEY = "fishlog";
 
+  function showTab(tab){
+  document.querySelectorAll("section").forEach(s=>s.classList.remove("active"));
+  document.getElementById(tab).classList.add("active");
+
+  if(tab === "log") loadLog();
+  if(tab === "map") initMap();
+  if(tab === "stats") renderStats();
+  }
+
+    document.getElementById("btnLog").classList.toggle("active", id==="log");
+    document.getElementById("btnAdd").classList.toggle("active", id==="add");
+    document.getElementById("btnMap").classList.toggle("active", id==="map");
+    document.getElementById("btnStats").classList.toggle("active", id==="stats");
+
+    if(id==="log") loadLog();
+    if(id==="map"){ initMap(); setTimeout(()=>{ if(window._fishMap) window._fishMap.invalidateSize(true); }, 250); }
+    if(id==="stats") renderStats();
+  }
+
   function safeNum(v){
     if(!v) return null;
     const n = Number(String(v).replace(",", "."));
     return Number.isFinite(n) ? n : null;
   }
-function showTab(tab){
-  document.querySelectorAll(".tab").forEach(t=>t.style.display="none");
-  document.getElementById(tab).style.display="block";
 
-  if(tab === "log"){
-    ensureTripsUI();
-    loadLog();
-  }
-
-  if(tab === "map"){
-    initMap();
-  }
-
-  if(tab === "stats"){
-    renderStats();
-  }
-}
   function getGPS(){
     if(!navigator.geolocation){ alert("GPS nie ondersteun nie."); return; }
     navigator.geolocation.getCurrentPosition(
@@ -173,10 +158,10 @@ function setTrips(trips){
 
 function ensureTripsUI(){
   // Ensure at least one default trip exists
-let trips = JSON.parse(localStorage.getItem("fishlog_trips") || "[]");
+  let trips = getTrips();
   if(!trips.length){
     trips = ["Stilbaai Trip"];
-    localStorage.setItem("fishlog_trips", JSON.stringify(trips));
+    setTrips(trips);
   }
 
   // Add screen dropdown
@@ -203,7 +188,7 @@ function newTrip(){
 
   const trips = getTrips();
   if(!trips.includes(clean)) trips.push(clean);
-localStorage.setItem("fishlog_trips", JSON.stringify(trips));
+  setTrips(trips);
   ensureTripsUI();
 
   const tripSelect = document.getElementById("tripSelect");
@@ -346,19 +331,11 @@ const points = [];
       <div><b>Per spesie:</b><br>${per}</div>
     `;
   }
-<script>
-  // TEST: wys dat JS loop
-  document.body.insertAdjacentHTML(
-    "afterbegin",
-    '<div style="padding:8px;background:#ff3b3b;color:#fff;font-weight:900;text-align:center">JS OK</div>'
-  );
 
-  // As hierdie functions bestaan, roep hulle
-  document.addEventListener("DOMContentLoaded", function () {
-    if (typeof ensureTripsUI === "function") ensureTripsUI();
-    if (typeof loadLog === "function") loadLog();
-  });
+  loadLog();
 </script>
-
 </body>
 </html>
+
+
+
