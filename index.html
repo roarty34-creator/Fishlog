@@ -1,820 +1,222 @@
 <!DOCTYPE html>
 <html lang="af">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>FishLog</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FishLog</title>
 
-  <!-- Leaflet (Map) -->
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-    crossorigin=""
-  />
-  <script
-    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-    crossorigin=""
-    defer
-  ></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-  <style>
-    :root{
-      --bg:#0b1220;
-      --panel:#111a30;
-      --card:#162040;
-      --line:rgba(255,255,255,.12);
-      --text:#e7eefc;
-      --muted:rgba(231,238,252,.75);
-      --brand:#2c5cff;
-      --brand2:#3a6cff;
-      --danger:#ff3b3b;
-      --ok:#1fbf75;
-    }
-    *{ box-sizing:border-box; }
-    body{
-      margin:0;
-      font-family: Arial, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-      background:var(--bg);
-      color:var(--text);
-    }
-    main{
-      max-width:920px;
-      margin:0 auto;
-      padding:12px;
-    }
-    .topbar{
-      display:flex;
-      gap:10px;
-      align-items:center;
-      justify-content:space-between;
-      margin-bottom:10px;
-    }
-    .tabs{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-    }
-    .card{
-      background:var(--card);
-      padding:12px;
-      border-radius:12px;
-      margin-top:10px;
-      border:1px solid rgba(255,255,255,.06);
-    }
-    .panel{
-      background:var(--panel);
-      padding:12px;
-      border-radius:14px;
-      border:1px solid rgba(255,255,255,.06);
-    }
-    .row{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      align-items:center;
-    }
-    .row > *{
-      flex:1 1 220px;
-      min-width:160px;
-    }
-    label{
-      display:block;
-      margin:10px 0 6px;
-      font-weight:700;
-      letter-spacing:.2px;
-    }
-    input, select, textarea{
-      width:100%;
-      background:rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.12);
-      color:var(--text);
-      padding:10px 10px;
-      border-radius:10px;
-      outline:none;
-    }
-    textarea{ min-height:78px; resize:vertical; }
-    select option{ color:#000; } /* vir sommige Androids */
-    .small{
-      font-size:13px;
-      color:var(--muted);
-      line-height:1.35;
-    }
-    button{
-      padding:10px 12px;
-      border-radius:10px;
-      border:none;
-      background:var(--brand);
-      color:white;
-      font-weight:700;
-      cursor:pointer;
-    }
-    button:hover{ background:var(--brand2); }
-    button.secondary{
-      background:rgba(255,255,255,.10);
-      border:1px solid rgba(255,255,255,.14);
-    }
-    button.secondary:hover{
-      background:rgba(255,255,255,.14);
-    }
-    button.danger{ background:var(--danger); }
-    button.ok{ background:var(--ok); }
-    .divider{
-      height:1px;
-      background:var(--line);
-      margin:10px 0;
-    }
-    section{ display:none; }
-    section.active{ display:block; }
-
-    .catchCard{
-      background:rgba(255,255,255,.05);
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:12px;
-      padding:12px;
-      margin-top:10px;
-    }
-    .catchHead{
-      display:flex;
-      justify-content:space-between;
-      gap:10px;
-      flex-wrap:wrap;
-      align-items:center;
-    }
-    .pill{
-      display:inline-block;
-      padding:4px 10px;
-      border-radius:999px;
-      background:rgba(44,92,255,.18);
-      border:1px solid rgba(44,92,255,.28);
-      color:var(--text);
-      font-size:12px;
-      font-weight:700;
-    }
-    .kv{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-      margin-top:8px;
-      color:var(--muted);
-      font-size:13px;
-    }
-    .kv b{ color:var(--text); }
-    img.photo{
-      width:100%;
-      max-width:360px;
-      border-radius:12px;
-      margin-top:10px;
-      border:1px solid rgba(255,255,255,.10);
-    }
-    #mapBox{
-      height:360px;
-      border-radius:14px;
-      overflow:hidden;
-      border:1px solid rgba(255,255,255,.10);
-    }
-  </style>
+<style>
+:root{
+--bg:#0b1220;
+--card:#162040;
+--panel:#111a30;
+--text:#e7eefc;
+--brand:#2c5cff;
+}
+body{margin:0;font-family:Arial;background:var(--bg);color:var(--text);}
+main{max-width:900px;margin:auto;padding:12px;}
+button{padding:10px 14px;border-radius:10px;border:none;background:var(--brand);color:white;font-weight:700;}
+button.secondary{background:#2a3555;}
+.card{background:var(--card);padding:12px;border-radius:12px;margin-top:12px;}
+.panel{background:var(--panel);padding:12px;border-radius:12px;margin-top:12px;}
+input,select,textarea{width:100%;padding:10px;border-radius:8px;border:1px solid #333;background:#0f1a33;color:white;}
+textarea{min-height:70px;}
+section{display:none;}
+section.active{display:block;}
+#map{height:350px;border-radius:12px;margin-top:10px;}
+.row{display:flex;gap:8px;flex-wrap:wrap;}
+.small{font-size:13px;opacity:.7;margin-top:6px;}
+</style>
 </head>
 
 <body>
 <main>
 
-  <div class="topbar">
-    <div class="tabs">
-      <button id="btnLog" class="secondary" type="button">Log</button>
-      <button id="btnAdd" class="secondary" type="button">Add</button>
-      <button id="btnMap" class="secondary" type="button">Map</button>
-      <button id="btnStats" class="secondary" type="button">Stats</button>
-    </div>
-    <div class="small" id="statusText"></div>
-  </div>
-
-  <section id="log" class="active">
-    <div class="panel">
-      <b>Filter</b>
-      <div class="row" style="margin-top:10px;">
-        <select id="tripFilter"></select>
-        <button class="secondary" id="btnClearFilter" type="button">All trips</button>
-      </div>
-      <div class="small" style="margin-top:8px;">Kies ’n trip om net daai vangste te sien.</div>
-    </div>
-
-    <div id="logList"></div>
-  </section>
-
-  <section id="add">
-    <div class="card">
-      <div class="row">
-        <div>
-          <label>Spesie</label>
-          <select id="species">
-            <option>Kabeljou</option>
-            <option>Geelstert</option>
-            <option>Bonito</option>
-            <option>Elf</option>
-            <option>Steenbras</option>
-            <option>Rooi roman</option>
-            <option>Hottentot</option>
-            <option>Haai</option>
-            <option>Ander</option>
-          </select>
-        </div>
-
-        <div>
-          <label>Trip / Folder</label>
-          <div class="row" style="gap:8px;">
-            <select id="tripSelect"></select>
-            <button id="btnNewTrip" class="secondary" type="button">New Trip</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="row">
-        <div>
-          <label>Lengte (cm)</label>
-          <input id="length" inputmode="decimal" placeholder="bv. 78" />
-        </div>
-        <div>
-          <label>Gewig (kg)</label>
-          <input id="weight" inputmode="decimal" placeholder="bv. 6.5" />
-        </div>
-      </div>
-
-      <div class="row">
-        <div>
-          <label>Plek naam</label>
-          <input id="place" placeholder="bv. Stilbaai / Goukou mond" />
-        </div>
-        <label>Foto</label>
-
 <div class="row">
-  <button id="btnCam" class="secondary" type="button">Camera</button>
-  <button id="btnGal" class="secondary" type="button">Gallery</button>
+<button onclick="showTab('log')">Log</button>
+<button onclick="showTab('add')">Add</button>
+<button onclick="showTab('mapTab')">Map</button>
+<button onclick="showTab('stats')">Stats</button>
+</div>
+
+<section id="log" class="active">
+<div class="panel">
+<b>Filter</b>
+<select id="tripFilter"></select>
+</div>
+<div id="logList"></div>
+</section>
+
+<section id="add">
+<div class="card">
+
+<label>Spesie</label>
+<select id="species">
+<option>Kabeljou</option>
+<option>Geelstert</option>
+<option>Elf</option>
+<option>Steenbras</option>
+<option>Ander</option>
+</select>
+
+<label>Trip</label>
+<input id="trip">
+
+<label>Lengte (cm)</label>
+<input id="length">
+
+<label>Gewig (kg)</label>
+<input id="weight">
+
+<label>Plek</label>
+<input id="place">
+
+<label>Foto</label>
+<div class="row">
+<button type="button" onclick="document.getElementById('camPick').click()">Camera</button>
+<button type="button" class="secondary" onclick="document.getElementById('galPick').click()">Gallery</button>
 </div>
 
 <input id="camPick" type="file" accept="image/*" capture="environment" style="display:none">
 <input id="galPick" type="file" accept="image/*" style="display:none">
 
 <div id="photoHint" class="small">Geen foto gekies nie.</div>
-      <label>Koördinate</label>
-      <div class="row">
-        <button class="secondary" id="btnGPS" type="button">Kry GPS</button>
-        <input id="coords" placeholder="lat, lon" readonly />
-      </div>
 
-      <label>Notas</label>
-      <textarea id="notes" placeholder="aas/lure, gety, wind, ens."></textarea>
+<label>Notas</label>
+<textarea id="notes"></textarea>
 
-      <div class="row" style="margin-top:10px;">
-        <button id="btnSave" class="ok" type="button">Save</button>
-        <button id="btnClear" class="secondary" type="button">Clear</button>
-      </div>
+<div class="row" style="margin-top:10px;">
+<button onclick="saveCatch()">Save</button>
+<button class="secondary" onclick="clearForm()">Clear</button>
+</div>
 
-      <div class="small" style="margin-top:10px;">
-        Tip: Jou data word op jou foon gestoor (localStorage). As jy “site data” clear, sal jou vangste weg wees.
-      </div>
-    </div>
-  </section>
+</div>
+</section>
 
-  <section id="map">
-    <div class="card">
-      <b>Map View</b>
-      <div class="small" style="margin-top:6px;">Pins = jou vangste (met koördinate)</div>
-      <div style="margin-top:10px;" id="mapBox"></div>
-    </div>
-  </section>
+<section id="mapTab">
+<div class="card">
+<div id="map"></div>
+</div>
+</section>
 
-  <section id="stats">
-    <div class="card">
-      <b>Stats</b>
-      <div id="statsBox" class="small" style="margin-top:10px;"></div>
-    </div>
-  </section>
+<section id="stats">
+<div class="card">
+<div id="statsBox"></div>
+</div>
+</section>
 
 </main>
 
 <script>
-(() => {
-  const KEY = "fishlog";
-  const KEY_TRIPS = "fishlog_trips";
 
-  const el = (id) => document.getElementById(id);
+let catches = JSON.parse(localStorage.getItem("fishlog")||"[]");
+let pickedPhoto=null;
 
-  const statusText = el("statusText");
-
-  function setStatus(msg){
-    statusText.textContent = msg || "";
-  }
-
-  function safeNum(v){
-    if(v === null || v === undefined) return null;
-    const s = String(v).trim().replace(",", ".");
-    if(!s) return null;
-    const n = Number(s);
-    return Number.isFinite(n) ? n : null;
-  }
-
-  function getTrips(){
-    try { return JSON.parse(localStorage.getItem(KEY_TRIPS) || "[]"); }
-    catch { return []; }
-  }
-
-  function setTrips(trips){
-    localStorage.setItem(KEY_TRIPS, JSON.stringify(trips));
-  }
-
-  function getCatches(){
-    try { return JSON.parse(localStorage.getItem(KEY) || "[]"); }
-    catch { return []; }
-  }
-
-  function setCatches(list){
-    localStorage.setItem(KEY, JSON.stringify(list));
-  }
-
-  function ensureTripsUI(){
-    let trips = getTrips();
-    if(!Array.isArray(trips)) trips = [];
-    if(trips.length === 0){
-      trips = ["Stilbaai Trip"];
-      setTrips(trips);
-    }
-function openCamera(){
-  const cam = document.getElementById("photoCam");
-  if(cam) cam.click();
+function showTab(id){
+document.querySelectorAll("section").forEach(s=>s.classList.remove("active"));
+document.getElementById(id).classList.add("active");
+if(id==="mapTab") initMap();
+if(id==="stats") renderStats();
 }
 
-function openGallery(){
-  const gal = document.getElementById("photoGal");
-  if(gal) gal.click();
+document.getElementById("camPick").addEventListener("change",(e)=>{
+if(e.target.files[0]){
+pickedPhoto=e.target.files[0];
+document.getElementById("photoHint").innerText="Gekies: "+pickedPhoto.name;
+}
+});
+
+document.getElementById("galPick").addEventListener("change",(e)=>{
+if(e.target.files[0]){
+pickedPhoto=e.target.files[0];
+document.getElementById("photoHint").innerText="Gekies: "+pickedPhoto.name;
+}
+});
+
+async function compressImage(file){
+return new Promise(resolve=>{
+const reader=new FileReader();
+reader.onload=e=>{
+const img=new Image();
+img.onload=()=>{
+const canvas=document.createElement("canvas");
+const maxWidth=800;
+const scale=Math.min(1,maxWidth/img.width);
+canvas.width=img.width*scale;
+canvas.height=img.height*scale;
+canvas.getContext("2d").drawImage(img,0,0,canvas.width,canvas.height);
+resolve(canvas.toDataURL("image/jpeg",0.7));
+};
+img.src=e.target.result;
+};
+reader.readAsDataURL(file);
+});
 }
 
-function updatePhotoHint(){
-  const cam = document.getElementById("photoCam");
-  const gal = document.getElementById("photoGal");
-  const hint = document.getElementById("photoHint");
-  if(!hint) return;
+async function saveCatch(){
+let photoData=null;
+if(pickedPhoto) photoData=await compressImage(pickedPhoto);
 
-  const f = (cam && cam.files && cam.files[0]) ? cam.files[0]
-        : (gal && gal.files && gal.files[0]) ? gal.files[0]
-        : null;
+const newCatch={
+species:document.getElementById("species").value,
+trip:document.getElementById("trip").value,
+length:document.getElementById("length").value,
+weight:document.getElementById("weight").value,
+place:document.getElementById("place").value,
+notes:document.getElementById("notes").value,
+photo:photoData,
+date:new Date().toLocaleString()
+};
 
-  hint.textContent = f ? ("Gekies: " + f.name) : "Geen foto gekies nie.";
-}
-    // Trip select (Add screen)
-    const tripSelect = el("tripSelect");
-    if(tripSelect){
-      tripSelect.innerHTML = trips.map(t => `<option>${escapeHtml(t)}</option>`).join("");
-    }
-
-    // Trip filter (Log screen)
-    const tripFilter = el("tripFilter");
-    if(tripFilter){
-      const current = tripFilter.value || "";
-      const opts = [`<option value="">All trips</option>`]
-        .concat(trips.map(t => `<option value="${escapeAttr(t)}">${escapeHtml(t)}</option>`));
-      tripFilter.innerHTML = opts.join("");
-
-      // keep selection if possible
-      const has = [...tripFilter.options].some(o => o.value === current);
-      if(has) tripFilter.value = current;
-    }
-  }
-
-  function newTrip(){
-    const name = prompt("Trip naam?");
-    if(!name) return;
-    const clean = name.trim();
-    if(!clean) return;
-
-    const trips = getTrips();
-    if(!trips.includes(clean)) trips.push(clean);
-    setTrips(trips);
-    ensureTripsUI();
-
-    const tripSelect = el("tripSelect");
-    if(tripSelect) tripSelect.value = clean;
-
-    setStatus("Trip bygevoeg ✅");
-  }
-
-  function clearTripFilter(){
-    const tripFilter = el("tripFilter");
-    if(tripFilter) tripFilter.value = "";
-    loadLog();
-    if(window._fishMap) initMap();
-    renderStats();
-  }
-
-  function showTab(tab){
-    document.querySelectorAll("main section").forEach(s => s.classList.remove("active"));
-    const box = el(tab);
-    if(box) box.classList.add("active");
-
-    // highlight buttons
-    ["btnLog","btnAdd","btnMap","btnStats"].forEach(id => el(id).classList.add("secondary"));
-    if(tab === "log") el("btnLog").classList.remove("secondary");
-    if(tab === "add") el("btnAdd").classList.remove("secondary");
-    if(tab === "map") el("btnMap").classList.remove("secondary");
-    if(tab === "stats") el("btnStats").classList.remove("secondary");
-
-    if(tab === "log") loadLog();
-    if(tab === "map") initMap();
-    if(tab === "stats") renderStats();
-  }
-
-async function fileToDataUrl(file){
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    const reader = new FileReader();
-
-    reader.onload = (e) => {
-      img.src = e.target.result;
-    };
-
-    img.onload = () => {
-      const canvas = document.createElement("canvas");
-
-      const maxWidth = 800;   // verander as jy kleiner wil hê
-      const scale = Math.min(1, maxWidth / img.width);
-
-      canvas.width = img.width * scale;
-      canvas.height = img.height * scale;
-
-      const ctx = canvas.getContext("2d");
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-      // 0.7 = goeie balans tussen kwaliteit en grootte
-      const compressed = canvas.toDataURL("image/jpeg", 0.7);
-      resolve(compressed);
-    };
-
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
+catches.push(newCatch);
+localStorage.setItem("fishlog",JSON.stringify(catches));
+clearForm();
+loadLog();
+alert("Gestoor!");
 }
 
-  function clearForm(){
-    ["length","weight","place","notes"].forEach(id => {
-      const e = el(id);
-      if(e) e.value = "";
-    });
-    const coords = el("coords");
-    if(coords) coords.value = "";
-    const photo = el("photo");
-     const c = el("photoCam"); if(c) c.value = "";
-const g = el("photoGal"); if(g) g.value = ""; 
-    if(photo) photo.value = "";
-    setStatus("Form skoon ✅");
-      const c = document.getElementById("photoCam"); if(c) c.value = "";
-const g = document.getElementById("photoGal"); if(g) g.value = "";
-updatePhotoHint();
-  }
+function clearForm(){
+document.getElementById("trip").value="";
+document.getElementById("length").value="";
+document.getElementById("weight").value="";
+document.getElementById("place").value="";
+document.getElementById("notes").value="";
+document.getElementById("photoHint").innerText="Geen foto gekies nie.";
+pickedPhoto=null;
+}
 
-  async function saveCatch(){
-    try{
-      const species = el("species").value || "Onbekend";
-      const trip = (el("tripSelect").value || "Stilbaai Trip").trim();
-      const length = safeNum(el("length").value);
-      const weight = safeNum(el("weight").value);
-      const place = (el("place").value || "").trim();
-      const coords = (el("coords").value || "").trim();
-      const notes = (el("notes").value || "").trim();
-
-      // Photo optional
-      let photoData = null;
-    const cam = document.getElementById("photoCam");
-const gal = document.getElementById("photoGal");
-
-const photoFile =
-  (cam && cam.files && cam.files[0]) ? cam.files[0] :
-  (gal && gal.files && gal.files[0]) ? gal.files[0] :
-  null;
-      if(photoFile){
-        photoData = await fileToDataUrl(photoFile);
-      }
-
-      const list = getCatches();
-      list.push({
-        id: (crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()) + "_" + Math.random().toString(16).slice(2),
-        species,
-        trip,
-        length,
-        weight,
-        place,
-        coords,
-        notes,
-        photo: photoData,
-        date: new Date().toLocaleString()
-      });
-
-      setCatches(list);
-
-      // ensure trip exists
-      const trips = getTrips();
-      if(!trips.includes(trip)){
-        trips.push(trip);
-        setTrips(trips);
-      }
-      ensureTripsUI();
-
-      clearForm();
-      setStatus("Vangs gestoor ✅");
-      showTab("log");
-      if(window._fishMap) initMap();
-      renderStats();
-    }catch(err){
-      console.error(err);
-      alert("Kon nie stoor nie. Probeer weer.");
-    }
-  }
-
-  function deleteCatchById(id){
-    const list = getCatches();
-    const idx = list.findIndex(x => x.id === id);
-    if(idx === -1) return;
-    if(!confirm("Delete hierdie vangs?")) return;
-    list.splice(idx,1);
-    setCatches(list);
-    setStatus("Vangs uitgevee ✅");
-    loadLog();
-    if(window._fishMap) initMap();
-    renderStats();
-  }
-
-  function loadLog(){
-    ensureTripsUI();
-
-    const wrap = el("logList");
-    if(!wrap) return;
-
-    const all = getCatches();
-    const tripFilter = el("tripFilter");
-    const selectedTrip = tripFilter ? tripFilter.value : "";
-
-    const catches = selectedTrip ? all.filter(c => (c.trip || "") === selectedTrip) : all;
-
-    if(!catches.length){
-      wrap.innerHTML = `<div class="card"><b>Geen vangste nog nie.</b><div class="small" style="margin-top:6px;">Gaan na Add en stoor jou eerste vangs.</div></div>`;
-      return;
-    }
-
-    wrap.innerHTML = "";
-
-    catches.slice().reverse().forEach(c => {
-      const mapsUrl = c.coords ? makeMapsUrl(c.coords) : "";
-      const len = (c.length !== null && c.length !== undefined) ? `${c.length} cm` : "";
-      const w = (c.weight !== null && c.weight !== undefined) ? `${c.weight} kg` : "";
-
-      wrap.innerHTML += `
-        <div class="catchCard">
-          <div class="catchHead">
-            <div>
-              <span class="pill">${escapeHtml(c.species || "Onbekend")}</span>
-              <span class="pill" style="background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.10);">${escapeHtml(c.trip || "Trip")}</span>
-            </div>
-            <div class="small">${escapeHtml(c.date || "")}</div>
-          </div>
-
-          <div class="kv">
-            ${c.place ? `<div><b>Plek:</b> ${escapeHtml(c.place)}</div>` : ""}
-            ${len ? `<div><b>Lengte:</b> ${escapeHtml(len)}</div>` : ""}
-            ${w ? `<div><b>Gewig:</b> ${escapeHtml(w)}</div>` : ""}
-          </div>
-
-          ${c.coords ? `
-            <div class="kv" style="margin-top:6px;">
-              <div><b>Koördinate:</b> ${escapeHtml(c.coords)}</div>
-              ${mapsUrl ? `<div><a href="${mapsUrl}" target="_blank" style="color:var(--text);text-decoration:underline;">Open in Google Maps</a></div>` : ""}
-            </div>
-          ` : ""}
-
-          ${c.notes ? `<div class="small" style="margin-top:8px;"><b>Notas:</b> ${escapeHtml(c.notes)}</div>` : ""}
-
-          ${c.photo ? `<img class="photo" src="${c.photo}" alt="Vangs foto" />` : ""}
-
-          <div class="row" style="margin-top:10px;">
-            <button class="danger" type="button" onclick="window.__del('${escapeAttr(c.id)}')">Delete</button>
-          </div>
-        </div>
-      `;
-    });
-
-    setStatus(`Vangste: ${catches.length}`);
-  }
-
-  function makeMapsUrl(coords){
-    // coords "lat, lon"
-    const parts = coords.split(",").map(s => s.trim());
-    if(parts.length < 2) return "";
-    const lat = Number(parts[0]);
-    const lon = Number(parts[1]);
-    if(!Number.isFinite(lat) || !Number.isFinite(lon)) return "";
-    return `https://www.google.com/maps?q=${lat},${lon}`;
-  }
-
-  function parseCoordPair(coords){
-    const parts = coords.split(",").map(s => s.trim());
-    if(parts.length < 2) return null;
-    const lat = Number(parts[0]);
-    const lon = Number(parts[1]);
-    if(!Number.isFinite(lat) || !Number.isFinite(lon)) return null;
-    return [lat, lon];
-  }
-
-  function initMap(){
-    const box = el("mapBox");
-    if(!box) return;
-
-    // Leaflet might still be loading on very slow networks
-    if(!window.L){
-      box.innerHTML = `<div class="small">Map laai... (as dit nie laai nie, refresh)</div>`;
-      return;
-    }
-
-    // Create map once
-    if(!window._fishMap){
-      window._fishMap = L.map("mapBox");
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        maxZoom: 19,
-        attribution: '&copy; OpenStreetMap'
-      }).addTo(window._fishMap);
-      window._fishMarkers = L.layerGroup().addTo(window._fishMap);
-    }
-
-    const all = getCatches();
-    const tripFilter = el("tripFilter");
-    const selectedTrip = tripFilter ? tripFilter.value : "";
-    const list = selectedTrip ? all.filter(c => (c.trip || "") === selectedTrip) : all;
-
-    const points = [];
-    window._fishMarkers.clearLayers();
-
-    list.forEach(c => {
-      if(!c.coords) return;
-      const p = parseCoordPair(c.coords);
-      if(!p) return;
-      points.push(p);
-
-      const title = `${c.species || "Onbekend"} • ${c.trip || ""}`.trim();
-      const sub = [c.place, c.date].filter(Boolean).join(" • ");
-      const popup = `<b>${escapeHtml(title)}</b><div class="small">${escapeHtml(sub)}</div>`;
-
-      L.marker(p).addTo(window._fishMarkers).bindPopup(popup);
-    });
-
-    if(points.length >= 2){
-      window._fishMap.fitBounds(points, { padding: [20,20] });
-    }else if(points.length === 1){
-      window._fishMap.setView(points[0], 12);
-    }else{
-      // Default Stilbaai-ish view
-      window._fishMap.setView([-34.37, 21.42], 10);
-    }
-  }
-
-  function renderStats(){
-    const box = el("statsBox");
-    if(!box) return;
-
-    const all = getCatches();
-    const tripFilter = el("tripFilter");
-    const selectedTrip = tripFilter ? tripFilter.value : "";
-    const catches = selectedTrip ? all.filter(c => (c.trip || "") === selectedTrip) : all;
-
-    if(!catches.length){
-      box.innerHTML = "Geen stats nog nie.";
-      return;
-    }
-
-    const total = catches.length;
-    const counts = {};
-    let biggestLen = null;
-    let biggestW = null;
-
-    catches.forEach(c => {
-      const s = c.species || "Onbekend";
-      counts[s] = (counts[s] || 0) + 1;
-      if(Number.isFinite(c.length)) biggestLen = (biggestLen === null) ? c.length : Math.max(biggestLen, c.length);
-      if(Number.isFinite(c.weight)) biggestW = (biggestW === null) ? c.weight : Math.max(biggestW, c.weight);
-    });
-
-    const per = Object.entries(counts)
-      .sort((a,b) => b[1]-a[1])
-      .map(([s,n]) => `• ${escapeHtml(s)}: <b>${n}</b>`)
-      .join("<br>");
-
-    box.innerHTML = `
-      <div><b>Totaal vangste:</b> ${total}</div>
-      <div style="margin-top:6px;"><b>Grootste lengte:</b> ${biggestLen !== null ? biggestLen + " cm" : "—"}</div>
-      <div style="margin-top:6px;"><b>Grootste gewig:</b> ${biggestW !== null ? biggestW + " kg" : "—"}</div>
-      <div class="divider"></div>
-      <div><b>Per spesie:</b><br>${per}</div>
-      ${selectedTrip ? `<div class="divider"></div><div><b>Filter:</b> ${escapeHtml(selectedTrip)}</div>` : ""}
-    `;
-  }
-
-  function getGPS(){
-    if(!navigator.geolocation){
-      alert("GPS nie beskikbaar op hierdie toestel nie.");
-      return;
-    }
-    setStatus("Kry GPS...");
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const lat = pos.coords.latitude;
-        const lon = pos.coords.longitude;
-        el("coords").value = `${lat.toFixed(6)}, ${lon.toFixed(6)}`;
-        setStatus("GPS gereed ✅");
-      },
-      (err) => {
-        console.error(err);
-        alert("Kon nie GPS kry nie. Maak seker Location is aan en gee toestemming.");
-        setStatus("");
-      },
-      { enableHighAccuracy:true, timeout:12000, maximumAge:10000 }
-    );
-  }
-
-  function escapeHtml(s){
-    return String(s)
-      .replaceAll("&","&amp;")
-      .replaceAll("<","&lt;")
-      .replaceAll(">","&gt;")
-      .replaceAll('"',"&quot;")
-      .replaceAll("'","&#039;");
-  }
-  function escapeAttr(s){
-    // for attributes / inline handlers
-    return escapeHtml(s).replaceAll("`","&#096;");
-  }
-
-  // expose delete
-  window.__del = deleteCatchById;
-
-  document.addEventListener("DOMContentLoaded", () => {
-    // Wire buttons
-    el("btnLog").addEventListener("click", () => showTab("log"));
-    el("btnAdd").addEventListener("click", () => showTab("add"));
-    el("btnMap").addEventListener("click", () => showTab("map"));
-    el("btnStats").addEventListener("click", () => showTab("stats"));
-
-    el("btnNewTrip").addEventListener("click", newTrip);
-    el("btnClear").addEventListener("click", clearForm);
-    el("btnSave").addEventListener("click", saveCatch);
-    el("btnGPS").addEventListener("click", getGPS);
-
-    el("btnClearFilter").addEventListener("click", clearTripFilter);
-      const cam = document.getElementById("photoCam");
-const gal = document.getElementById("photoGal");
-if(cam) cam.addEventListener("change", updatePhotoHint);
-if(gal) gal.addEventListener("change", updatePhotoHint);
-
-    el("tripFilter").addEventListener("change", () => {
-      loadLog();
-      if(window._fishMap) initMap();
-      renderStats();
-    });
-
-    ensureTripsUI();
-    loadLog();
-    renderStats();
-  });
-  window.openCamera = openCamera;
-window.openGallery = openGallery;
-window.updatePhotoHint = updatePhotoHint;
-  document.getElementById("btnCam")?.addEventListener("click", ()=>{
-  document.getElementById("camPick")?.click();
+function loadLog(){
+const list=document.getElementById("logList");
+list.innerHTML="";
+catches.slice().reverse().forEach(c=>{
+list.innerHTML+=`
+<div class="card">
+<b>${c.species}</b> - ${c.trip}<br>
+${c.length?c.length+"cm ":""}${c.weight?c.weight+"kg":""}<br>
+${c.place}<br>
+${c.photo?'<img src="'+c.photo+'" style="max-width:100%;border-radius:10px;margin-top:8px;">':""}
+<div class="small">${c.date}</div>
+</div>`;
 });
+}
 
-document.getElementById("btnGal")?.addEventListener("click", ()=>{
-  document.getElementById("galPick")?.click();
-});
+function renderStats(){
+document.getElementById("statsBox").innerText="Totaal vangste: "+catches.length;
+}
 
-document.getElementById("camPick")?.addEventListener("change", (e)=>{
-  const file = e.target.files?.[0];
-  if(file){
-    document.getElementById("photoHint").textContent = "Gekies: " + file.name;
-    window._pickedPhoto = file;
-  }
-});
+let map;
+function initMap(){
+if(!map){
+map=L.map('map').setView([-34.37,21.42],10);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+}
+}
 
-document.getElementById("galPick")?.addEventListener("change", (e)=>{
-  const file = e.target.files?.[0];
-  if(file){
-    document.getElementById("photoHint").textContent = "Gekies: " + file.name;
-    window._pickedPhoto = file;
-  }
-});
-document.getElementById("galPick")?.addEventListener("change", (e)=>{
-  const file = e.target.files?.[0];
-  if(file){
-    document.getElementById("photoHint").textContent = "Gekies: " + file.name;
-    window._pickedPhoto = file;
-  }
-});
-})();
+loadLog();
+
 </script>
 
 </body>
