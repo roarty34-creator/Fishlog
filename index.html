@@ -440,6 +440,8 @@ async function fileToDataUrl(file){
     const coords = el("coords");
     if(coords) coords.value = "";
     const photo = el("photo");
+     const c = el("photoCam"); if(c) c.value = "";
+const g = el("photoGal"); if(g) g.value = ""; 
     if(photo) photo.value = "";
     setStatus("Form skoon ✅");
   }
