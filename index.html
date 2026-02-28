@@ -432,8 +432,10 @@ loadLog();
 fillTripSelect();
 loadLog();
 show("log");
-})(); 
-  window.show = show;
+
+window.show = show;   // ← MOET hier wees
+
+})();                 // ← en dan sluit jy die IIFE
 </script>
 </body>
 </html>
