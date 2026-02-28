@@ -1,5 +1,4 @@
-
-    <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="af">
 <head>
   <meta charset="UTF-8" />
@@ -783,7 +782,9 @@ if(gal) gal.addEventListener("change", updatePhotoHint);
     loadLog();
     renderStats();
   });
-
+window.openCamera = openCamera;
+window.openGallery = openGallery;
+window.updatePhotoHint = updatePhotoHint;
 })();
 </script>
 
