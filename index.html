@@ -143,17 +143,19 @@
   const status = el("status");
 
   function setStatus(msg){ status.textContent = msg || ""; }
+function show(id){
+  document.querySelectorAll("section").forEach(s => s.style.display = "none");
+  el(id).style.display = "block";
 
-  function show(id){
-    document.querySelectorAll("section").forEach(s => s.style.display = "none");
-    el(id).style.display = "block";
-
-    if(id === "log") loadLog();
-    if(id === "stats") renderStats();
+  if(id === "log") loadLog();
+  if(id === "stats") renderStats();
   if(id === "add"){
-  fillTripSelect();
-  initMap();
+    fillTripSelect();
+    initMap();
   }
+}
+
+window.show = show;
 
   function getAll(){
     return JSON.parse(localStorage.getItem(KEY) || "[]");
