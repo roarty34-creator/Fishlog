@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FishLog</title>
 
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 
   <style>
     :root{
@@ -13,30 +13,54 @@
       --card:#162040;
       --text:#e7eefc;
       --brand:#2c5cff;
-      --muted:rgba(231,238,252,.7);
+      --muted:#94a3b8;
       --danger:#ff3b3b;
-      --line:rgba(255,255,255,.12);
     }
-    body{ margin:0; font-family:Arial, system-ui, sans-serif; background:var(--bg); color:var(--text); }
-    main{ padding:15px; max-width:650px; margin:auto; }
-    nav{ display:flex; gap:8px; margin-bottom:10px; position:sticky; top:0; background:var(--bg); padding:10px 0; z-index:5; }
+    body{
+      margin:0;
+      font-family:Arial, sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
+    main{padding:15px;max-width:700px;margin:auto}
+    nav{display:flex;gap:10px;margin-bottom:12px}
     button{
-      padding:10px 14px; border-radius:10px; border:none; background:var(--brand); color:white;
+      padding:10px 14px;
+      border-radius:12px;
+      border:none;
+      background:var(--brand);
+      color:white;
       font-weight:600;
     }
-    .secondary{ background:#3a3f50; }
-    .danger{ background:var(--danger); }
-    .card{ background:var(--card); padding:12px; border-radius:14px; margin-top:12px; border:1px solid var(--line); }
-    input, select, textarea{
-      width:100%; padding:10px; margin-top:6px; border-radius:10px; border:none; outline:none;
-      background:#0f1730; color:var(--text);
+    .secondary{background:#334155}
+    .danger{background:var(--danger)}
+    .card{
+      background:var(--card);
+      padding:12px;
+      border-radius:16px;
+      margin-top:12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,.25);
     }
-    label{ display:block; margin-top:10px; font-weight:700; }
-    .row{ display:flex; gap:8px; align-items:center; }
-    .small{ font-size:12px; color:var(--muted); margin-top:6px; }
-    #map{ height:300px; margin-top:10px; border-radius:14px; overflow:hidden; border:1px solid var(--line); }
-    img{ max-width:100%; border-radius:12px; margin-top:8px; border:1px solid var(--line); }
-    hr{ border:none; border-top:1px solid var(--line); margin:12px 0; }
+    label{display:block;margin-top:10px;color:var(--muted);font-size:13px}
+    input,select,textarea{
+      width:100%;
+      padding:10px;
+      margin-top:6px;
+      border-radius:10px;
+      border:none;
+      outline:none;
+      background:#0f1a33;
+      color:var(--text);
+    }
+    textarea{min-height:90px}
+    #map{height:280px;margin-top:12px;border-radius:16px;overflow:hidden}
+    img{max-width:100%;border-radius:12px;margin-top:10px}
+    .small{font-size:12px;opacity:.75;margin-top:6px}
+    .row{display:flex;gap:10px;align-items:center}
+    .row > * {flex:1}
+    .tight{gap:8px}
+    hr{border:none;border-top:1px solid rgba(255,255,255,.12);margin:14px 0}
+    .status{margin-top:8px;color:var(--muted);font-size:13px}
   </style>
 </head>
 
@@ -56,50 +80,57 @@
       <div class="small">Kies ’n trip om net daai vangste te sien.</div>
       <select id="tripFilter"></select>
     </div>
-
     <div id="list"></div>
   </section>
 
   <!-- ADD -->
   <section id="add" style="display:none">
     <div class="card">
+
       <label>Spesie</label>
-      <input id="species" placeholder="bv. Kabeljou" 
+      <input id="species" placeholder="bv. Kabeljou">
+
+      <label>Trip</label>
+      <div class="row tight">
+        <select id="trip"></select>
+        <button type="button" class="secondary" onclick="newTrip()">+ Trip</button>
+      </div>
+      <div class="small">Kies ’n bestaande trip, of maak ’n nuwe een.</div>
 
       <label>Lengte (cm)</label>
-      <input id="length" type="number" inputmode="decimal" placeholder="bv. 78" />
+      <input id="length" type="number" inputmode="numeric" placeholder="bv. 65">
 
       <label>Gewig (kg)</label>
-      <input id="weight" type="number" inputmode="decimal" placeholder="bv. 6.5" />
+      <input id="weight" type="number" inputmode="decimal" placeholder="bv. 4.2">
 
       <label>Plek</label>
-      <input id="place" placeholder="bv. Stilbaai / Goukou mond" />
+      <input id="place" placeholder="bv. Stilbaai">
 
       <label>Koördinate</label>
-      <div class="row">
+      <div class="row tight">
         <button type="button" class="secondary" onclick="getGPS()">Kry GPS</button>
-        <input id="coords" placeholder="lat, lon" readonly />
+        <input id="coords" placeholder="lat, lon" readonly>
       </div>
-      <div class="small">Tip: GPS werk net as jou browser Location permission “Allow” is.</div>
 
       <label>Foto</label>
-      <div class="row">
+      <div class="row tight">
         <button type="button" onclick="document.getElementById('cam').click()">Camera</button>
         <button type="button" class="secondary" onclick="document.getElementById('gal').click()">Gallery</button>
       </div>
-      <input id="cam" type="file" accept="image/*" capture="environment" hidden />
-      <input id="gal" type="file" accept="image/*" hidden />
+      <input id="cam" type="file" accept="image/*" capture="environment" hidden>
+      <input id="gal" type="file" accept="image/*" hidden>
+
       <div id="photoPreview"></div>
 
       <label>Notas</label>
-      <textarea id="notes" rows="3" placeholder="aas/lure, gety, wind, ens."></textarea>
+      <textarea id="notes" placeholder="Enige notas..."></textarea>
 
-      <div class="row" style="margin-top:12px">
+      <div class="row">
         <button type="button" onclick="saveCatch()">Save</button>
         <button type="button" class="secondary" onclick="clearForm()">Clear</button>
       </div>
 
-      <div id="status" class="small"></div>
+      <div class="status" id="status"></div>
     </div>
 
     <div id="map"></div>
@@ -109,24 +140,28 @@
   <section id="stats" style="display:none">
     <div class="card">
       <b>Stats</b>
-      <div id="statsBox" class="small" style="margin-top:8px"></div>
+      <div id="statsBox" class="small"></div>
 
       <hr>
 
       <div class="row">
         <button type="button" onclick="exportData()">Export Backup</button>
         <button type="button" class="secondary" onclick="document.getElementById('importFile').click()">Import Backup</button>
-        <input type="file" id="importFile" accept="application/json" hidden />
       </div>
+      <input type="file" id="importFile" accept="application/json" hidden>
     </div>
   </section>
 
 </main>
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <script>
 
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<script>
+(() => {
   const KEY = "fishlog";
   let editingId = null;
+  let map = null;
+  let pickedPhoto = null;
 
   const el = (id) => document.getElementById(id);
 
@@ -137,25 +172,26 @@
   const place = el("place");
   const coords = el("coords");
   const notes = el("notes");
+  const photoPreview = el("photoPreview");
   const tripFilter = el("tripFilter");
+  const status = el("status");
 
-  /* ---------- NAV ---------- */
+  function setStatus(msg){
+    status.textContent = msg || "";
+  }
 
   function show(id){
-    document.querySelectorAll("section")
-      .forEach(s => s.style.display = "none");
-
-    const section = el(id);
-    if(section) section.style.display = "block";
+    document.querySelectorAll("section").forEach(s => s.style.display = "none");
+    el(id).style.display = "block";
 
     if(id === "log") loadLog();
     if(id === "stats") renderStats();
-    if(id === "add") fillTripSelect();
+    if(id === "add"){
+      fillTripSelect();
+      initMap();
+    }
   }
-
   window.show = show;
-
-  /* ---------- STORAGE ---------- */
 
   function getAll(){
     return JSON.parse(localStorage.getItem(KEY) || "[]");
@@ -165,18 +201,14 @@
     localStorage.setItem(KEY, JSON.stringify(data));
   }
 
-  /* ---------- TRIPS ---------- */
-
   function getTrips(){
     const data = getAll();
     const set = new Set();
-
     data.forEach(c => {
       if(c.trip) set.add(String(c.trip).trim());
     });
-
     set.add("Geen");
-    return Array.from(set).filter(Boolean).sort();
+    return Array.from(set).filter(Boolean).sort((a,b)=>a.localeCompare(b));
   }
 
   function fillTripSelect(selected){
@@ -184,120 +216,267 @@
     if(!sel) return;
 
     const trips = getTrips();
+    sel.innerHTML = trips.map(t => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join("");
 
-    sel.innerHTML = trips
-      .map(t => `<option value="${t}">${t}</option>`)
-      .join("");
-
-    if(selected && trips.includes(selected)){
-      sel.value = selected;
-    }
-  }
-
-  function newTrip(){
-    const name = prompt("Naam van nuwe Trip?");
-    if(!name) return;
-
-    const clean = name.trim();
-    if(!clean) return;
-
-    fillTripSelect(clean);
-  }
-
-  window.newTrip = newTrip;
-
-  /* ---------- SAVE ---------- */
-
-  function saveCatch(){
-    const data = getAll();
-
-    const item = {
-      id: editingId || Date.now(),
-      species: species.value.trim(),
-      trip: trip.value.trim() || "Geen",
-      length: Number(length.value) || 0,
-      weight: Number(weight.value) || 0,
-      place: place.value.trim(),
-      coords: coords.value.trim(),
-      notes: notes.value.trim()
-    };
-
-    if(editingId){
-      const index = data.findIndex(c => c.id === editingId);
-      if(index !== -1) data[index] = item;
-    } else {
-      data.push(item);
-    }
-
-    saveAll(data);
-    clearForm();
-    show("log");
-  }
-
-  window.saveCatch = saveCatch;
-
-  /* ---------- CLEAR ---------- */
-
-  function clearForm(){
-    editingId = null;
-    species.value = "";
-    trip.value = "";
-    length.value = "";
-    weight.value = "";
-    place.value = "";
-    coords.value = "";
-    notes.value = "";
-  }
-
-  /* ---------- LOG ---------- */
-
-  function loadLog(){
-    const list = el("list");
-    if(!list) return;
-
-    const data = getAll();
-    const filter = tripFilter?.value;
-
-    const filtered = filter
-      ? data.filter(c => c.trip === filter)
-      : data;
-
-    list.innerHTML = filtered.map(c => `
-      <div class="card">
-        <b>${c.species}</b><br>
-        Trip: ${c.trip}<br>
-        ${c.length} cm • ${c.weight} kg<br>
-        ${c.place}
-      </div>
-    `).join("");
-
-    fillTripFilter();
+    if(selected && trips.includes(selected)) sel.value = selected;
+    else sel.value = trips.includes("Geen") ? "Geen" : (trips[0] || "Geen");
   }
 
   function fillTripFilter(){
     if(!tripFilter) return;
 
     const trips = getTrips();
-
     tripFilter.innerHTML =
       `<option value="">Alles</option>` +
-      trips.map(t => `<option value="${t}">${t}</option>`).join("");
+      trips.map(t => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join("");
   }
 
-  tripFilter?.addEventListener("change", loadLog);
+  tripFilter.addEventListener("change", () => loadLog());
 
-  /* ---------- STATS ---------- */
+  function newTrip(){
+    const name = prompt("Naam van nuwe Trip?");
+    if(!name) return;
+    const clean = name.trim();
+    if(!clean) return;
+    fillTripSelect(clean);
+    setStatus("Trip gekies: " + clean);
+  }
+  window.newTrip = newTrip;
+
+  function clearForm(){
+    editingId = null;
+    species.value = "";
+    length.value = "";
+    weight.value = "";
+    place.value = "";
+    coords.value = "";
+    notes.value = "";
+    pickedPhoto = null;
+    photoPreview.innerHTML = "";
+    fillTripSelect();
+    setStatus("");
+  }
+  window.clearForm = clearForm;
+
+  function saveCatch(){
+    const data = getAll();
+
+    const item = {
+      id: editingId || Date.now().toString(),
+      species: (species.value || "").trim(),
+      trip: (trip.value || "Geen").trim(),
+      length: length.value ? Number(length.value) : null,
+      weight: weight.value ? Number(weight.value) : null,
+      place: (place.value || "").trim(),
+      coords: (coords.value || "").trim(),
+      notes: (notes.value || "").trim(),
+      photo: pickedPhoto || "",
+      date: new Date().toLocaleDateString()
+    };
+
+    if(!item.species){
+      alert("Vul asseblief Spesie in.");
+      return;
+    }
+
+    const idx = data.findIndex(x => x.id === item.id);
+    if(idx >= 0) data[idx] = item;
+    else data.push(item);
+
+    saveAll(data);
+    fillTripFilter();
+    loadLog();
+    renderStats();
+    clearForm();
+    show("log");
+    alert("Saved!");
+  }
+  window.saveCatch = saveCatch;
+
+  function loadLog(){
+    const list = el("list");
+    list.innerHTML = "";
+
+    fillTripFilter();
+
+    const data = getAll();
+    const selectedTrip = tripFilter.value;
+
+    const filtered = selectedTrip
+      ? data.filter(c => String(c.trip).trim() === selectedTrip)
+      : data;
+
+    filtered.slice().reverse().forEach(c => {
+      list.innerHTML += `
+        <div class="card">
+          <b>${escapeHtml(c.species || "")}</b> - ${escapeHtml(c.trip || "")}<br>
+          ${(c.length ? escapeHtml(String(c.length)) + "cm " : "")}${(c.weight ? escapeHtml(String(c.weight)) + "kg" : "")}<br>
+          ${escapeHtml(c.place || "")}<br>
+          ${escapeHtml(c.coords || "")}
+          ${c.photo ? `<img src="${c.photo}" alt="foto">` : ""}
+
+          <div class="row" style="margin-top:10px">
+            <button type="button" class="secondary" onclick="editCatch('${c.id}')">Edit</button>
+            <button type="button" class="danger" onclick="deleteCatch('${c.id}')">Delete</button>
+          </div>
+
+          <div class="small">${escapeHtml(c.date || "")}</div>
+        </div>
+      `;
+    });
+
+    if(!filtered.length){
+      list.innerHTML = `<div class="card"><div class="small">Geen vangste om te wys nie.</div></div>`;
+    }
+  }
+
+  function editCatch(id){
+    const data = getAll();
+    const c = data.find(x => x.id === id);
+    if(!c){
+      alert("Catch nie gevind nie.");
+      return;
+    }
+
+    editingId = id;
+
+    species.value = c.species || "";
+    fillTripSelect(c.trip || "Geen");
+    length.value = c.length ?? "";
+    weight.value = c.weight ?? "";
+    place.value = c.place || "";
+    coords.value = c.coords || "";
+    notes.value = c.notes || "";
+    pickedPhoto = c.photo || "";
+    photoPreview.innerHTML = pickedPhoto ? `<img src="${pickedPhoto}" alt="foto">` : "";
+    setStatus("Editing: " + (c.species || ""));
+
+    show("add");
+  }
+  window.editCatch = editCatch;
+
+  function deleteCatch(id){
+    if(!confirm("Delete hierdie catch?")) return;
+    const data = getAll().filter(x => x.id !== id);
+    saveAll(data);
+    fillTripFilter();
+    loadLog();
+    renderStats();
+  }
+  window.deleteCatch = deleteCatch;
 
   function renderStats(){
-    console.log("Stats rendering...");
+    const data = getAll();
+    const box = el("statsBox");
+
+    if(!data.length){
+      box.innerHTML = "No catches yet.";
+      return;
+    }
+
+    let biggest = 0;
+    data.forEach(c => {
+      if(typeof c.length === "number" && c.length > biggest) biggest = c.length;
+    });
+
+    box.innerHTML = `
+      Total catches: ${data.length}<br>
+      Biggest length: ${biggest || 0} cm
+    `;
   }
 
-  /* ---------- START ---------- */
+  function getGPS(){
+    if(!navigator.geolocation){
+      alert("GPS nie beskikbaar nie.");
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        const lat = pos.coords.latitude.toFixed(6);
+        const lon = pos.coords.longitude.toFixed(6);
+        coords.value = lat + ", " + lon;
+        setStatus("GPS vas: " + coords.value);
+        if(map) map.setView([Number(lat), Number(lon)], 12);
+      },
+      () => alert("Kon nie ligging kry nie.")
+    );
+  }
+  window.getGPS = getGPS;
 
+  el("cam").addEventListener("change", handlePhoto);
+  el("gal").addEventListener("change", handlePhoto);
+
+  function handlePhoto(e){
+    const file = e.target.files && e.target.files[0];
+    if(!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(){
+      pickedPhoto = reader.result;
+      photoPreview.innerHTML = `<img src="${pickedPhoto}" alt="foto">`;
+      setStatus("Foto gekies ✅");
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function initMap(){
+    if(map) return;
+    map = L.map("map").setView([-34.37, 20.85], 10);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19
+    }).addTo(map);
+  }
+
+  function exportData(){
+    const data = localStorage.getItem(KEY);
+    if(!data){
+      alert("Geen data om te export nie.");
+      return;
+    }
+    const blob = new Blob([data], {type:"application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "fishlog-backup.json";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+  window.exportData = exportData;
+
+  el("importFile").addEventListener("change", function(e){
+    const file = e.target.files && e.target.files[0];
+    if(!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(){
+      try{
+        const data = JSON.parse(reader.result);
+        if(!Array.isArray(data)) throw new Error("Not array");
+        saveAll(data);
+        alert("Backup suksesvol ingevoer!");
+        fillTripSelect();
+        fillTripFilter();
+        loadLog();
+        renderStats();
+        show("log");
+      }catch{
+        alert("Ongeldige backup file.");
+      }
+    };
+    reader.readAsText(file);
+  });
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, m => ({
+      "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;"
+    }[m]));
+  }
+
+  // START
   fillTripSelect();
+  fillTripFilter();
   loadLog();
   show("log");
-
 })();
 </script>
 
