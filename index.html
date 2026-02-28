@@ -15,6 +15,9 @@ window.onerror = function(msg, url, line, col, err){
   alert("ERROR: " + msg + "\nLine: " + line + ":" + col);
   return false;
 };
+  document.body.insertAdjacentHTML("afterbegin",
+  '<div style="padding:8px;background:#ff3b3b;color:#fff;font-weight:900;text-align:center">JS OK</div>'
+);
   <style>
     :root{--bg:#0b1220;--panel:#111a30;--card:#162040;--line:rgba(255,255,255,.12);
       --text:#e7eefc;--muted:rgba(231,238,252,.75);--brand:#2c5cff;--danger:#ff3b3b;}
