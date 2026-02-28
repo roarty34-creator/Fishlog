@@ -66,8 +66,12 @@
       <label>Spesie</label>
       <input id="species" placeholder="bv. Kabeljou" />
 
-      <label>Trip</label>
-      <input id="trip" placeholder="bv. Stilbaai Boot" />
+<label>Trip</label>
+<div style="display:flex;gap:6px;align-items:center">
+  <select id="trip"></select>
+  <button type="button" class="secondary" onclick="newTrip()">New</button>
+</div>
+<div class="small">Kies ’n bestaande trip of maak ’n nuwe een.</div>
 
       <label>Lengte (cm)</label>
       <input id="length" type="number" inputmode="decimal" placeholder="bv. 78" />
