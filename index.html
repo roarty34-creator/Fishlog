@@ -469,6 +469,9 @@ async function fileToDataUrl(file){
 const g = el("photoGal"); if(g) g.value = ""; 
     if(photo) photo.value = "";
     setStatus("Form skoon ✅");
+      const c = document.getElementById("photoCam"); if(c) c.value = "";
+const g = document.getElementById("photoGal"); if(g) g.value = "";
+updatePhotoHint();
   }
 
   async function saveCatch(){
