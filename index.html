@@ -164,17 +164,18 @@ function saveCatch(){
 
  const photo=window._photo||"";
 
- data.push({
- species:species.value,
- trip:trip.value||"Geen",
- length:Number(length.value)||null,
- weight:Number(weight.value)||null,
- place:place.value,
- coords:coords.value,
- notes:notes.value,
- photo:photo,
- date:new Date().toLocaleDateString()
- });
+data.push({
+ id: crypto.randomUUID(), // ✅ voeg hierdie by
+  species: species.value,
+  trip: trip.value || "Geen",
+  length: Number(length.value) || null,
+  weight: Number(weight.value) || null,
+  place: place.value,
+  coords: coords.value,
+  notes: notes.value,
+  photo: photo,
+  date: new Date().toLocaleDateString()
+});
 
  saveAll(data);
  alert("Saved!");
