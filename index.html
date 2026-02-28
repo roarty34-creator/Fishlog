@@ -245,7 +245,7 @@ function newTrip(){
 
   const trips = getTrips();
   if(!trips.includes(clean)) trips.push(clean);
-  setTrips(trips);
+localStorage.setItem("fishlog_trips", JSON.stringify(trips));
   ensureTripsUI();
 
   const tripSelect = document.getElementById("tripSelect");
