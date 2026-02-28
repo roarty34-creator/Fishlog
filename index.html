@@ -164,14 +164,16 @@
   function setStatus(msg){
     el("statusText").textContent = msg || "";
   }
-
   function show(id){
-    document.querySelectorAll("section").forEach(s => s.style.display="none");
-    el(id).style.display="block";
+  document.querySelectorAll("section").forEach(s=>{
+    s.style.display="none";
+  });
 
-    if(id === "log") loadLog();
-    if(id === "stats") renderStats();
-    if(id === "add") initMap();
+  el(id).style.display="block";
+
+  if(id === "log") loadLog();
+  if(id === "stats") renderStats();
+  if(id === "add") initMap();
   }
 
   function getAll(){
