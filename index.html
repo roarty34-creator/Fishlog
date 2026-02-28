@@ -142,6 +142,7 @@ nav{display:flex;gap:8px;margin-bottom:10px}
 <script>
 
 const KEY="fishlog";
+ let editingId = null;
 
 function show(id){
  document.querySelectorAll("section").forEach(s=>s.style.display="none");
@@ -195,6 +196,22 @@ function loadLog(){
 
  data.slice().reverse().forEach(c=>{
   list.innerHTML+=`
+  list.innerHTML += `
+  <div class="card">
+    <b>${c.species}</b> - ${c.trip}<br>
+    ${c.length? c.length+"cm " : ""}${c.weight? c.weight+"kg" : ""}<br>
+    ${c.place || ""}<br>
+    ${c.coords || ""}<br>
+    ${c.photo ? `<img src="${c.photo}" style="width:100%;border-radius:12px;margin-top:8px">` : ""}
+
+    <div class="row" style="margin-top:10px;gap:8px">
+      <button type="button" class="secondary" onclick="editCatch('${c.id}')">Edit</button>
+      <button type="button" class="danger" onclick="deleteCatch('${c.id}')">Delete</button>
+    </div>
+
+    <div class="small">${c.date || ""}</div>
+  </div>
+`;
   <div class="card">
   <b>${c.species}</b> - ${c.trip}<br>
   ${c.length||""}cm ${c.weight||""}kg<br>
