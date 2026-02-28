@@ -122,34 +122,28 @@ function(){
 <script>
   const KEY = "fishlog";
 
-function showTab(tab){
-  document.querySelectorAll("section").forEach(s=>s.classList.remove("active"));
-  document.getElementById(tab).classList.add("active");
-
-  if(tab === "log"){
-  ensureTripsUI();
-  loadLog();
-  }
-  if(tab === "folder") initMap();   // ← BELANGRIK as jou Map onder "Folder" sit
-  if(tab === "stats") renderStats();
-}
-
-    document.getElementById("btnLog").classList.toggle("active", id==="log");
-    document.getElementById("btnAdd").classList.toggle("active", id==="add");
-    document.getElementById("btnMap").classList.toggle("active", id==="map");
-    document.getElementById("btnStats").classList.toggle("active", id==="stats");
-
-    if(id==="log") loadLog();
-    if(id==="map"){ initMap(); setTimeout(()=>{ if(window._fishMap) window._fishMap.invalidateSize(true); }, 250); }
-    if(id==="stats") renderStats();
-  }
-
   function safeNum(v){
     if(!v) return null;
     const n = Number(String(v).replace(",", "."));
     return Number.isFinite(n) ? n : null;
   }
+function showTab(tab){
+  document.querySelectorAll(".tab").forEach(t=>t.style.display="none");
+  document.getElementById(tab).style.display="block";
 
+  if(tab === "log"){
+    ensureTripsUI();
+    loadLog();
+  }
+
+  if(tab === "map"){
+    initMap();
+  }
+
+  if(tab === "stats"){
+    renderStats();
+  }
+}
   function getGPS(){
     if(!navigator.geolocation){ alert("GPS nie ondersteun nie."); return; }
     navigator.geolocation.getCurrentPosition(
