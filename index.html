@@ -215,10 +215,10 @@ function setTrips(trips){
 
 function ensureTripsUI(){
   // Ensure at least one default trip exists
-  let trips = getTrips();
+let trips = JSON.parse(localStorage.getItem("fishlog_trips") || "[]");
   if(!trips.length){
     trips = ["Stilbaai Trip"];
-    setTrips(trips);
+    localStorage.setItem("fishlog_trips", JSON.stringify(trips));
   }
 
   // Add screen dropdown
