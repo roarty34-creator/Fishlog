@@ -158,7 +158,9 @@
 
     if(id === "log") loadLog();
     if(id === "stats") renderStats();
-    if(id === "add") initMap();
+  if(id === "add"){
+  fillTripSelect();
+  initMap();
   }
   window.show = show;
 
@@ -407,7 +409,8 @@ function newTrip(){
         if(!Array.isArray(data)) throw new Error("not array");
         saveAll(data);
         alert("Backup suksesvol ingevoer!");
-        loadLog();
+        fillTripSelect();
+loadLog();
         renderStats();
         show("log");
       }catch{
