@@ -114,14 +114,13 @@ section{ display:none; }
     <input id="place" placeholder="bv. Stilbaai / Die Punt" autocomplete="off">
 
     <label class="small">Koördinate</label>
-    <div style="display:flex; gap:10px; align-items:center;">
-      <button type="button" onclick="getGPS()">Kry GPS</button>
-      <input id="coords" placeholder="-34.370000, 20.850000" readonly autocomplete="off">
-    </div>
+<div style="display:flex; gap:10px;">
+  <button type="button" onclick="getGPS()">Kry GPS</button>
+  <input id="coords" placeholder="-34.37, 20.85" readonly autocomplete="off">
+</div>
 
-    <label class="small">Lengte (cm)</label>
-    <input id="length" placeholder="bv. 65" autocomplete="off">
-
+<label class="small">Lengte (cm)</label>
+<input id="length" placeholder="bv. 65" autocomplete="off">
     <button class="navbtn active" style="margin-top:10px" onclick="saveCatch()">Save</button>
   </div>
 </section>
