@@ -183,11 +183,13 @@ section{ display:none; }
     saveAll(data);
 
     species.value = "";
-    place.value = "";
-    length.value = "";
+place.value = "";
+coords.value = "";   // 👈 HIER
+length.value = "";
 
-    show("log");
+show("log");
   }
+  
   function getGPS(){
   if(!navigator.geolocation){
     alert("GPS nie beskikbaar nie.");
