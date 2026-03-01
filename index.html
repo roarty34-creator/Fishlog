@@ -111,10 +111,16 @@ section{ display:none; }
     <input id="species" placeholder="bv. Kaapse Kabeljou" />
 
     <label class="small">Plek</label>
-    <input id="place" placeholder="bv. Stilbaai / Die Punt" />
+<input id="place" placeholder="bv. Stilbaai / Die Punt">
 
-    <label class="small">Lengte (cm)</label>
-    <input id="length" placeholder="bv. 65" />
+<label class="small">Koördinate</label>
+<div style="display:flex; gap:10px;">
+  <button type="button" onclick="getGPS()">Kry GPS</button>
+  <input id="coords" placeholder="-34.37, 20.85" readonly />
+</div>
+
+<label class="small">Lengte (cm)</label>
+<input id="length" placeholder="bv. 65">
 
     <button class="navbtn active" style="margin-top:10px" onclick="saveCatch()">Save</button>
   </div>
