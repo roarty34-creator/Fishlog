@@ -86,8 +86,8 @@ section{
 
 <h2>FishLog</h2>
 
-<button onclick="show('add')">Add</button>
-<button onclick="show('log')">Log</button>
+<button class="navbtn" id="btnAdd" onclick="show('add')">Add</button>
+<button class="navbtn" id="btnLog" onclick="show('log')">Log</button>
 
 <section id="add">
 <h3>Add Catch</h3>
@@ -154,6 +154,12 @@ function show(id){
   document.querySelectorAll("section").forEach(s=>s.style.display="none");
   el(id).style.display="block";
   if(id==="log") loadLog();
+// active top button highlight
+const bAdd = document.getElementById("btnAdd");
+const bLog = document.getElementById("btnLog");
+if(bAdd && bLog){
+  bAdd.classList.toggle("active", id === "add");
+  bLog.classList.toggle("active", id === "log");
 }
 
 window.show = show;
