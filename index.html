@@ -163,7 +163,17 @@ section{
   }
 
   function loadLog(){
-    list.innerHTML = "";
+  list.innerHTML += `
+  <div class="card">
+    <b>${c.species}</b><br>
+    ${c.place} • ${c.length}cm<br>
+    <small>${c.date}</small>
+
+    <div style="margin-top:10px">
+      <button class="navbtn" onclick="deleteCatch(${c.id})">Delete</button>
+    </div>
+  </div>
+`;
     const data = getAll();
     data.forEach(c => {
       list.innerHTML += `
