@@ -212,9 +212,6 @@ i      --text:#e7eefc;
       fillTripSelect();
       initMap();
     }
-  }
-  window.show = show;
-window.saveCatch = saveCatch;
 
   function getAll(){
   return JSON.parse(localStorage.getItem("fishlog") || "[]");
@@ -581,7 +578,6 @@ window.saveCatch = saveCatch;
 fillTripSelect();
 loadLog();
 show("add");
-
 })();
 </script>
 </body>
