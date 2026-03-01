@@ -494,6 +494,84 @@ loadLog();
 show("add");
 })();
 </script>
+<script>
+(() => {
 
+const el = id => document.getElementById(id);
+
+const species = el("species");
+const trip = el("trip");
+const length = el("length");
+const weight = el("weight");
+const place = el("place");
+const coords = el("coords");
+const list = el("list");
+
+function getAll(){
+  return JSON.parse(localStorage.getItem("fishlog") || "[]");
+}
+
+function saveAll(data){
+  localStorage.setItem("fishlog", JSON.stringify(data));
+}
+
+function show(id){
+  document.querySelectorAll("section").forEach(s => s.style.display="none");
+  el(id).style.display="block";
+  if(id==="log") loadLog();
+}
+
+window.show = show;
+
+function saveCatch(){
+  const data = getAll();
+
+  const item = {
+    id: Date.now(),
+    species: species.value,
+    trip: trip.value,
+    length: length.value,
+    weight: weight.value,
+    place: place.value,
+    coords: coords.value,
+    date: new Date().toLocaleDateString()
+  };
+
+  data.push(item);
+  saveAll(data);
+  clearForm();
+  loadLog();
+  show("log");
+}
+
+window.saveCatch = saveCatch;
+
+function clearForm(){
+  species.value="";
+  length.value="";
+  weight.value="";
+  place.value="";
+  coords.value="";
+}
+
+function loadLog(){
+  list.innerHTML="";
+  const data = getAll();
+
+  data.forEach(c=>{
+    list.innerHTML += `
+      <div class="card">
+        <b>${c.species}</b><br>
+        ${c.place} • ${c.length}cm • ${c.weight}kg<br>
+        <small>${c.date}</small>
+      </div>
+    `;
+  });
+}
+
+show("log");
+
+})();
+</script>
 </body>
 </html>
