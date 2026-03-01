@@ -529,13 +529,6 @@ function getAll(){
 function saveAll(data){
   localStorage.setItem("fishlog", JSON.stringify(data));
 }
-
-function show(id){
-  document.querySelectorAll("section").forEach(s => s.style.display="none");
-  el(id).style.display="block";
-  if(id==="log") loadLog();
-}
-
 window.show = show;
 
 function saveCatch(){
