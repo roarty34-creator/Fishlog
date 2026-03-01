@@ -111,17 +111,16 @@ section{ display:none; }
     <input id="species" placeholder="bv. Kaapse Kabeljou" autocomplete="off">
 
     <label class="small">Plek</label>
-<input id="place" placeholder="bv. Stilbaai / Die Punt" autocomplete="off">
+    <input id="place" placeholder="bv. Stilbaai / Die Punt" autocomplete="off">
 
     <label class="small">Koördinate</label>
+    <div style="display:flex; gap:10px; align-items:center;">
+      <button type="button" onclick="getGPS()">Kry GPS</button>
+      <input id="coords" placeholder="-34.370000, 20.850000" readonly autocomplete="off">
+    </div>
+
+    <label class="small">Lengte (cm)</label>
     <input id="length" placeholder="bv. 65" autocomplete="off">
-<div style="display:flex; gap:10px;">
-  <button type="button" onclick="getGPS()">Kry GPS</button>
-  <input id="coords" placeholder="-34.37, 20.85" readonly autocomplete="off">
-</div
-
-<label class="small">Lengte (cm)</label>
-
 
     <button class="navbtn active" style="margin-top:10px" onclick="saveCatch()">Save</button>
   </div>
@@ -141,12 +140,14 @@ section{ display:none; }
 (() => {
   const KEY = "fishlog";
 
-  
-const species = el("species");
-const place = el("place");
-const coords = el("coords");
-const length = el("length");
-  
+  const el = (id) => document.getElementById(id);
+
+  const species = el("species");
+  const place   = el("place");
+  const coords  = el("coords");
+  const length  = el("length");
+  const list    = el("list");
+
   function getAll() {
     return JSON.parse(localStorage.getItem(KEY) || "[]");
   }
@@ -173,40 +174,40 @@ const length = el("length");
   function saveCatch() {
     const data = getAll();
     data.push({
-  id: Date.now(),
-  species: species.value.trim(),
-  place: place.value.trim(),
-  coords: coords.value.trim(),
-  length: length.value.trim(),
-  date: new Date().toLocaleDateString()
-});
+      id: Date.now(),
+      species: species.value.trim(),
+      place: place.value.trim(),
+      coords: coords.value.trim(),
+      length: length.value.trim(),
+      date: new Date().toLocaleDateString()
+    });
     saveAll(data);
 
-  species.value = "";
-place.value = "";
-coords.value = "";
-length.value = "";
+    species.value = "";
+    place.value = "";
+    coords.value = "";
+    length.value = "";
 
-show("log");
+    show("log");
   }
-  
+
   function getGPS(){
-  if(!navigator.geolocation){
-    alert("GPS nie beskikbaar nie.");
-    return;
-  }
+    if(!navigator.geolocation){
+      alert("GPS nie beskikbaar nie.");
+      return;
+    }
 
-  navigator.geolocation.getCurrentPosition(
-    (pos) => {
-      const lat = pos.coords.latitude.toFixed(6);
-      const lon = pos.coords.longitude.toFixed(6);
-      coords.value = lat + ", " + lon;
-    },
-    () => {
-      alert("Kon nie ligging kry nie. Maak seker Location is aan.");
-    },
-    { enableHighAccuracy: true, timeout: 10000 }
-  );
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const lat = pos.coords.latitude.toFixed(6);
+        const lon = pos.coords.longitude.toFixed(6);
+        coords.value = lat + ", " + lon;
+      },
+      () => {
+        alert("Kon nie ligging kry nie. Maak seker Location is aan.");
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
   }
 
   function loadLog(){
@@ -219,16 +220,14 @@ show("log");
     }
 
     data.forEach(c => {
-      const safeSpecies = (c.species || "").replaceAll("<","&lt;").replaceAll(">","&gt;");
-      const safePlace   = (c.place || "").replaceAll("<","&lt;").replaceAll(">","&gt;");
-      const safeLen     = (c.length || "").replaceAll("<","&lt;").replaceAll(">","&gt;");
-      const safeDate    = (c.date || "").replaceAll("<","&lt;").replaceAll(">","&gt;");
+      const safe = (x) => (x ?? "").toString().replaceAll("<","&lt;").replaceAll(">","&gt;");
 
       list.innerHTML += `
         <div class="card">
-          <b>${safeSpecies}</b><br>
-          ${safePlace} • ${safeLen}cm<br>
-          <small>${safeDate}</small><br><br>
+          <b>${safe(c.species)}</b><br>
+          ${safe(c.place)} • ${safe(c.length)}cm<br>
+          <small>${safe(c.date)}</small><br>
+          <small>${safe(c.coords)}</small><br><br>
 
           <button onclick="editCatch(${c.id})">Edit</button>
           <button onclick="deleteCatch(${c.id})">Delete</button>
@@ -259,11 +258,15 @@ show("log");
     const newPlace = prompt("Place:", c.place || "");
     if (newPlace === null) return;
 
+    const newCoords = prompt("Coords:", c.coords || "");
+    if (newCoords === null) return;
+
     const newLength = prompt("Length (cm):", c.length || "");
     if (newLength === null) return;
 
     c.species = newSpecies.trim();
     c.place = newPlace.trim();
+    c.coords = newCoords.trim();
     c.length = newLength.trim();
 
     saveAll(data);
