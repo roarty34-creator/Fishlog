@@ -44,18 +44,7 @@ button:active{
   transform: scale(0.98);
 }
 
-/* Top nav buttons */
-.navbtn{
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
 
-.navbtn.active{
-  background: rgba(79, 140, 255, 0.12);
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(79,140,255,0.12);
-}
 
 
 .card{
@@ -76,7 +65,6 @@ input{
   color: var(--text);
   margin-bottom:10px;
 }
-
 section{
   display:none;
 }
@@ -125,72 +113,78 @@ section{
 <h3>Catch Log</h3>
 <div id="list"></div>
 </section>
-
+  
 <script>
 (() => {
+  const KEY = "fishlog";
 
-const KEY = "fishlog";
+  const el = id => document.getElementById(id);
+  const species = el("species");
+  const place = el("place");
+  const length = el("length");
+  const list = el("list");
 
-const el = id => document.getElementById(id);
-const species = el("species");
-const place = el("place");
-const length = el("length");
-const list = el("list");
+  function getAll(){
+    return JSON.parse(localStorage.getItem(KEY) || "[]");
+  }
 
-function getAll(){
-  return JSON.parse(localStorage.getItem(KEY) || "[]");
-}
+  function saveAll(data){
+    localStorage.setItem(KEY, JSON.stringify(data));
+  }
 
-function saveAll(data){
-  localStorage.setItem(KEY, JSON.stringify(data));
-}
+  function loadLog(){
+    list.innerHTML = "";
+    const data = getAll();
+    data.forEach(c => {
+      list.innerHTML += `
+        <div class="card">
+          <b>${c.species}</b><br>
+          ${c.place} • ${c.length}cm<br>
+          <small>${c.date}</small>
+        </div>
+      `;
+    });
+  }
 
-function saveCatch(){
-  const data = getAll();
-  data.push({
-    species: species.value,
-    place: place.value,
-    length: length.value,
-    date: new Date().toLocaleDateString()
-  });
-  saveAll(data);
-  species.value="";
-  place.value="";
-  length.value="";
-  show("log");
-}
+  function setActive(id){
+    const bAdd = el("btnAdd");
+    const bLog = el("btnLog");
+    if(!bAdd || !bLog) return;
+    bAdd.classList.toggle("active", id === "add");
+    bLog.classList.toggle("active", id === "log");
+  }
 
-function loadLog(){
-  list.innerHTML="";
-  const data = getAll();
-  data.forEach(c=>{
-    list.innerHTML += `
-      <div class="card">
-        <b>${c.species}</b><br>
-        ${c.place} • ${c.length}cm<br>
-        <small>${c.date}</small>
-      </div>
-    `;
-  });
-}
+  function show(id){
+    document.querySelectorAll("section").forEach(s => s.style.display = "none");
+    el(id).style.display = "block";
 
-function show(id){
-  document.querySelectorAll("section").forEach(s=>s.style.display="none");
-  el(id).style.display="block";
-  if(id==="log") loadLog();
-// active top button highlight
-const bAdd = document.getElementById("btnAdd");
-const bLog = document.getElementById("btnLog");
-if(bAdd && bLog){
-  bAdd.classList.toggle("active", id === "add");
-  bLog.classList.toggle("active", id === "log");
-}
+    setActive(id);
+    if(id === "log") loadLog();
+  }
 
-window.show = show;
-window.saveCatch = saveCatch;
+  function saveCatch(){
+    const data = getAll();
+    data.push({
+      species: species.value,
+      place: place.value,
+      length: length.value,
+      date: new Date().toLocaleDateString()
+    });
+    saveAll(data);
 
-show("add");
+    species.value = "";
+    place.value = "";
+    length.value = "";
 
+    show("log");
+  }
+
+  // Maak funksies beskikbaar vir jou buttons
+  window.show = show;
+  window.saveCatch = saveCatch;
+
+  // START
+  show("add");
 })();
 </script>
 
