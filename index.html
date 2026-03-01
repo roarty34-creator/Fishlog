@@ -140,8 +140,13 @@ section{
 </section>
 
 <section id="log">
-<h3>Catch Log</h3>
-<div id="list"></div>
+  <h3>Catch Log</h3>
+
+  <div style="display:flex; gap:10px; margin-bottom:12px;">
+    <button onclick="clearAll()">Clear all</button>
+  </div>
+
+  <div id="list"></div>
 </section>
 
   <script>
@@ -190,26 +195,91 @@ section{
     loadLog();
   }
 
-  function loadLog() {
-    list.innerHTML = "";
-    const data = getAll();
+  function loadLog(){
+  list.innerHTML = "";
+  const data = getAll();
 
-    data.forEach(c => {
-      // OU items sonder id? Gee vir hulle een en save terug.
-      if (!c.id) c.id = Date.now() + Math.floor(Math.random() * 1000);
+  data.forEach((c, idx) => {
+    list.innerHTML += `
+      <div class="card">
+        <b>${c.species}</b><br>
+        ${c.place} • ${c.length}cm<br>
+        <small>${c.date}</small><br><br>
 
-      list.innerHTML += `
-        <div class="card">
-          <b>${c.species || ""}</b><br>
-          ${(c.place || "")} • ${(c.length || "")}cm<br>
-          <small>${c.date || ""}</small>
-          <div style="margin-top:10px">
-            <button class="navbtn" onclick="deleteCatch('${c.id}')">Delete</button>
-          </div>
-        </div>
-      `;
-    });
+        <button onclick="editCatch(${idx})">Edit</button>
+        <button onclick="deleteCatch(${idx})">Delete</button>
+      </div>
+    `;
+  });
+  }
+  function deleteCatch(index){
+  const data = getAll();
+  data.splice(index, 1);
+  saveAll(data);
+  loadLog();
+}
 
+function editCatch(index){
+  const data = getAll();
+  const c = data[index];
+
+  const newSpecies = prompt("Species:", c.species);
+  if (newSpecies === null) return;
+
+  const newPlace = prompt("Place:", c.place);
+  if (newPlace === null) return;
+
+  const newLength = prompt("Length (cm):", c.length);
+  if (newLength === null) return;
+
+  c.species = newSpecies.trim();
+  c.place = newPlace.trim();
+  c.length = newLength.trim();
+
+  saveAll(data);
+  loadLog();
+}
+
+function clearAll(){
+  const ok = confirm("Are you sure you want to delete ALL catches?");
+  if(!ok) return;
+  saveAll([]);     // maak localStorage leeg
+  loadLog();
+}
+function deleteCatch(index){
+  const data = getAll();
+  data.splice(index, 1);
+  saveAll(data);
+  loadLog();
+}
+
+function editCatch(index){
+  const data = getAll();
+  const c = data[index];
+
+  const newSpecies = prompt("Species:", c.species);
+  if (newSpecies === null) return;
+
+  const newPlace = prompt("Place:", c.place);
+  if (newPlace === null) return;
+
+  const newLength = prompt("Length (cm):", c.length);
+  if (newLength === null) return;
+
+  c.species = newSpecies.trim();
+  c.place = newPlace.trim();
+  c.length = newLength.trim();
+
+  saveAll(data);
+  loadLog();
+}
+
+function clearAll(){
+  const ok = confirm("Are you sure you want to delete ALL catches?");
+  if(!ok) return;
+  saveAll([]);     // maak localStorage leeg
+  loadLog();
+}
     // save terug as ons ids moes byvoeg
     saveAll(data);
   }
@@ -229,16 +299,18 @@ section{
     if (id === "log") loadLog();
   }
 
-  // Maak funksies beskikbaar vir HTML onclick
-  window.show = show;
-  window.saveCatch = saveCatch;
-  window.deleteCatch = deleteCatch;
+window.show = show;
+window.saveCatch = saveCatch;
+window.deleteCatch = deleteCatch;
+window.editCatch = editCatch;
+window.clearAll = clearAll; 
+  
+  
 
   // START
   show("add");
 })();
   </script>
   
-
 </body>
 </html>
