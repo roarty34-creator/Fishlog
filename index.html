@@ -145,6 +145,7 @@ section{ display:none; }
   const place = el("place");
   const length = el("length");
   const list = el("list");
+  const coords = el("coords");
 
   function getAll() {
     return JSON.parse(localStorage.getItem(KEY) || "[]");
@@ -172,12 +173,13 @@ section{ display:none; }
   function saveCatch() {
     const data = getAll();
     data.push({
-      id: Date.now(),
-      species: species.value.trim(),
-      place: place.value.trim(),
-      length: length.value.trim(),
-      date: new Date().toLocaleDateString()
-    });
+  id: Date.now(),
+  species: species.value.trim(),
+  place: place.value.trim(),
+  coords: coords.value.trim(),
+  length: length.value.trim(),
+  date: new Date().toLocaleDateString()
+});
     saveAll(data);
 
     species.value = "";
@@ -185,6 +187,24 @@ section{ display:none; }
     length.value = "";
 
     show("log");
+  }
+  function getGPS(){
+  if(!navigator.geolocation){
+    alert("GPS nie beskikbaar nie.");
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      const lat = pos.coords.latitude.toFixed(6);
+      const lon = pos.coords.longitude.toFixed(6);
+      coords.value = lat + ", " + lon;
+    },
+    () => {
+      alert("Kon nie ligging kry nie. Maak seker Location is aan.");
+    },
+    { enableHighAccuracy: true, timeout: 10000 }
+  );
   }
 
   function loadLog(){
@@ -262,6 +282,7 @@ section{ display:none; }
   window.deleteCatch = deleteCatch;
   window.editCatch = editCatch;
   window.clearAll = clearAll;
+  window.getGPS = getGPS;
 
   // START
   show("add");
