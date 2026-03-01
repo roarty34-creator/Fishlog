@@ -88,7 +88,7 @@ i      --text:#e7eefc;
     <div class="card">
 
       <label>Spesie</label>
-      <input id="species" placeholder="bv. Kabeljou">
+<input id="species" placeholder="bv. Kabeljou">
 
       <label>Trip</label>
       <div class="row tight">
@@ -317,7 +317,7 @@ show("add");   // bly op Add
   filtered.slice().reverse().forEach(c => {
     list.innerHTML += `
       <div class="card">
-        <b>Spesie:</b> ${escapeHtml(c.species || "")}<br>
+        <b>Spesie:</b> $(c.species || "")}<br>
         <b>Trip:</b> ${escapeHtml(c.trip || "")}<br>
 
         ${c.length ? "<b>Lengte:</b> " + c.length + " cm<br>" : ""}
