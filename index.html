@@ -163,12 +163,16 @@ section{
   }
 
   function loadLog(){
-  list.innerHTML += `
+list.innerHTML += `
   <div class="card">
     <b>${c.species}</b><br>
     ${c.place} • ${c.length}cm<br>
     <small>${c.date}</small>
-
+    <div style="margin-top:10px">
+      <button class="navbtn" onclick="deleteCatch(${c.id})">Delete</button>
+    </div>
+  </div>
+`;
     <div style="margin-top:10px">
       <button class="navbtn" onclick="deleteCatch(${c.id})">Delete</button>
     </div>
@@ -217,10 +221,18 @@ section{
 
     show("log");
   }
+function deleteCatch(id){
+  const ok = confirm("Delete hierdie vang?");
+  if(!ok) return;
 
+  const data = getAll().filter(c => c.id !== id);
+  saveAll(data);
+  loadLog();
+}
   // Maak funksies beskikbaar vir buttons
   window.show = show;
-  window.saveCatch = saveCatch;
+window.saveCatch = saveCatch;
+window.deleteCatch = deleteCatch;
 
   // START
   show("add");
