@@ -163,14 +163,21 @@ section{ display:none; }
     bAdd.classList.toggle("active", id === "add");
     bLog.classList.toggle("active", id === "log");
   }
+ 
+function show(id) {
+  document.querySelectorAll("section").forEach(s => s.style.display = "none");
+  el(id).style.display = "block";
+  setActive(id);
 
-  function show(id) {
-    document.querySelectorAll("section").forEach(s => s.style.display = "none");
-    el(id).style.display = "block";
-    setActive(id);
-    if (id === "log") loadLog();
+  if(id === "add"){
+    species.value = "";
+    place.value = "";
+    coords.value = "";
+    length.value = "";
   }
 
+  if (id === "log") loadLog();
+}
   function saveCatch() {
     const data = getAll();
     data.push({
