@@ -1,10 +1,44 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8">
+<meta charset="UTF-8" />
 <title>FishLog</title>
+
 <style>
-  .topnav{
+:root{
+  --bg:#0b1220;
+  --card:#101a2e;
+  --text:#e8eefc;
+  --muted:#9fb0d0;
+  --accent:#4f8cff;
+  --border:#20304d;
+}
+
+body{
+  margin:0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  background: radial-gradient(1200px 800px at 20% 0%, #142040 0%, var(--bg) 55%);
+  color:var(--text);
+  padding:20px;
+}
+
+h2{ margin-top:0; }
+
+button{
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 10px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 700;
+  transition: transform .06s ease, background .2s ease, border-color .2s ease;
+}
+
+button:hover{ border-color: var(--accent); }
+button:active{ transform: scale(0.98); }
+
+.topnav{
   display:inline-flex;
   background:#0e1730;
   padding:6px;
@@ -27,48 +61,6 @@
   background:var(--accent);
   color:#071022;
 }
-:root{
-  --bg:#0b1220;
-  --card:#101a2e;
-  --text:#e8eefc;
-  --muted:#9fb0d0;
-  --accent:#4f8cff;
-  --border:#20304d;
-}
-
-body{
-  margin:0;
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-  background: radial-gradient(1200px 800px at 20% 0%, #142040 0%, var(--bg) 55%);
-  color:var(--text);
-  padding:20px;
-}
-
-h2{
-  margin-top:0;
-}
-
-button{
-  background: transparent;
-  color: var(--text);
-  border: 1px solid var(--border);
-  padding: 10px 14px;
-  border-radius: 999px;
-  cursor: pointer;
-  font-weight: 700;
-  transition: transform .06s ease, background .2s ease, border-color .2s ease;
-}
-
-button:hover{
-  border-color: var(--accent);
-}
-
-button:active{
-  transform: scale(0.98);
-}
-
-
-
 
 .card{
   background: linear-gradient(180deg, #122042 0%, var(--card) 100%);
@@ -88,19 +80,8 @@ input{
   color: var(--text);
   margin-bottom:10px;
 }
-section{
-  display:none;
-}
-  .topnav{
-  display:inline-flex;
-  background:#0e1730;
-  padding:6px;
-  border-radius:999px;
-  border:1px solid var(--border);
-  gap:6px;
-  margin-bottom:20px;
-}
-  label.small{
+
+label.small{
   display:block;
   margin: 10px 0 6px;
   color: var(--muted);
@@ -108,13 +89,13 @@ section{
   font-weight: 700;
 }
 
-#add .card{
-  max-width: 520px;
-}
+#add .card{ max-width: 520px; }
+
+section{ display:none; }
 </style>
 </head>
-<body>
 
+<body>
 <h2>FishLog</h2>
 
 <div class="topnav">
@@ -127,13 +108,13 @@ section{
     <h3 style="margin:0 0 10px">Add Catch</h3>
 
     <label class="small">Spesie</label>
-    <input id="species" placeholder="bv. Kaapse Kabeljou">
+    <input id="species" placeholder="bv. Kaapse Kabeljou" />
 
     <label class="small">Plek</label>
-    <input id="place" placeholder="bv. Stilbaai / Die Punt">
+    <input id="place" placeholder="bv. Stilbaai / Die Punt" />
 
     <label class="small">Lengte (cm)</label>
-    <input id="length" placeholder="bv. 65">
+    <input id="length" placeholder="bv. 65" />
 
     <button class="navbtn active" style="margin-top:10px" onclick="saveCatch()">Save</button>
   </div>
@@ -149,7 +130,7 @@ section{
   <div id="list"></div>
 </section>
 
-  <script>
+<script>
 (() => {
   const KEY = "fishlog";
 
@@ -165,6 +146,21 @@ section{
 
   function saveAll(data) {
     localStorage.setItem(KEY, JSON.stringify(data));
+  }
+
+  function setActive(id){
+    const bAdd = el("btnAdd");
+    const bLog = el("btnLog");
+    if(!bAdd || !bLog) return;
+    bAdd.classList.toggle("active", id === "add");
+    bLog.classList.toggle("active", id === "log");
+  }
+
+  function show(id) {
+    document.querySelectorAll("section").forEach(s => s.style.display = "none");
+    el(id).style.display = "block";
+    setActive(id);
+    if (id === "log") loadLog();
   }
 
   function saveCatch() {
@@ -185,132 +181,86 @@ section{
     show("log");
   }
 
+  function loadLog(){
+    list.innerHTML = "";
+    const data = getAll();
+
+    if(data.length === 0){
+      list.innerHTML = `<div class="card"><small>No catches yet.</small></div>`;
+      return;
+    }
+
+    data.forEach(c => {
+      const safeSpecies = (c.species || "").replaceAll("<","&lt;").replaceAll(">","&gt;");
+      const safePlace   = (c.place || "").replaceAll("<","&lt;").replaceAll(">","&gt;");
+      const safeLen     = (c.length || "").replaceAll("<","&lt;").replaceAll(">","&gt;");
+      const safeDate    = (c.date || "").replaceAll("<","&lt;").replaceAll(">","&gt;");
+
+      list.innerHTML += `
+        <div class="card">
+          <b>${safeSpecies}</b><br>
+          ${safePlace} • ${safeLen}cm<br>
+          <small>${safeDate}</small><br><br>
+
+          <button onclick="editCatch(${c.id})">Edit</button>
+          <button onclick="deleteCatch(${c.id})">Delete</button>
+        </div>
+      `;
+    });
+  }
+
   function deleteCatch(id) {
     const ok = confirm("Delete hierdie vang?");
     if (!ok) return;
 
-    // as id dalk string/nommer meng, maak seker dit vergelyk reg:
     const data = getAll().filter(c => String(c.id) !== String(id));
     saveAll(data);
     loadLog();
   }
 
-  function loadLog(){
-  list.innerHTML = "";
-  const data = getAll();
+  function editCatch(id){
+    const data = getAll();
+    const idx = data.findIndex(c => String(c.id) === String(id));
+    if(idx === -1) return;
 
-  data.forEach((c, idx) => {
-    list.innerHTML += `
-      <div class="card">
-        <b>${c.species}</b><br>
-        ${c.place} • ${c.length}cm<br>
-        <small>${c.date}</small><br><br>
+    const c = data[idx];
 
-        <button onclick="editCatch(${idx})">Edit</button>
-        <button onclick="deleteCatch(${idx})">Delete</button>
-      </div>
-    `;
-  });
-  }
-  function deleteCatch(index){
-  const data = getAll();
-  data.splice(index, 1);
-  saveAll(data);
-  loadLog();
-}
+    const newSpecies = prompt("Species:", c.species || "");
+    if (newSpecies === null) return;
 
-function editCatch(index){
-  const data = getAll();
-  const c = data[index];
+    const newPlace = prompt("Place:", c.place || "");
+    if (newPlace === null) return;
 
-  const newSpecies = prompt("Species:", c.species);
-  if (newSpecies === null) return;
+    const newLength = prompt("Length (cm):", c.length || "");
+    if (newLength === null) return;
 
-  const newPlace = prompt("Place:", c.place);
-  if (newPlace === null) return;
+    c.species = newSpecies.trim();
+    c.place = newPlace.trim();
+    c.length = newLength.trim();
 
-  const newLength = prompt("Length (cm):", c.length);
-  if (newLength === null) return;
-
-  c.species = newSpecies.trim();
-  c.place = newPlace.trim();
-  c.length = newLength.trim();
-
-  saveAll(data);
-  loadLog();
-}
-
-function clearAll(){
-  const ok = confirm("Are you sure you want to delete ALL catches?");
-  if(!ok) return;
-  saveAll([]);     // maak localStorage leeg
-  loadLog();
-}
-function deleteCatch(index){
-  const data = getAll();
-  data.splice(index, 1);
-  saveAll(data);
-  loadLog();
-}
-
-function editCatch(index){
-  const data = getAll();
-  const c = data[index];
-
-  const newSpecies = prompt("Species:", c.species);
-  if (newSpecies === null) return;
-
-  const newPlace = prompt("Place:", c.place);
-  if (newPlace === null) return;
-
-  const newLength = prompt("Length (cm):", c.length);
-  if (newLength === null) return;
-
-  c.species = newSpecies.trim();
-  c.place = newPlace.trim();
-  c.length = newLength.trim();
-
-  saveAll(data);
-  loadLog();
-}
-
-function clearAll(){
-  const ok = confirm("Are you sure you want to delete ALL catches?");
-  if(!ok) return;
-  saveAll([]);     // maak localStorage leeg
-  loadLog();
-}
-    // save terug as ons ids moes byvoeg
     saveAll(data);
+    loadLog();
   }
 
-  function setActive(id){
-    const bAdd = el("btnAdd");
-    const bLog = el("btnLog");
-    if(!bAdd || !bLog) return;
-    bAdd.classList.toggle("active", id === "add");
-    bLog.classList.toggle("active", id === "log");
+  function clearAll(){
+    const ok = confirm("Are you sure you want to delete ALL catches?");
+    if(!ok) return;
+    saveAll([]);
+    loadLog();
   }
 
-  function show(id) {
-    document.querySelectorAll("section").forEach(s => s.style.display = "none");
-    el(id).style.display = "block";
-    setActive(id);
-    if (id === "log") loadLog();
-  }
-
-window.show = show;
-window.saveCatch = saveCatch;
-window.deleteCatch = deleteCatch;
-window.editCatch = editCatch;
-window.clearAll = clearAll; 
-  
-  
+  // maak beskikbaar vir HTML onclick=""
+  window.show = show;
+  window.saveCatch = saveCatch;
+  window.loadLog = loadLog;
+  window.deleteCatch = deleteCatch;
+  window.editCatch = editCatch;
+  window.clearAll = clearAll;
 
   // START
   show("add");
 })();
-  </script>
-  
+</script>
+
 </body>
 </html>
