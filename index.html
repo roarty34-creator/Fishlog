@@ -203,11 +203,12 @@ section{
   function saveCatch(){
     const data = getAll();
     data.push({
-      species: species.value,
-      place: place.value,
-      length: length.value,
-      date: new Date().toLocaleDateString()
-    });
+  id: Date.now(),
+  species: species.value,
+  place: place.value,
+  length: length.value,
+  date: new Date().toLocaleDateString()
+});
     saveAll(data);
 
     species.value = "";
