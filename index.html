@@ -108,19 +108,20 @@ section{ display:none; }
     <h3 style="margin:0 0 10px">Add Catch</h3>
 
     <label class="small">Spesie</label>
-    <input id="species" placeholder="bv. Kaapse Kabeljou" />
+    <input id="species" placeholder="bv. Kaapse Kabeljou" autocomplete="off">
 
     <label class="small">Plek</label>
-<input id="place" placeholder="bv. Stilbaai / Die Punt">
+<input id="place" placeholder="bv. Stilbaai / Die Punt" autocomplete="off">
 
-<label class="small">Koördinate</label>
+    <label class="small">Koördinate</label>
+    <input id="length" placeholder="bv. 65" autocomplete="off">
 <div style="display:flex; gap:10px;">
   <button type="button" onclick="getGPS()">Kry GPS</button>
-  <input id="coords" placeholder="-34.37, 20.85" readonly>
-</div>
+  <input id="coords" placeholder="-34.37, 20.85" readonly autocomplete="off">
+</div
 
 <label class="small">Lengte (cm)</label>
-<input id="length" placeholder="bv. 65">
+
 
     <button class="navbtn active" style="margin-top:10px" onclick="saveCatch()">Save</button>
   </div>
