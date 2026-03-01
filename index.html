@@ -529,7 +529,6 @@ function getAll(){
 function saveAll(data){
   localStorage.setItem("fishlog", JSON.stringify(data));
 }
-window.show = show;
 
 function saveCatch(){
   const data = getAll();
@@ -561,9 +560,8 @@ function clearForm(){
   place.value="";
   coords.value="";
 }
-
 function loadLog(){
-  list.innerHTML="";
+  list.innerHTML = "";
   const data = getAll();
 
   data.forEach(c=>{
@@ -575,12 +573,8 @@ function loadLog(){
       </div>
     `;
   });
-
-  show("log");
 }
 
-window.show = show;
-window.saveCatch = saveCatch;
 
 })();
 </script>
