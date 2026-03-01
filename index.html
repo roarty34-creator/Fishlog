@@ -148,71 +148,29 @@ section{
 (() => {
   const KEY = "fishlog";
 
-  const el = id => document.getElementById(id);
+  const el = (id) => document.getElementById(id);
   const species = el("species");
   const place = el("place");
   const length = el("length");
   const list = el("list");
 
-  function getAll(){
+  function getAll() {
     return JSON.parse(localStorage.getItem(KEY) || "[]");
   }
 
-  function saveAll(data){
+  function saveAll(data) {
     localStorage.setItem(KEY, JSON.stringify(data));
   }
 
-  function loadLog(){
-list.innerHTML += `
-  <div class="card">
-    <b>${c.species}</b><br>
-    ${c.place} • ${c.length}cm<br>
-    <small>${c.date}</small>
-    <div style="margin-top:10px">
-      <button class="navbtn" onclick="deleteCatch(${c.id})">Delete</button>
-    </div>
-  </div>
-`;
-    <div style="margin-top:10px">
-      <button class="navbtn" onclick="deleteCatch(${c.id})">Delete</button>
-    </div>
-  </div>
-`;
-    const data = getAll();
-    data.forEach(c => {
-      list.innerHTML += `
-        <div class="card">
-          <b>${c.species}</b><br>
-          ${c.place} • ${c.length}cm<br>
-          <small>${c.date}</small>
-        </div>
-      `;
-    });
-  }
-
-  function show(id){
-    document.querySelectorAll("section").forEach(s => s.style.display = "none");
-    const section = el(id);
-    if(section) section.style.display = "block";
-
-    // highlight top buttons
-    const bAdd = el("btnAdd");
-    const bLog = el("btnLog");
-    if(bAdd) bAdd.classList.toggle("active", id === "add");
-    if(bLog) bLog.classList.toggle("active", id === "log");
-
-    if(id === "log") loadLog();
-  }
-
-  function saveCatch(){
+  function saveCatch() {
     const data = getAll();
     data.push({
-  id: Date.now(),
-  species: species.value,
-  place: place.value,
-  length: length.value,
-  date: new Date().toLocaleDateString()
-});
+      id: Date.now(),
+      species: species.value.trim(),
+      place: place.value.trim(),
+      length: length.value.trim(),
+      date: new Date().toLocaleDateString()
+    });
     saveAll(data);
 
     species.value = "";
@@ -221,24 +179,65 @@ list.innerHTML += `
 
     show("log");
   }
-function deleteCatch(id){
-  const ok = confirm("Delete hierdie vang?");
-  if(!ok) return;
 
-  const data = getAll().filter(c => c.id !== id);
-  saveAll(data);
-  loadLog();
-}
-  // Maak funksies beskikbaar vir buttons
+  function deleteCatch(id) {
+    const ok = confirm("Delete hierdie vang?");
+    if (!ok) return;
+
+    // as id dalk string/nommer meng, maak seker dit vergelyk reg:
+    const data = getAll().filter(c => String(c.id) !== String(id));
+    saveAll(data);
+    loadLog();
+  }
+
+  function loadLog() {
+    list.innerHTML = "";
+    const data = getAll();
+
+    data.forEach(c => {
+      // OU items sonder id? Gee vir hulle een en save terug.
+      if (!c.id) c.id = Date.now() + Math.floor(Math.random() * 1000);
+
+      list.innerHTML += `
+        <div class="card">
+          <b>${c.species || ""}</b><br>
+          ${(c.place || "")} • ${(c.length || "")}cm<br>
+          <small>${c.date || ""}</small>
+          <div style="margin-top:10px">
+            <button class="navbtn" onclick="deleteCatch('${c.id}')">Delete</button>
+          </div>
+        </div>
+      `;
+    });
+
+    // save terug as ons ids moes byvoeg
+    saveAll(data);
+  }
+
+  function setActive(id){
+    const bAdd = el("btnAdd");
+    const bLog = el("btnLog");
+    if(!bAdd || !bLog) return;
+    bAdd.classList.toggle("active", id === "add");
+    bLog.classList.toggle("active", id === "log");
+  }
+
+  function show(id) {
+    document.querySelectorAll("section").forEach(s => s.style.display = "none");
+    el(id).style.display = "block";
+    setActive(id);
+    if (id === "log") loadLog();
+  }
+
+  // Maak funksies beskikbaar vir HTML onclick
   window.show = show;
-window.saveCatch = saveCatch;
-window.deleteCatch = deleteCatch;
+  window.saveCatch = saveCatch;
+  window.deleteCatch = deleteCatch;
 
   // START
   show("add");
 })();
   </script>
-
   
 
 </body>
