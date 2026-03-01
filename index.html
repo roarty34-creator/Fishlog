@@ -4,6 +4,29 @@
 <meta charset="UTF-8">
 <title>FishLog</title>
 <style>
+  .topnav{
+  display:inline-flex;
+  background:#0e1730;
+  padding:6px;
+  border-radius:999px;
+  border:1px solid var(--border);
+  gap:6px;
+  margin-bottom:20px;
+}
+
+.navbtn{
+  border:none;
+  background:transparent;
+  padding:8px 18px;
+  border-radius:999px;
+  font-weight:700;
+  color:var(--text);
+}
+
+.navbtn.active{
+  background:var(--accent);
+  color:#071022;
+}
 :root{
   --bg:#0b1220;
   --card:#101a2e;
@@ -77,19 +100,6 @@ section{
   gap:6px;
   margin-bottom:20px;
 }
-
-.navbtn{
-  border:none;
-  background:transparent;
-  padding:8px 18px;
-  border-radius:999px;
-  font-weight:700;
-}
-
-.navbtn.active{
-  background:var(--accent);
-  color:#071022;
-}
 </style>
 </head>
 <body>
@@ -154,13 +164,28 @@ section{
     bLog.classList.toggle("active", id === "log");
   }
 
-  function show(id){
-    document.querySelectorAll("section").forEach(s => s.style.display = "none");
-    el(id).style.display = "block";
+function show(id){
+  document.querySelectorAll("section").forEach(s => 
+    s.style.display = "none"
+  );
 
-    setActive(id);
-    if(id === "log") loadLog();
-  }
+  el(id).style.display = "block";
+
+  // Highlight knoppies
+  const bAdd = el("btnAdd");
+  const bLog = el("btnLog");
+
+if(bAdd && bLog){
+    bAdd.classList.toggle("active", id === "add");
+bLog.classList.toggle("active", id === "log");
+
+  if(id === "log") loadLog();
+}
+
+  window.show = show;
+window.saveCatch = saveCatch;
+
+show("add");
 
   function saveCatch(){
     const data = getAll();
