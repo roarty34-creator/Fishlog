@@ -576,16 +576,17 @@ function loadLog(){
     list.innerHTML += `
       <div class="card">
         <b>${c.species}</b><br>
-        ${c.place} • ${c.length}cm • ${c.weight}kg<br>
+        ${c.place} • ${c.length}cm
         <small>${c.date}</small>
       </div>
     `;
   });
+
+  show("log");
 }
 window.show = show;
 window.saveCatch = saveCatch;
-show("log");
-})();
+  })();
 </script>
 </body>
 </html>
