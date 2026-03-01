@@ -100,6 +100,17 @@ section{
   gap:6px;
   margin-bottom:20px;
 }
+  label.small{
+  display:block;
+  margin: 10px 0 6px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+#add .card{
+  max-width: 520px;
+}
 </style>
 </head>
 <body>
@@ -112,11 +123,20 @@ section{
 </div>
 
 <section id="add">
-<h3>Add Catch</h3>
-<input id="species" placeholder="Species"><br><br>
-<input id="place" placeholder="Place"><br><br>
-<input id="length" placeholder="Length (cm)"><br><br>
-<button onclick="saveCatch()">Save</button>
+  <div class="card">
+    <h3 style="margin:0 0 10px">Add Catch</h3>
+
+    <label class="small">Spesie</label>
+    <input id="species" placeholder="bv. Kaapse Kabeljou">
+
+    <label class="small">Plek</label>
+    <input id="place" placeholder="bv. Stilbaai / Die Punt">
+
+    <label class="small">Lengte (cm)</label>
+    <input id="length" placeholder="bv. 65">
+
+    <button class="navbtn active" style="margin-top:10px" onclick="saveCatch()">Save</button>
+  </div>
 </section>
 
 <section id="log">
