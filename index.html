@@ -217,11 +217,11 @@ i      --text:#e7eefc;
 window.saveCatch = saveCatch;
 
   function getAll(){
-    return JSON.parse(localStorage.getItem(KEY) || "[]");
+  return JSON.parse(localStorage.getItem("fishlog") || "[]");
   }
 
   function saveAll(data){
-    localStorage.setItem(KEY, JSON.stringify(data));
+  localStorage.setItem("fishlog", JSON.stringify(data));
   }
 
   function getTrips(){
