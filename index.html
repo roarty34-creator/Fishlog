@@ -140,13 +140,12 @@ section{ display:none; }
 (() => {
   const KEY = "fishlog";
 
-  const el = (id) => document.getElementById(id);
-  const species = el("species");
-  const place = el("place");
-  const length = el("length");
-  const list = el("list");
-  const coords = el("coords");
-
+  
+const species = el("species");
+const place = el("place");
+const coords = el("coords");
+const length = el("length");
+  
   function getAll() {
     return JSON.parse(localStorage.getItem(KEY) || "[]");
   }
