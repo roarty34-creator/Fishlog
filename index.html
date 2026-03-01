@@ -123,8 +123,8 @@ section{
 <h3>Catch Log</h3>
 <div id="list"></div>
 </section>
-  
-<script>
+
+  <script>
 (() => {
   const KEY = "fishlog";
 
@@ -156,36 +156,19 @@ section{
     });
   }
 
-  function setActive(id){
+  function show(id){
+    document.querySelectorAll("section").forEach(s => s.style.display = "none");
+    const section = el(id);
+    if(section) section.style.display = "block";
+
+    // highlight top buttons
     const bAdd = el("btnAdd");
     const bLog = el("btnLog");
-    if(!bAdd || !bLog) return;
-    bAdd.classList.toggle("active", id === "add");
-    bLog.classList.toggle("active", id === "log");
+    if(bAdd) bAdd.classList.toggle("active", id === "add");
+    if(bLog) bLog.classList.toggle("active", id === "log");
+
+    if(id === "log") loadLog();
   }
-
-function show(id){
-  document.querySelectorAll("section").forEach(s => 
-    s.style.display = "none"
-  );
-
-  el(id).style.display = "block";
-
-  // Highlight knoppies
-  const bAdd = el("btnAdd");
-  const bLog = el("btnLog");
-
-if(bAdd && bLog){
-    bAdd.classList.toggle("active", id === "add");
-bLog.classList.toggle("active", id === "log");
-
-  if(id === "log") loadLog();
-}
-
-  window.show = show;
-window.saveCatch = saveCatch;
-
-show("add");
 
   function saveCatch(){
     const data = getAll();
@@ -204,14 +187,16 @@ show("add");
     show("log");
   }
 
-  // Maak funksies beskikbaar vir jou buttons
+  // Maak funksies beskikbaar vir buttons
   window.show = show;
   window.saveCatch = saveCatch;
 
   // START
   show("add");
 })();
-</script>
+  </script>
+
+  
 
 </body>
 </html>
