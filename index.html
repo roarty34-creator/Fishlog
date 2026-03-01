@@ -292,39 +292,41 @@ show("add");   // bly op Add
   window.saveCatch = saveCatch;
 
   ().forEach(c => {
-    function loadLog(){
+    
+function loadLog(){
   const list = document.getElementById("list");
-  list.innerHTML = "";
-
-  fillTripFilter();
+  const tripFilterEl = document.getElementById("tripFilter");
+  if(!list) return;
 
   const data = getAll();
-  const selectedTrip = tripFilter.value;
+  const selectedTrip = tripFilterEl ? tripFilterEl.value : "";
 
   const filtered = selectedTrip
-    ? data.filter(c => String(c.trip).trim() === selectedTrip)
+    ? data.filter(c => String(c.trip || "").trim() === selectedTrip)
     : data;
 
+  list.innerHTML = "";
+
   if(!filtered.length){
-    list.innerHTML = `
-      <div class="card">
-        <div class="small">Geen vangste om te wys nie.</div>
-      </div>
-    `;
+    list.innerHTML = `<div class="card"><div class="small">Geen vangste om te wys nie.</div></div>`;
     return;
   }
 
   filtered.slice().reverse().forEach(c => {
+    const speciesTxt = c.species ? String(c.species) : "";
+    const tripTxt = c.trip ? String(c.trip) : "";
+    const placeTxt = c.place ? String(c.place) : "";
+    const coordsTxt = c.coords ? String(c.coords) : "";
+    const dateTxt = c.date ? String(c.date) : "";
+
     list.innerHTML += `
       <div class="card">
-        <b>Spesie:</b> ${escapeHtml(c.species || "")}<br>
-        <b>Trip:</b> ${escapeHtml(c.trip || "")}<br>
-
+        <b>Spesie:</b> ${speciesTxt}<br>
+        <b>Trip:</b> ${tripTxt}<br>
         ${c.length ? "<b>Lengte:</b> " + c.length + " cm<br>" : ""}
         ${c.weight ? "<b>Gewig:</b> " + c.weight + " kg<br>" : ""}
-        ${c.place ? "<b>Plek:</b> " + escapeHtml(c.place) + "<br>" : ""}
-        ${c.coords ? "<b>Koördinate:</b> " + escapeHtml(c.coords) + "<br>" : ""}
-
+        ${placeTxt ? "<b>Plek:</b> " + placeTxt + "<br>" : ""}
+        ${coordsTxt ? "<b>Koördinate:</b> " + coordsTxt + "<br>" : ""}
         ${c.photo ? `<img src="${c.photo}" alt="foto">` : ""}
 
         <div class="row" style="margin-top:10px">
@@ -332,15 +334,13 @@ show("add");   // bly op Add
           <button type="button" class="danger" onclick="deleteCatch('${c.id}')">Verwyder</button>
         </div>
 
-        <div class="small">Datum: ${escapeHtml(c.date || "")}</div>
+        <div class="small">Datum: ${dateTxt}</div>
+      
       </div>
     `;
   });
-    }
-        </div>
-      `;
-    });
-
+}
+  
     if(!filtered.length){
       list.innerHTML = `<div class="card"><div class="small">Geen vangste om te wys nie.</div></div>`;
     }
