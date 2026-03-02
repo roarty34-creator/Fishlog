@@ -119,12 +119,19 @@ section{ display:none; }
     </div>
 
     <label class="small">Lengte (cm)</label>
-    <input id="length" placeholder="bv. 65" autocomplete="off">
+<input id="length" placeholder="bv. 65" autocomplete="off">
 
-    <label class="small">Foto</label>
-    <input id="photo" type="file" accept="image/*" autocomplete="off">
+<label class="small">Foto</label>
 
-    <button class="navbtn active" style="margin-top:10px" onclick="saveCatch()">Save</button>
+<div style="display:flex; gap:10px; flex-wrap:wrap;">
+  <button type="button" onclick="document.getElementById('photoCamera').click()">📷 Kamera</button>
+  <button type="button" onclick="document.getElementById('photoGallery').click()">🖼 Gallery</button>
+</div>
+
+<input id="photoCamera" type="file" accept="image/*" capture="environment" style="display:none;">
+<input id="photoGallery" type="file" accept="image/*" style="display:none;">
+
+<button class="navbtn active" style="margin-top:10px" onclick="saveCatch()">Save</button>
   </div>
 </section>
 
