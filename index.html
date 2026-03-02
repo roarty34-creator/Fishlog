@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="af">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>FishLog</title>
 
 <style>
@@ -14,6 +14,7 @@
   --accent:#4f8cff;
   --border:#20304d;
 }
+
 body{
   margin:0;
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
@@ -21,7 +22,9 @@ body{
   color:var(--text);
   padding:20px;
 }
+
 h2{ margin-top:0; }
+
 button{
   background: transparent;
   color: var(--text);
@@ -30,8 +33,11 @@ button{
   border-radius: 999px;
   cursor: pointer;
   font-weight: 700;
+  transition: transform .06s ease, background .2s ease, border-color .2s ease;
 }
 button:hover{ border-color: var(--accent); }
+button:active{ transform: scale(0.98); }
+
 .topnav{
   display:inline-flex;
   background:#0e1730;
@@ -41,6 +47,7 @@ button:hover{ border-color: var(--accent); }
   gap:6px;
   margin-bottom:20px;
 }
+
 .navbtn{
   border:none;
   background:transparent;
@@ -53,6 +60,7 @@ button:hover{ border-color: var(--accent); }
   background:var(--accent);
   color:#071022;
 }
+
 .card{
   background: linear-gradient(180deg, #122042 0%, var(--card) 100%);
   border: 1px solid var(--border);
@@ -61,6 +69,7 @@ button:hover{ border-color: var(--accent); }
   margin: 10px 0;
   box-shadow: 0 10px 25px rgba(0,0,0,.25);
 }
+
 input, select{
   width:100%;
   padding: 10px;
@@ -69,7 +78,9 @@ input, select{
   background: #0e1730;
   color: var(--text);
   margin-bottom:10px;
+  outline:none;
 }
+
 label.small{
   display:block;
   margin: 10px 0 6px;
@@ -77,9 +88,41 @@ label.small{
   font-size: 12px;
   font-weight: 700;
 }
+
 #add .card{ max-width: 520px; }
+
 section{ display:none; }
-.smallmuted{ color:var(--muted); font-size:12px; }
+
+.smallMuted{ color:var(--muted); font-size:12px; }
+hr.sep{
+  border:0;
+  border-top:1px solid var(--border);
+  margin:12px 0;
+}
+
+.thumbRow{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  flex-wrap:wrap;
+}
+.thumb{
+  width:86px;
+  height:64px;
+  border-radius:12px;
+  border:1px solid var(--border);
+  object-fit:cover;
+  background:#0e1730;
+}
+
+.grid2{
+  display:grid;
+  grid-template-columns: 1fr;
+  gap:10px;
+}
+@media(min-width:720px){
+  .grid2{ grid-template-columns: 1fr 1fr; }
+}
 </style>
 </head>
 
@@ -106,17 +149,18 @@ section{ display:none; }
       <option>Silver (Bastermeid)</option>
       <option>Rooi Steenbras</option>
       <option>Yellow Belly (Rockod)</option>
+      <option>Garrick (Leervis)</option>
+      <option>Elf (Shad)</option>
     </select>
 
     <label class="small">Plek</label>
     <input id="place" placeholder="bv. Stilbaai / Die Punt" autocomplete="off">
 
     <label class="small">Koördinate</label>
-    <div style="display:flex; gap:10px; align-items:center;">
+    <div style="display:flex; gap:10px; flex-wrap:wrap;">
       <button type="button" onclick="getGPS()">Kry GPS</button>
-      <input id="coords" placeholder="-34.37, 20.85" readonly autocomplete="off">
+      <input id="coords" placeholder="-34.37, 20.85" readonly autocomplete="off" style="flex:1; min-width:200px;">
     </div>
-    <div class="smallmuted" style="margin-top:6px;">Tip: druk “Kry GPS”, dan “Save”.</div>
 
     <label class="small">Lengte (cm)</label>
     <input id="length" placeholder="bv. 65" inputmode="numeric" autocomplete="off">
@@ -125,19 +169,29 @@ section{ display:none; }
     <div style="display:flex; gap:10px; flex-wrap:wrap;">
       <button type="button" onclick="document.getElementById('photoCamera').click()">📷 Kamera</button>
       <button type="button" onclick="document.getElementById('photoGallery').click()">🖼 Gallery</button>
+      <span id="photoHint" class="smallMuted"></span>
     </div>
     <input id="photoCamera" type="file" accept="image/*" capture="environment" style="display:none;">
     <input id="photoGallery" type="file" accept="image/*" style="display:none;">
 
-    <button class="navbtn active" style="margin-top:12px" onclick="saveCatch()">Save</button>
+    <button class="navbtn active" style="margin-top:10px" onclick="saveCatch()">Save</button>
   </div>
 </section>
 
 <section id="log">
-  <h3>Catch Log</h3>
+  <h3 style="margin:0 0 8px">Catch Log</h3>
 
-  <div style="display:flex; gap:10px; margin-bottom:12px;">
+  <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
+    <button onclick="exportCSV()">Export CSV</button>
     <button onclick="clearAll()">Clear all</button>
+  </div>
+
+  <!-- STATS -->
+  <div class="grid2">
+    <div class="card" id="statsBox"></div>
+    <div class="card" id="speciesBox"></div>
+    <div class="card" id="spotBox"></div>
+    <div class="card" id="barsBox"></div>
   </div>
 
   <div id="list"></div>
@@ -148,153 +202,195 @@ section{ display:none; }
   const KEY = "fishlog";
 
   const el = (id) => document.getElementById(id);
+
   const species = el("species");
   const place   = el("place");
   const coords  = el("coords");
   const length  = el("length");
-  const list    = el("list");
 
-  function getAll(){
+  const list = el("list");
+
+  const statsBox   = el("statsBox");
+  const speciesBox = el("speciesBox");
+  const spotBox    = el("spotBox");
+  const barsBox    = el("barsBox");
+
+  const photoCamera = el("photoCamera");
+  const photoGallery = el("photoGallery");
+  const photoHint = el("photoHint");
+
+  function getAll() {
     return JSON.parse(localStorage.getItem(KEY) || "[]");
   }
-  function saveAll(data){
+
+  function saveAll(data) {
     localStorage.setItem(KEY, JSON.stringify(data));
   }
 
   function setActive(id){
     const bAdd = el("btnAdd");
     const bLog = el("btnLog");
+    if(!bAdd || !bLog) return;
     bAdd.classList.toggle("active", id === "add");
     bLog.classList.toggle("active", id === "log");
   }
 
-  function show(id){
+  function show(id) {
     document.querySelectorAll("section").forEach(s => s.style.display = "none");
     el(id).style.display = "block";
     setActive(id);
-    if(id === "log") loadLog();
+    if (id === "log") loadLog();
   }
 
+  // ---------- GPS ----------
   function getGPS(){
     if(!navigator.geolocation){
       alert("GPS nie beskikbaar nie.");
       return;
     }
+
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const lat = pos.coords.latitude.toFixed(6);
         const lon = pos.coords.longitude.toFixed(6);
         coords.value = lat + ", " + lon;
       },
-      () => alert("Kon nie ligging kry nie. Maak seker Location is aan."),
-      { enableHighAccuracy:true, timeout:10000 }
+      () => {
+        alert("Kon nie ligging kry nie. Maak seker Location is aan.");
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
     );
   }
 
-  function openMap(coord){
-    // coord = "-34.123, 20.456"
-    const url = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(coord);
-    window.open(url, "_blank");
+  // ---------- PHOTO HELPERS ----------
+  function fileToDataUrl(file){
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result || ""));
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
   }
 
-  function directionsTo(coord){
-    const url = "https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent(coord);
-    window.open(url, "_blank");
+  let pendingPhoto = ""; // dataURL
+
+  async function onPickPhoto(from){
+    try{
+      const input = from === "camera" ? photoCamera : photoGallery;
+      const file = input && input.files && input.files[0];
+      if(!file){
+        pendingPhoto = "";
+        if(photoHint) photoHint.textContent = "";
+        return;
+      }
+      pendingPhoto = await fileToDataUrl(file);
+      if(photoHint) photoHint.textContent = "Foto gekies ✅";
+    }catch(e){
+      pendingPhoto = "";
+      if(photoHint) photoHint.textContent = "";
+      alert("Kon nie foto lees nie.");
+    }
   }
 
-  function saveCatch(){
+  if(photoCamera){
+    photoCamera.addEventListener("change", () => onPickPhoto("camera"));
+  }
+  if(photoGallery){
+    photoGallery.addEventListener("change", () => onPickPhoto("gallery"));
+  }
+
+  // ---------- SAVE ----------
+  function saveCatch() {
     const data = getAll();
-    data.push({
+
+    const newCatch = {
       id: Date.now(),
       species: (species.value || "").trim(),
       place: (place.value || "").trim(),
       coords: (coords.value || "").trim(),
       length: (length.value || "").trim(),
-      date: new Date().toLocaleDateString()
-    });
+      dateISO: new Date().toISOString(),
+      date: new Date().toLocaleDateString(),
+      photo: pendingPhoto || ""
+    };
+
+    data.push(newCatch);
     saveAll(data);
 
-    // clear inputs (NET 1 keer)
+    // Clear fields
     species.value = "";
     place.value = "";
     coords.value = "";
     length.value = "";
 
-    const cam = el("photoCamera");
-    const gal = el("photoGallery");
-    if(cam) cam.value = "";
-    if(gal) gal.value = "";
+    pendingPhoto = "";
+    if(photoHint) photoHint.textContent = "";
+
+    const cam = document.getElementById("photoCamera");
+    const gal = document.getElementById("photoGallery");
+    if (cam) cam.value = "";
+    if (gal) gal.value = "";
 
     show("log");
   }
 
-  function loadLog(){
-    const data = getAll();
-    list.innerHTML = "";
-
-    if(data.length === 0){
-      list.innerHTML = `<div class="card"><small>No catches yet.</small></div>`;
-      return;
-    }
-
-    data.slice().reverse().forEach((c) => {
-      const safeSpecies = (c.species || "").replaceAll("<","&lt;").replaceAll(">","&gt;");
-      const safePlace   = (c.place || "").replaceAll("<","&lt;").replaceAll(">","&gt;");
-      const safeLen     = (c.length || "").replaceAll("<","&lt;").replaceAll(">","&gt;");
-      const safeDate    = (c.date || "").replaceAll("<","&lt;").replaceAll(">","&gt;");
-      const coord       = (c.coords || "").trim();
-
-      const coordBlock = coord ? `
-        <small>📍 ${coord}</small><br>
-        <button onclick="openMap('${encodeURIComponent(coord)}')">Maps</button>
-        <button onclick="directionsTo('${encodeURIComponent(coord)}')">Directions</button>
-        <br><br>
-      ` : `<br>`;
-
-      list.innerHTML += `
-        <div class="card">
-          <b>${safeSpecies || "•"}</b><br>
-          ${safePlace || ""} ${safeLen ? "• " + safeLen + "cm" : ""}<br>
-          <small>${safeDate}</small><br><br>
-          ${coordBlock}
-          <button onclick="editCatch(${c.id})">Edit</button>
-          <button onclick="deleteCatch(${c.id})">Delete</button>
-        </div>
-      `;
-    });
+  // ---------- MAPS ----------
+  function openMap(coord){
+    // coord like "-34.123, 21.456"
+    const q = encodeURIComponent(coord);
+    // works for Google Maps web + opens app often
+    window.open("https://www.google.com/maps?q=" + q, "_blank");
   }
 
-  function deleteCatch(id){
+  function directionsTo(coord){
+    const q = encodeURIComponent(coord);
+    window.open("https://www.google.com/maps/dir/?api=1&destination=" + q, "_blank");
+  }
+
+  // ---------- VIEW PHOTO ----------
+  function viewPhoto(id){
+    const data = getAll();
+    const c = data.find(x => String(x.id) === String(id));
+    if(!c || !c.photo) return;
+    // open image in new tab
+    const w = window.open("", "_blank");
+    if(!w) return;
+    w.document.write(`<img src="${c.photo}" style="max-width:100%;height:auto;display:block;margin:0 auto;background:#000">`);
+  }
+
+  // ---------- EDIT / DELETE ----------
+  function deleteCatch(id) {
     const ok = confirm("Delete hierdie vang?");
-    if(!ok) return;
-    const data = getAll().filter(x => String(x.id) !== String(id));
+    if (!ok) return;
+
+    const data = getAll().filter(c => String(c.id) !== String(id));
     saveAll(data);
     loadLog();
   }
 
   function editCatch(id){
     const data = getAll();
-    const idx = data.findIndex(x => String(x.id) === String(id));
+    const idx = data.findIndex(c => String(c.id) === String(id));
     if(idx === -1) return;
 
     const c = data[idx];
 
-    const ns = prompt("Spesie:", c.species || "");
-    if(ns === null) return;
+    const newSpecies = prompt("Spesie:", c.species || "");
+    if(newSpecies === null) return;
 
-    const np = prompt("Plek:", c.place || "");
-    if(np === null) return;
+    const newPlace = prompt("Plek:", c.place || "");
+    if(newPlace === null) return;
 
-    const nc = prompt("Koördinate:", c.coords || "");
-    if(nc === null) return;
+    const newCoords = prompt("Koördinate:", c.coords || "");
+    if(newCoords === null) return;
 
-    const nl = prompt("Lengte (cm):", c.length || "");
-    if(nl === null) return;
+    const newLength = prompt("Lengte (cm):", c.length || "");
+    if(newLength === null) return;
 
-    c.species = ns.trim();
-    c.place   = np.trim();
-    c.coords  = nc.trim();
-    c.length  = nl.trim();
+    c.species = newSpecies.trim();
+    c.place   = newPlace.trim();
+    c.coords  = newCoords.trim();
+    c.length  = newLength.trim();
 
     saveAll(data);
     loadLog();
@@ -307,19 +403,251 @@ section{ display:none; }
     loadLog();
   }
 
-  // maak beskikbaar vir onclick=""
+  // ---------- CSV EXPORT ----------
+  function exportCSV(){
+    const data = getAll();
+    if(!data.length){
+      alert("Geen data om te export nie.");
+      return;
+    }
+
+    const header = ["id","date","species","place","coords","length_cm","has_photo"];
+    const rows = data.map(c => ([
+      c.id,
+      c.date || "",
+      (c.species || "").replaceAll('"','""'),
+      (c.place || "").replaceAll('"','""'),
+      (c.coords || "").replaceAll('"','""'),
+      (c.length || "").replaceAll('"','""'),
+      c.photo ? "yes" : "no"
+    ]));
+
+    const csv = [header, ...rows]
+      .map(r => r.map(v => `"${String(v ?? "")}"`).join(","))
+      .join("\n");
+
+    const blob = new Blob([csv], {type:"text/csv;charset=utf-8"});
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "fishlog.csv";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+
+    URL.revokeObjectURL(url);
+  }
+
+  // ---------- STATS ----------
+  function monthKey(dateISO){
+    // YYYY-MM
+    if(!dateISO) return "";
+    const d = new Date(dateISO);
+    if(isNaN(d.getTime())) return "";
+    const y = d.getFullYear();
+    const m = String(d.getMonth()+1).padStart(2,"0");
+    return `${y}-${m}`;
+  }
+
+  function computeStats(data){
+    const total = data.length;
+
+    // lengths numeric
+    const nums = data
+      .map(c => Number(String(c.length || "").replace(",", ".")))
+      .filter(n => Number.isFinite(n) && n > 0);
+
+    const avg = nums.length ? (nums.reduce((a,b)=>a+b,0) / nums.length) : 0;
+    const max = nums.length ? Math.max(...nums) : 0;
+
+    // last date
+    const last = data
+      .map(c => ({ id:c.id, iso:c.dateISO || "", date:c.date || "" }))
+      .sort((a,b) => String(b.iso).localeCompare(String(a.iso)))[0];
+
+    // counts by species/place
+    const bySpecies = new Map();
+    const byPlace = new Map();
+    const byMonth = new Map();
+
+    data.forEach(c => {
+      const s = (c.species || "").trim() || "(No species)";
+      const p = (c.place || "").trim() || "(No place)";
+      bySpecies.set(s, (bySpecies.get(s) || 0) + 1);
+      byPlace.set(p, (byPlace.get(p) || 0) + 1);
+
+      const mk = monthKey(c.dateISO) || "(unknown)";
+      byMonth.set(mk, (byMonth.get(mk) || 0) + 1);
+    });
+
+    const speciesSorted = [...bySpecies.entries()].sort((a,b)=>b[1]-a[1]);
+    const placeSorted   = [...byPlace.entries()].sort((a,b)=>b[1]-a[1]);
+    const monthSorted   = [...byMonth.entries()].sort((a,b)=>String(a[0]).localeCompare(String(b[0])));
+
+    return { total, avg, max, last, speciesSorted, placeSorted, monthSorted };
+  }
+
+  function renderStats(data){
+    if(!statsBox || !speciesBox || !spotBox || !barsBox) return;
+
+    const s = computeStats(data);
+
+    const avgTxt = s.avg ? s.avg.toFixed(1) + " cm" : "-";
+    const maxTxt = s.max ? s.max.toFixed(0) + " cm" : "-";
+    const lastTxt = s.last ? (s.last.date || "-") : "-";
+
+    statsBox.innerHTML = `
+      <b>Stats</b><hr class="sep">
+      <div><b>Total catches:</b> ${s.total}</div>
+      <div><b>Average length:</b> ${avgTxt}</div>
+      <div><b>Biggest length:</b> ${maxTxt}</div>
+      <div><b>Last catch:</b> ${lastTxt}</div>
+    `;
+
+    const topSpecies = s.speciesSorted[0] ? s.speciesSorted[0][0] : "-";
+    const speciesList = s.speciesSorted.length
+      ? s.speciesSorted.map(([name,n]) => `• ${name} (${n})`).join("<br>")
+      : "No data";
+
+    speciesBox.innerHTML = `
+      <b>Species</b><hr class="sep">
+      <div><b>Top species:</b> ${topSpecies}</div>
+      <div style="margin-top:8px"><b>By species:</b><br><br>${speciesList}</div>
+    `;
+
+    const topPlace = s.placeSorted[0] ? s.placeSorted[0][0] : "-";
+    const placeList = s.placeSorted.length
+      ? s.placeSorted.map(([name,n]) => `• ${name} (${n})`).join("<br>")
+      : "No data";
+
+    spotBox.innerHTML = `
+      <b>Spots</b><hr class="sep">
+      <div><b>Top spot:</b> ${topPlace}</div>
+      <div style="margin-top:8px"><b>By place:</b><br><br>${placeList}</div>
+    `;
+
+    // Bars per month
+    if(s.monthSorted.length){
+      const maxMonth = Math.max(...s.monthSorted.map(([,n])=>n));
+      const rows = s.monthSorted.map(([m,n]) => {
+        const w = maxMonth ? Math.round((n/maxMonth)*100) : 0;
+        return `
+          <div style="margin-bottom:8px">
+            <div style="display:flex; justify-content:space-between; gap:10px;">
+              <span>${m}</span><span>${n}</span>
+            </div>
+            <div style="background:#1a2745;border-radius:6px;overflow:hidden;height:8px;margin-top:4px;">
+              <div style="width:${w}%;background:var(--accent);height:100%;"></div>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      barsBox.innerHTML = `
+        <b>Per month</b><hr class="sep">
+        ${rows}
+      `;
+    }else{
+      barsBox.innerHTML = `
+        <b>Per month</b><hr class="sep">
+        <div class="smallMuted">No data</div>
+      `;
+    }
+  }
+
+  // ---------- LOG RENDER ----------
+  function esc(s){
+    return String(s || "")
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;");
+  }
+
+  function loadLog(){
+    if(!list) return;
+
+    list.innerHTML = "";
+    const data = getAll();
+
+    renderStats(data);
+
+    if(data.length === 0){
+      list.innerHTML = `<div class="card"><small>No catches yet.</small></div>`;
+      return;
+    }
+
+    // newest first
+    const sorted = [...data].sort((a,b)=> String(b.dateISO||"").localeCompare(String(a.dateISO||"")));
+
+    sorted.forEach(c => {
+      const safeSpecies = esc(c.species);
+      const safePlace   = esc(c.place);
+      const safeLen     = esc(c.length);
+      const safeDate    = esc(c.date);
+      const hasCoords   = (c.coords || "").trim().length > 0;
+      const coordShow   = esc(c.coords || "");
+
+      const hasPhoto = !!(c.photo && String(c.photo).startsWith("data:image"));
+      const thumb = hasPhoto ? `<img class="thumb" src="${c.photo}" alt="photo">` : "";
+
+      list.innerHTML += `
+        <div class="card">
+          <b>${safeSpecies || "(No species)"}</b><br>
+          ${safePlace || "(No place)"} • ${safeLen ? safeLen + "cm" : "-"}<br>
+          <small>${safeDate || ""}</small><br><br>
+
+          ${hasCoords ? `
+            <small>📍 ${coordShow}</small><br>
+            <div style="display:flex; gap:10px; flex-wrap:wrap; margin:8px 0 12px;">
+              <button onclick="openMap('${encodeURIComponent(c.coords)}')">Maps</button>
+              <button onclick="directionsTo('${encodeURIComponent(c.coords)}')">Directions</button>
+            </div>
+          ` : ``}
+
+          ${hasPhoto ? `
+            <div class="thumbRow" style="margin:8px 0 12px;">
+              ${thumb}
+              <button onclick="viewPhoto(${c.id})">View photo</button>
+            </div>
+          ` : ``}
+
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button onclick="editCatch(${c.id})">Edit</button>
+            <button onclick="deleteCatch(${c.id})">Delete</button>
+          </div>
+        </div>
+      `;
+    });
+  }
+
+  // IMPORTANT: decode in openMap/directionsTo from encoded coord string
+  function openMap(encodedCoord){
+    const coord = decodeURIComponent(encodedCoord || "");
+    const q = encodeURIComponent(coord);
+    window.open("https://www.google.com/maps?q=" + q, "_blank");
+  }
+
+  function directionsTo(encodedCoord){
+    const coord = decodeURIComponent(encodedCoord || "");
+    const q = encodeURIComponent(coord);
+    window.open("https://www.google.com/maps/dir/?api=1&destination=" + q, "_blank");
+  }
+
+  // ---------- expose for onclick ----------
   window.show = show;
-  window.getGPS = getGPS;
   window.saveCatch = saveCatch;
   window.loadLog = loadLog;
   window.deleteCatch = deleteCatch;
   window.editCatch = editCatch;
   window.clearAll = clearAll;
+  window.getGPS = getGPS;
+  window.openMap = openMap;
+  window.directionsTo = directionsTo;
+  window.viewPhoto = viewPhoto;
+  window.exportCSV = exportCSV;
 
-  // hierdie twee ontvang ENCODED string uit HTML
-  window.openMap = (enc) => openMap(decodeURIComponent(enc));
-  window.directionsTo = (enc) => directionsTo(decodeURIComponent(enc));
-
+  // START
   show("add");
 })();
 </script>
