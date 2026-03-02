@@ -122,6 +122,8 @@ section{ display:none; }
     <label class="small">Lengte (cm)</label>
     <input id="length" placeholder="bv. 65" autocomplete="off">
 
+    <label class="small">Foto</label>
+<input id="photo" type="file" accept="image/*" capture="environment" autocomplete="off">
     <button class="navbtn active" style="margin-top:10px" onclick="saveCatch()">Save</button>
   </div>
 </section>
@@ -147,6 +149,7 @@ section{ display:none; }
   const coords  = el("coords");
   const length  = el("length");
   const list    = el("list");
+  const photo = el("photo");
 
   function getAll() {
     return JSON.parse(localStorage.getItem(KEY) || "[]");
@@ -171,25 +174,34 @@ section{ display:none; }
     if (id === "log") loadLog();
   }
 
-  function saveCatch() {
-    const data = getAll();
-    data.push({
-      id: Date.now(),
-      species: species.value.trim(),
-      place: place.value.trim(),
-      coords: coords.value.trim(),
-      length: length.value.trim(),
-      date: new Date().toLocaleDateString()
-    });
-    saveAll(data);
+  async function saveCatch() {
+  const data = getAll();
 
-    // clear inputs (GPS ook!)
-    species.value = "";
-    place.value = "";
-    coords.value = "";
-    length.value = "";
+  // foto -> base64 (as daar een is)
+  let photoData = "";
+  if (photo.files && photo.files[0]) {
+    photoData = await fileToDataUrl(photo.files[0]);
+  }
 
-    show("log");
+  data.push({
+    id: Date.now(),
+    species: species.value.trim(),
+    place: place.value.trim(),
+    coords: coords.value.trim(),
+    length: length.value.trim(),
+    photo: photoData,              // 👈 foto word hier gestoor
+    date: new Date().toLocaleDateString()
+  });
+
+  saveAll(data);
+
+  species.value = "";
+  place.value = "";
+  coords.value = "";
+  length.value = "";
+  photo.value = "";                // 👈 maak foto veld leeg
+
+  show("log");
   }
 
   function getGPS(){
@@ -243,17 +255,37 @@ section{ display:none; }
         <button onclick="openMap('${c.coords}')">Maps</button>
         <button onclick="directionsTo('${c.coords}')">Directions</button>
         <br><br>
-      ` : `<br>`}
+      ` : `<br>`
+    
+        ${c.photo ? `
+  <img src="${c.photo}" style="width:100%;border-radius:14px;margin-top:10px;border:1px solid var(--border);">
+  <br><br>
+` : ``}
 
       <button onclick="editCatch(${c.id})">Edit</button>
       <button onclick="deleteCatch(${c.id})">Delete</button>
     </div>
   `;
 });
-  }
+  } 
+
+function fileToDataUrl(file){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ""));
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
 function deleteCatch(id) {
-    const ok = confirm("Delete hierdie vang?");
-    if (!ok) return;
+  const ok = confirm("Delete hierdie vang?");
+  if (!ok) return;
+
+  const data = getAll().filter(c => String(c.id) !== String(id));
+  saveAll(data);
+  loadLog();
+}
 
     const data = getAll().filter(c => String(c.id) !== String(id));
     saveAll(data);
