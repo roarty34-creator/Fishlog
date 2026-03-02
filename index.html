@@ -32,9 +32,11 @@ button{
   border-radius: 999px;
   cursor: pointer;
   font-weight: 700;
+  transition: transform .06s ease, background .2s ease, border-color .2s ease;
 }
 
 button:hover{ border-color: var(--accent); }
+button:active{ transform: scale(0.98); }
 
 .topnav{
   display:inline-flex;
@@ -66,6 +68,7 @@ button:hover{ border-color: var(--accent); }
   border-radius: 18px;
   padding: 14px;
   margin: 10px 0;
+  box-shadow: 0 10px 25px rgba(0,0,0,.25);
 }
 
 input{
@@ -86,12 +89,13 @@ label.small{
   font-weight: 700;
 }
 
+#add .card{ max-width: 520px; }
+
 section{ display:none; }
 </style>
 </head>
 
 <body>
-
 <h2>FishLog</h2>
 
 <div class="topnav">
@@ -101,22 +105,22 @@ section{ display:none; }
 
 <section id="add">
   <div class="card">
-    <h3>Add Catch</h3>
+    <h3 style="margin:0 0 10px">Add Catch</h3>
 
     <label class="small">Spesie</label>
-    <input id="species" autocomplete="off">
+    <input id="species" placeholder="bv. Kaapse Kabeljou" autocomplete="off">
 
     <label class="small">Plek</label>
-    <input id="place" autocomplete="off">
+    <input id="place" placeholder="bv. Stilbaai / Die Punt" autocomplete="off">
 
     <label class="small">Koördinate</label>
     <div style="display:flex; gap:10px;">
       <button type="button" onclick="getGPS()">Kry GPS</button>
-      <input id="coords" readonly autocomplete="off">
+      <input id="coords" placeholder="-34.37, 20.85" readonly autocomplete="off">
     </div>
 
     <label class="small">Lengte (cm)</label>
-    <input id="length" autocomplete="off">
+    <input id="length" placeholder="bv. 65" autocomplete="off">
 
     <button class="navbtn active" style="margin-top:10px" onclick="saveCatch()">Save</button>
   </div>
@@ -124,144 +128,163 @@ section{ display:none; }
 
 <section id="log">
   <h3>Catch Log</h3>
-  <button onclick="clearAll()">Clear all</button>
+
+  <div style="display:flex; gap:10px; margin-bottom:12px;">
+    <button onclick="clearAll()">Clear all</button>
+  </div>
+
   <div id="list"></div>
 </section>
 
 <script>
 (() => {
+  const KEY = "fishlog";
 
-const KEY = "fishlog";
+  const el = (id) => document.getElementById(id);
 
-const el = id => document.getElementById(id);
-const species = el("species");
-const place = el("place");
-const coords = el("coords");
-const length = el("length");
-const list = el("list");
+  const species = el("species");
+  const place   = el("place");
+  const coords  = el("coords");
+  const length  = el("length");
+  const list    = el("list");
 
-function getAll(){
-  return JSON.parse(localStorage.getItem(KEY) || "[]");
-}
-
-function saveAll(data){
-  localStorage.setItem(KEY, JSON.stringify(data));
-}
-
-function show(id){
-  document.querySelectorAll("section").forEach(s => s.style.display="none");
-  el(id).style.display="block";
-
-  el("btnAdd").classList.toggle("active", id==="add");
-  el("btnLog").classList.toggle("active", id==="log");
-
-  if(id==="add"){
-    species.value="";
-    place.value="";
-    coords.value="";
-    length.value="";
+  function getAll() {
+    return JSON.parse(localStorage.getItem(KEY) || "[]");
   }
 
-  if(id==="log") loadLog();
-}
-
-function saveCatch(){
-  const data=getAll();
-
-  data.push({
-    id:Date.now(),
-    species:species.value.trim(),
-    place:place.value.trim(),
-    coords:coords.value.trim(),
-    length:length.value.trim(),
-    date:new Date().toLocaleDateString()
-  });
-
-  saveAll(data);
-  show("log");
-}
-
-function getGPS(){
-  if(!navigator.geolocation){
-    alert("GPS nie beskikbaar nie.");
-    return;
+  function saveAll(data) {
+    localStorage.setItem(KEY, JSON.stringify(data));
   }
 
-  navigator.geolocation.getCurrentPosition(
-    pos=>{
-      const lat=pos.coords.latitude.toFixed(6);
-      const lon=pos.coords.longitude.toFixed(6);
-      coords.value=lat+", "+lon;
-    },
-    ()=>alert("Kon nie ligging kry nie."),
-    {enableHighAccuracy:true,timeout:10000}
-  );
-}
-function openMap(coordStr){
-  if(!coordStr) return;
-  const url = "https://www.google.com/maps?q=" + encodeURIComponent(coordStr);
-  window.open(url, "_blank");
-}
-
-function directionsTo(coordStr){
-  if(!coordStr) return;
-  const url = "https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent(coordStr);
-  window.open(url, "_blank");
-}
-function loadLog(){
-  list.innerHTML="";
-  const data=getAll();
-
-  if(data.length===0){
-    list.innerHTML=`<div class="card">No catches yet.</div>`;
-    return;
+  function setActive(id){
+    const bAdd = el("btnAdd");
+    const bLog = el("btnLog");
+    if(!bAdd || !bLog) return;
+    bAdd.classList.toggle("active", id === "add");
+    bLog.classList.toggle("active", id === "log");
   }
 
-  data.forEach(c=>{
-    const coord = c.coords || "";
-    const coordSafe = coord.replace(/'/g, "\\'");
+  function show(id) {
+    document.querySelectorAll("section").forEach(s => s.style.display = "none");
+    el(id).style.display = "block";
+    setActive(id);
+    if (id === "log") loadLog();
+  }
 
-    list.innerHTML += `
-      <div class="card">
-        <b>${c.species}</b><br>
-        ${c.place} • ${c.length}cm<br>
-        <small>${c.date}</small><br>
+  function saveCatch() {
+    const data = getAll();
+    data.push({
+      id: Date.now(),
+      species: species.value.trim(),
+      place: place.value.trim(),
+      coords: coords.value.trim(),
+      length: length.value.trim(),
+      date: new Date().toLocaleDateString()
+    });
+    saveAll(data);
 
-        ${coord ? `
-          <small>📍 ${coord}</small><br>
-          <button onclick="openMap('${coordSafe}')">Maps</button>
-          <button onclick="directionsTo('${coordSafe}')">Directions</button>
-          <br><br>
-        ` : `<br>`}
+    // clear inputs (GPS ook!)
+    species.value = "";
+    place.value = "";
+    coords.value = "";
+    length.value = "";
 
-        <button onclick="deleteCatch(${c.id})">Delete</button>
-      </div>
-    `;
-  });
-}
-}
+    show("log");
+  }
 
-function deleteCatch(id){
-  const data=getAll().filter(c=>String(c.id)!==String(id));
-  saveAll(data);
-  loadLog();
-}
+  function getGPS(){
+    if(!navigator.geolocation){
+      alert("GPS nie beskikbaar nie.");
+      return;
+    }
 
-function clearAll(){
-  if(confirm("Delete ALL catches?")){
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const lat = pos.coords.latitude.toFixed(6);
+        const lon = pos.coords.longitude.toFixed(6);
+        coords.value = lat + ", " + lon;
+      },
+      () => {
+        alert("Kon nie ligging kry nie. Maak seker Location is aan.");
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  }
+
+  // Maps helpers
+  function openMap(coordStr){
+    const url = "https://www.google.com/maps?q=" + encodeURIComponent(coordStr);
+    window.open(url, "_blank");
+  }
+
+  function directionsTo(coordStr){
+    const url = "https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent(coordStr);
+    window.open(url, "_blank");
+  }
+
+  function loadLog(){
+    list.innerHTML = "";
+    const data = getAll();
+
+    if(data.length === 0){
+      list.innerHTML = `<div class="card"><small>No catches yet.</small></div>`;
+      return;
+    }
+
+    data.forEach(c => {
+      const safeSpecies = (c.species || "").replaceAll("<","&lt;").replaceAll(">","&gt;");
+      const safePlace   = (c.place || "").replaceAll("<","&lt;").replaceAll(">","&gt;");
+      const safeLen     = (c.length || "").replaceAll("<","&lt;").replaceAll(">","&gt;");
+      const safeDate    = (c.date || "").replaceAll("<","&lt;").replaceAll(">","&gt;");
+      const safeCoords  = (c.coords || "").replaceAll("<","&lt;").replaceAll(">","&gt;");
+
+      list.innerHTML += `
+        <div class="card">
+          <b>${safeSpecies}</b><br>
+          ${safePlace} • ${safeLen}cm<br>
+          <small>${safeDate}</small><br>
+
+          ${c.coords ? `
+            <small>📍 ${safeCoords}</small><br>
+            <button onclick="openMap(this.dataset.c)" data-c="${safeCoords}">Maps</button>
+            <button onclick="directionsTo(this.dataset.c)" data-c="${safeCoords}">Directions</button>
+            <br><br>
+          ` : `<br>`}
+
+          <button onclick="deleteCatch(${c.id})">Delete</button>
+        </div>
+      `;
+    });
+  }
+
+  function deleteCatch(id) {
+    const ok = confirm("Delete hierdie vang?");
+    if (!ok) return;
+
+    const data = getAll().filter(c => String(c.id) !== String(id));
+    saveAll(data);
+    loadLog();
+  }
+
+  function clearAll(){
+    const ok = confirm("Are you sure you want to delete ALL catches?");
+    if(!ok) return;
     saveAll([]);
     loadLog();
   }
 
-window.show=show;
-window.saveCatch=saveCatch;
-window.deleteCatch=deleteCatch;
-window.clearAll=clearAll;
-window.getGPS=getGPS;
-window.openMap = openMap;
-window.directionsTo = directionsTo;
-show("add");
+  // maak beskikbaar vir HTML onclick=""
+  window.show = show;
+  window.saveCatch = saveCatch;
+  window.loadLog = loadLog;
+  window.deleteCatch = deleteCatch;
+  window.clearAll = clearAll;
+  window.getGPS = getGPS;
+  window.openMap = openMap;
+  window.directionsTo = directionsTo;
 
+  // START
+  show("add");
 })();
 </script>
 
