@@ -197,7 +197,11 @@ function getGPS(){
     {enableHighAccuracy:true,timeout:10000}
   );
 }
-
+function openMap(coordStr){
+  if(!coordStr) return;
+  const url = "https://www.google.com/maps?q=" + encodeURIComponent(coordStr);
+  window.open(url, "_blank");
+}
 function loadLog(){
   list.innerHTML="";
   const data=getAll();
@@ -213,7 +217,8 @@ function loadLog(){
         <b>${c.species}</b><br>
         ${c.place} • ${c.length}cm<br>
         <small>${c.date}</small><br>
-        <small>📍 ${c.coords}</small><br><br>
+        ${c.coords ? `<small>📍 ${c.coords}</small><br>
+<button onclick="openMap('${c.coords}')">Open in Google Maps</button><br><br>` : `<br>`}
         <button onclick="deleteCatch(${c.id})">Delete</button>
       </div>
     `;
@@ -238,7 +243,7 @@ window.saveCatch=saveCatch;
 window.deleteCatch=deleteCatch;
 window.clearAll=clearAll;
 window.getGPS=getGPS;
-
+window.openMap = openMap;
 show("add");
 
 })();
