@@ -357,38 +357,67 @@ section{ display:none; }
     saveAll([]);
     loadLog();
   }
+function loadStats(){
+  const data = getAll();
+  const total = data.length;
 
-  function loadStats(){
-    const data = getAll();
-    const total = data.length;
+  // lengths
+  const lengths = data
+    .map(c => parseFloat(String(c.length || "").replace(",", ".")))
+    .filter(n => Number.isFinite(n));
 
-    const lengths = data
-      .map(c => parseFloat(String(c.length || "").replace(",", ".")))
-      .filter(n => Number.isFinite(n));
+  const avg = lengths.length ? (lengths.reduce((a,b)=>a+b,0)/lengths.length) : 0;
+  const max = lengths.length ? Math.max(...lengths) : 0;
 
-    const avg = lengths.length ? (lengths.reduce((a,b)=>a+b,0)/lengths.length) : 0;
-    const max = lengths.length ? Math.max(...lengths) : 0;
+  // counts per species
+  const speciesCounts = {};
+  data.forEach(c => {
+    const sp = (c.species || "").trim() || "Onbekend";
+    speciesCounts[sp] = (speciesCounts[sp] || 0) + 1;
+  });
+  const speciesSorted = Object.entries(speciesCounts).sort((a,b)=>b[1]-a[1]);
+  const topSpecies = speciesSorted[0]?.[0] || "—";
+  const topSpeciesN = speciesSorted[0]?.[1] || 0;
 
-    const counts = {};
-    data.forEach(c => {
-      const sp = (c.species || "").trim() || "Onbekend";
-      counts[sp] = (counts[sp] || 0) + 1;
-    });
+  // counts per spot/place
+  const placeCounts = {};
+  data.forEach(c => {
+    const pl = (c.place || "").trim() || "Onbekend";
+    placeCounts[pl] = (placeCounts[pl] || 0) + 1;
+  });
+  const placeSorted = Object.entries(placeCounts).sort((a,b)=>b[1]-a[1]);
+  const topPlace = placeSorted[0]?.[0] || "—";
+  const topPlaceN = placeSorted[0]?.[1] || 0;
 
-    const sorted = Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+  // last catch date (best effort)
+  const lastDate = data.length ? (data[data.length-1].date || "—") : "—";
 
-    statsBox.innerHTML = `
-      <b>Total catches:</b> ${total}<br>
-      <b>Average length:</b> ${avg ? avg.toFixed(1) : "—"} cm<br>
-      <b>Biggest length:</b> ${max ? max.toFixed(1) : "—"} cm
-    `;
+  statsBox.innerHTML = `
+    <b>Total catches:</b> ${total}<br>
+    <b>Average length:</b> ${avg ? avg.toFixed(1) : "—"} cm<br>
+    <b>Biggest length:</b> ${max ? max.toFixed(1) : "—"} cm<br>
+    <b>Last catch:</b> ${lastDate}
+  `;
 
-    speciesBox.innerHTML = `
-      <b>By species:</b><br><br>
-      ${sorted.length
-        ? sorted.map(([name,n]) => `• ${name}: ${n}`).join("<br>")
-        : "<small>No data yet.</small>"
-      }
+  speciesBox.innerHTML = `
+    <b>Top species:</b> ${topSpecies} (${topSpeciesN})<br><br>
+    <b>By species:</b><br><br>
+    ${speciesSorted.length
+      ? speciesSorted.map(([name,n]) => `• ${name}: ${n}`).join("<br>")
+      : "<small>No data yet.</small>"
+    }
+  `;
+
+  spotBox.innerHTML = `
+    <b>Top spot:</b> ${topPlace} (${topPlaceN})<br><br>
+    <b>By place:</b><br><br>
+    ${placeSorted.length
+      ? placeSorted.map(([name,n]) => `• ${name}: ${n}`).join("<br>")
+      : "<small>No data yet.</small>"
+    }
+  `;
+}
+  
     `;
   }
 
