@@ -223,38 +223,74 @@ section{ display:none; }
   }
 
   function loadLog(){
-    list.innerHTML = "";
-    const data = getAll();
+  list.innerHTML = "";
+  const data = getAll();
 
-    if(data.length === 0){
-      list.innerHTML = `<div class="card"><small>No catches yet.</small></div>`;
-      return;
-    }
+  if(data.length === 0){
+    list.innerHTML = `<div class="card"><small>No catches yet.</small></div>`;
+    return;
+  }
 
-    data.forEach(c => {
-      const safeSpecies = (c.species || "").replaceAll("<","&lt;").replaceAll(">","&gt;");
-      const safePlace   = (c.place || "").replaceAll("<","&lt;").replaceAll(">","&gt;");
-      const safeLen     = (c.length || "").replaceAll("<","&lt;").replaceAll(">","&gt;");
-      const safeDate    = (c.date || "").replaceAll("<","&lt;").replaceAll(">","&gt;");
-      const safeCoords  = (c.coords || "").replaceAll("<","&lt;").replaceAll(">","&gt;");
+  data.forEach(c => {
+    const safeSpecies = c.species || "";
+    const safePlace   = c.place || "";
+    const safeLen     = c.length || "";
+    const safeDate    = c.date || "";
+    const safeCoords  = c.coords || "";
 
-      list.innerHTML += `
-        <div class="card">
-          <b>${safeSpecies}</b><br>
-          ${safePlace} • ${safeLen}cm<br>
-          <small>${safeDate}</small><br>
+    list.innerHTML += `
+      <div class="card">
+        <b>${safeSpecies}</b><br>
+        ${safePlace} • ${safeLen}cm<br>
+        <small>${safeDate}</small><br>
 
-          ${c.coords ? `
-            <small>📍 ${safeCoords}</small><br>
-            <button onclick="openMap(this.dataset.c)" data-c="${safeCoords}">Maps</button>
-            <button onclick="directionsTo(this.dataset.c)" data-c="${safeCoords}">Directions</button>
-            <br><br>
-          ` : `<br>`}
+        ${safeCoords ? `
+          <small>📍 ${safeCoords}</small><br>
+          <button onclick="openMap(this.dataset.c)" data-c="${safeCoords}">Maps</button>
+          <button onclick="directionsTo(this.dataset.c)" data-c="${safeCoords}">Directions</button>
+          <br><br>
+        ` : `<br>`}
 
-          <button onclick="deleteCatch(${c.id})">Delete</button>
-        </div>
-      `;
-    });
+        <button onclick="editCatch(${c.id})">Edit</button>
+        <button onclick="deleteCatch(${c.id})">Delete</button>
+      </div>
+    `;
+  });
+}function loadLog(){
+  list.innerHTML = "";
+  const data = getAll();
+
+  if(data.length === 0){
+    list.innerHTML = `<div class="card"><small>No catches yet.</small></div>`;
+    return;
+  }
+
+  data.forEach(c => {
+    const safeSpecies = c.species || "";
+    const safePlace   = c.place || "";
+    const safeLen     = c.length || "";
+    const safeDate    = c.date || "";
+    const safeCoords  = c.coords || "";
+
+    list.innerHTML += `
+      <div class="card">
+        <b>${safeSpecies}</b><br>
+        ${safePlace} • ${safeLen}cm<br>
+        <small>${safeDate}</small><br>
+
+        ${safeCoords ? `
+          <small>📍 ${safeCoords}</small><br>
+          <button onclick="openMap(this.dataset.c)" data-c="${safeCoords}">Maps</button>
+          <button onclick="directionsTo(this.dataset.c)" data-c="${safeCoords}">Directions</button>
+          <br><br>
+        ` : `<br>`}
+
+        <button onclick="editCatch(${c.id})">Edit</button>
+        <button onclick="deleteCatch(${c.id})">Delete</button>
+      </div>
+    `;
+  });
+  
   }
 
   function deleteCatch(id) {
@@ -265,7 +301,33 @@ section{ display:none; }
     saveAll(data);
     loadLog();
   }
+function editCatch(id){
+  const data = getAll();
+  const idx = data.findIndex(c => String(c.id) === String(id));
+  if(idx === -1) return;
 
+  const c = data[idx];
+
+  const newSpecies = prompt("Spesie:", c.species || "");
+  if(newSpecies === null) return;
+
+  const newPlace = prompt("Plek:", c.place || "");
+  if(newPlace === null) return;
+
+  const newCoords = prompt("Koördinate:", c.coords || "");
+  if(newCoords === null) return;
+
+  const newLength = prompt("Lengte (cm):", c.length || "");
+  if(newLength === null) return;
+
+  c.species = newSpecies.trim();
+  c.place   = newPlace.trim();
+  c.coords  = newCoords.trim();
+  c.length  = newLength.trim();
+
+  saveAll(data);
+  loadLog();
+}
   function clearAll(){
     const ok = confirm("Are you sure you want to delete ALL catches?");
     if(!ok) return;
@@ -282,7 +344,7 @@ section{ display:none; }
   window.getGPS = getGPS;
   window.openMap = openMap;
   window.directionsTo = directionsTo;
-
+window.editCatch = editCatch;
   // START
   show("add");
 })();
