@@ -146,11 +146,11 @@ section{ display:none; }
   </div>
   <div id="list"></div>
 </section>
-
 <section id="stats">
   <h3>Stats</h3>
   <div id="statsBox" class="card"></div>
   <div id="speciesBox" class="card"></div>
+  <div id="spotBox" class="card"></div>
 </section>
 
 <script>
@@ -168,6 +168,7 @@ section{ display:none; }
   const list    = el("list");
   const statsBox = el("statsBox");
   const speciesBox = el("speciesBox");
+  const spotBox = el("spotBox");
 
   function getAll(){
     return JSON.parse(localStorage.getItem(KEY) || "[]");
