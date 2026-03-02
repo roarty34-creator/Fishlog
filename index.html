@@ -398,17 +398,21 @@ section{ display:none; }
       <b>Last catch:</b> ${lastDate}
     `;
 
-    speciesBox.innerHTML = `
-      <b>Top species:</b> ${topSpecies} (${topSpeciesN})<br><br>
-      <b>By species:</b><br><br>
-      ${speciesSorted.length ? speciesSorted.map(([n,k]) => `• ${n}: ${k}`).join("<br>") : "<small>No data yet.</small>"}
-    `;
+    // --- Species ---
+speciesBox.innerHTML =
+  "<b>Top species:</b> " + topSpecies + " (" + topSpeciesN + ")<br><br>" +
+  "<b>By species:</b><br><br>" +
+  (speciesSorted.length
+    ? speciesSorted.map(([n,k]) => "• " + n + ": " + k).join("<br>")
+    : "<small>No data yet.</small>");
 
-    spotBox.innerHTML = `
-      <b>Top spot:</b> ${topPlace} (${topPlaceN})<br><br>
-      <b>By place:</b><br><br>
-      ${placeSorted.length ? placeSorted.map(([n,k]) => `• ${n}: ${k}`).join("<br>") : "<small>No data yet.</small>"}
-    `;
+// --- Spots ---
+spotBox.innerHTML =
+  "<b>Top spot:</b> " + topPlace + " (" + topPlaceN + ")<br><br>" +
+  "<b>By place:</b><br><br>" +
+  (placeSorted.length
+    ? placeSorted.map(([n,k]) => "• " + n + ": " + k).join("<br>")
+    : "<small>No data yet.</small>");
 
 // --- Bars version ---
 if(monthSorted.length){
@@ -416,37 +420,23 @@ if(monthSorted.length){
 
   const rows = monthSorted.map(([m,n])=>{
     const barWidth = Math.round((n / maxMonth) * 100);
-    return `
-      <div style="margin-bottom:8px;">
-        <div style="display:flex; justify-content:space-between; font-size:12px;">
-          <span>${m}</span>
-          <span>${n}</span>
-        </div>
-        <div style="
-          background:#1a2745;
-          border-radius:6px;
-          overflow:hidden;
-          height:8px;
-          margin-top:4px;">
-          <div style="
-            width:${barWidth}%;
-            background:var(--accent);
-            height:100%;">
-          </div>
-        </div>
-      </div>
-    `;
+    return "<div style='margin-bottom:8px;'>" +
+      "<div style='display:flex; justify-content:space-between; font-size:12px;'>" +
+        "<span>" + m + "</span>" +
+        "<span>" + n + "</span>" +
+      "</div>" +
+      "<div style='background:#1a2745;border-radius:6px;overflow:hidden;height:8px;margin-top:4px;'>" +
+        "<div style='width:" + barWidth + "%;background:var(--accent);height:100%;'></div>" +
+      "</div>" +
+    "</div>";
   }).join("");
 
-  monthBox.innerHTML = `
-    <b>Catches per month:</b><br><br>
-    ${rows}
-  `;
+  monthBox.innerHTML =
+    "<b>Catches per month:</b><br><br>" + rows;
+
 }else{
-  monthBox.innerHTML = `
-    <b>Catches per month:</b><br><br>
-    <small>No data yet.</small>
-  `;
+  monthBox.innerHTML =
+    "<b>Catches per month:</b><br><br><small>No data yet.</small>";
 }
   // expose
   window.show = show;
