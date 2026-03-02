@@ -2,6 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>FishLog</title>
 
 <style>
@@ -32,7 +33,7 @@ button{
   border-radius: 999px;
   cursor: pointer;
   font-weight: 700;
-  transition: transform .06s ease, background .2s ease, border-color .2s ease;
+  transition: transform .06s ease, border-color .2s ease;
 }
 
 button:hover{ border-color: var(--accent); }
@@ -89,8 +90,6 @@ label.small{
   font-weight: 700;
 }
 
-#add .card{ max-width: 520px; }
-
 section{ display:none; }
 </style>
 </head>
@@ -114,26 +113,25 @@ section{ display:none; }
     <input id="place" placeholder="bv. Stilbaai / Die Punt" autocomplete="off">
 
     <label class="small">Koördinate</label>
-    <div style="display:flex; gap:10px;">
+    <div style="display:flex; gap:10px; align-items:center;">
       <button type="button" onclick="getGPS()">Kry GPS</button>
       <input id="coords" placeholder="-34.37, 20.85" readonly autocomplete="off">
     </div>
 
     <label class="small">Lengte (cm)</label>
-<input id="length" placeholder="bv. 65" autocomplete="off">
+    <input id="length" placeholder="bv. 65" autocomplete="off">
 
-<label class="small">Foto</label>
-<input id="photo" type="file" accept="image/*" capture="environment" autocomplete="off">
+    <label class="small">Foto</label>
+    <input id="photo" type="file" accept="image/*" capture="environment" autocomplete="off">
 
-<button class="navbtn active" style="margin-top:10px" onclick="saveCatch()">Save</button>
-    
+    <button class="navbtn active" style="margin-top:10px" onclick="saveCatch()">Save</button>
   </div>
 </section>
 
 <section id="log">
   <h3>Catch Log</h3>
 
-  <div style="display:flex; gap:10px; margin-bottom:12px;">
+  <div style="display:flex; gap:10px; margin-bottom:12px; flex-wrap:wrap;">
     <button onclick="clearAll()">Clear all</button>
   </div>
 
@@ -143,67 +141,33 @@ section{ display:none; }
 <script>
 (() => {
   const KEY = "fishlog";
-
   const el = (id) => document.getElementById(id);
 
   const species = el("species");
   const place   = el("place");
   const coords  = el("coords");
   const length  = el("length");
+  const photo   = el("photo");
   const list    = el("list");
-  const photo = el("photo");
 
-  function getAll() {
+  function getAll(){
     return JSON.parse(localStorage.getItem(KEY) || "[]");
   }
 
-  function saveAll(data) {
+  function saveAll(data){
     localStorage.setItem(KEY, JSON.stringify(data));
   }
 
   function setActive(id){
-    const bAdd = el("btnAdd");
-    const bLog = el("btnLog");
-    if(!bAdd || !bLog) return;
-    bAdd.classList.toggle("active", id === "add");
-    bLog.classList.toggle("active", id === "log");
+    el("btnAdd").classList.toggle("active", id === "add");
+    el("btnLog").classList.toggle("active", id === "log");
   }
 
-  function show(id) {
-    document.querySelectorAll("section").forEach(s => s.style.display = "none");
-    el(id).style.display = "block";
+  function show(id){
+    document.querySelectorAll("section").forEach(s => s.style.display="none");
+    el(id).style.display="block";
     setActive(id);
-    if (id === "log") loadLog();
-  }
-
-  async function saveCatch() {
-  const data = getAll();
-
-  // foto -> base64 (as daar een is)
-  let photoData = "";
-  if (photo.files && photo.files[0]) {
-    photoData = await fileToDataUrl(photo.files[0]);
-  }
-
-  data.push({
-    id: Date.now(),
-    species: species.value.trim(),
-    place: place.value.trim(),
-    coords: coords.value.trim(),
-    length: length.value.trim(),
-    photo: photoData,              // 👈 foto word hier gestoor
-    date: new Date().toLocaleDateString()
-  });
-
-  saveAll(data);
-
-  species.value = "";
-  place.value = "";
-  coords.value = "";
-  length.value = "";
-  photo.value = "";                // 👈 maak foto veld leeg
-
-  show("log");
+    if(id === "log") loadLog();
   }
 
   function getGPS(){
@@ -211,132 +175,173 @@ section{ display:none; }
       alert("GPS nie beskikbaar nie.");
       return;
     }
-
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const lat = pos.coords.latitude.toFixed(6);
         const lon = pos.coords.longitude.toFixed(6);
         coords.value = lat + ", " + lon;
       },
-      () => {
-        alert("Kon nie ligging kry nie. Maak seker Location is aan.");
-      },
+      () => alert("Kon nie ligging kry nie. Maak seker Location is aan."),
       { enableHighAccuracy: true, timeout: 10000 }
     );
   }
 
-  // Maps helpers
+  function fileToDataUrl(file){
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result || ""));
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
   function openMap(coordStr){
+    if(!coordStr) return;
     const url = "https://www.google.com/maps?q=" + encodeURIComponent(coordStr);
     window.open(url, "_blank");
   }
 
   function directionsTo(coordStr){
+    if(!coordStr) return;
     const url = "https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent(coordStr);
     window.open(url, "_blank");
   }
 
-  function loadLog(){
-  list.innerHTML = "";
-  const data = getAll();
+  function saveCatch(){
+    const data = getAll();
 
-  if(data.length === 0){
-    list.innerHTML = `<div class="card"><small>No catches yet.</small></div>`;
-    return;
+    const newCatch = {
+      id: Date.now(),
+      species: species.value.trim(),
+      place: place.value.trim(),
+      coords: coords.value.trim(),
+      length: length.value.trim(),
+      photo: "",
+      date: new Date().toLocaleDateString()
+    };
+
+    // Geen foto gekies nie
+    if(!photo || !photo.files || !photo.files[0]){
+      data.push(newCatch);
+      saveAll(data);
+      clearForm();
+      show("log");
+      return;
+    }
+
+    // Foto gekies -> maak base64
+    fileToDataUrl(photo.files[0]).then(photoData => {
+      newCatch.photo = photoData || "";
+      data.push(newCatch);
+      saveAll(data);
+      clearForm();
+      show("log");
+    }).catch(() => {
+      alert("Foto kon nie gelees word nie. Probeer weer.");
+    });
   }
 
-  data.forEach(c=>{
-  list.innerHTML += `
-    <div class="card">
-      <b>${c.species}</b><br>
-      ${c.place} • ${c.length}cm<br>
-      <small>${c.date}</small><br>
+  function clearForm(){
+    species.value = "";
+    place.value = "";
+    coords.value = "";
+    length.value = "";
+    if(photo) photo.value = "";
+  }
 
-      ${c.coords ? `
-        <small>📍 ${c.coords}</small><br>
-        <button onclick="openMap('${c.coords}')">Maps</button>
-        <button onclick="directionsTo('${c.coords}')">Directions</button>
-        <br><br>
-      ` : `<br>`
-    
-        ${c.photo ? `
-  <img src="${c.photo}" style="width:100%;border-radius:14px;margin-top:10px;border:1px solid var(--border);">
-  <br><br>
-` : ``}
+  function loadLog(){
+    list.innerHTML = "";
+    const data = getAll();
 
-      <button onclick="editCatch(${c.id})">Edit</button>
-      <button onclick="deleteCatch(${c.id})">Delete</button>
-    </div>
-  `;
-});
-  } 
+    if(data.length === 0){
+      list.innerHTML = `<div class="card"><small>No catches yet.</small></div>`;
+      return;
+    }
 
-function fileToDataUrl(file){
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result || ""));
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
+    data.slice().reverse().forEach(c => {
+      const s = (x)=> (x ?? "").toString().replaceAll("<","&lt;").replaceAll(">","&gt;");
+      const safeCoords = s(c.coords);
+      const safeId = s(c.id);
 
-function deleteCatch(id) {
-  const ok = confirm("Delete hierdie vang?");
-  if (!ok) return;
+      list.innerHTML += `
+        <div class="card">
+          <b>${s(c.species)}</b><br>
+          ${s(c.place)} • ${s(c.length)}cm<br>
+          <small>${s(c.date)}</small><br>
 
-  const data = getAll().filter(c => String(c.id) !== String(id));
-  saveAll(data);
-  loadLog();
-}
+          ${c.coords ? `
+            <small>📍 ${safeCoords}</small><br>
+            <button onclick="openMap(this.dataset.c)" data-c="${safeCoords}">Maps</button>
+            <button onclick="directionsTo(this.dataset.c)" data-c="${safeCoords}">Directions</button>
+            <br><br>
+          ` : `<br>`}
 
+          ${c.photo ? `
+            <img src="${c.photo}" alt="Catch photo"
+              style="width:100%;border-radius:14px;margin-top:10px;border:1px solid var(--border);" />
+            <br><br>
+          ` : ``}
+
+          <button onclick="editCatch(${safeId})">Edit</button>
+          <button onclick="deleteCatch(${safeId})">Delete</button>
+        </div>
+      `;
+    });
+  }
+
+  function deleteCatch(id){
+    const ok = confirm("Delete hierdie vang?");
+    if(!ok) return;
     const data = getAll().filter(c => String(c.id) !== String(id));
     saveAll(data);
     loadLog();
   }
-function editCatch(id){
-  alert("Edit klik werk");
-  const data = getAll();
-  const idx = data.findIndex(c => String(c.id) === String(id));
-  if(idx === -1) return;
 
-  const c = data[idx];
+  function editCatch(id){
+    const data = getAll();
+    const idx = data.findIndex(c => String(c.id) === String(id));
+    if(idx === -1) return;
 
-  const newSpecies = prompt("Spesie:", c.species || "");
-  if(newSpecies === null) return;
+    const c = data[idx];
 
-  const newPlace = prompt("Plek:", c.place || "");
-  if(newPlace === null) return;
+    const newSpecies = prompt("Spesie:", c.species || "");
+    if(newSpecies === null) return;
 
-  const newCoords = prompt("Koördinate:", c.coords || "");
-  if(newCoords === null) return;
+    const newPlace = prompt("Plek:", c.place || "");
+    if(newPlace === null) return;
 
-  const newLength = prompt("Lengte (cm):", c.length || "");
-  if(newLength === null) return;
+    const newCoords = prompt("Koördinate:", c.coords || "");
+    if(newCoords === null) return;
 
-  c.species = newSpecies.trim();
-  c.place   = newPlace.trim();
-  c.coords  = newCoords.trim();
-  c.length  = newLength.trim();
+    const newLength = prompt("Lengte (cm):", c.length || "");
+    if(newLength === null) return;
 
-  saveAll(data);
-  loadLog();
-}
+    c.species = newSpecies.trim();
+    c.place   = newPlace.trim();
+    c.coords  = newCoords.trim();
+    c.length  = newLength.trim();
+
+    saveAll(data);
+    loadLog();
+  }
+
   function clearAll(){
-    const ok = confirm("Are you sure you want to delete ALL catches?");
+    const ok = confirm("Delete ALL catches?");
     if(!ok) return;
     saveAll([]);
     loadLog();
   }
 
-  // maak beskikbaar vir HTML onclick=""
+  // Maak beskikbaar vir HTML onclick=""
   window.show = show;
-window.saveCatch = saveCatch;
-window.deleteCatch = deleteCatch;
-window.editCatch = editCatch;
-window.clearAll = clearAll;
-window.getGPS = getGPS;
-window.openMap = openMap;
-window.directionsTo = directionsTo;
+  window.saveCatch = saveCatch;
+  window.getGPS = getGPS;
+  window.openMap = openMap;
+  window.directionsTo = directionsTo;
+  window.deleteCatch = deleteCatch;
+  window.editCatch = editCatch;
+  window.clearAll = clearAll;
+
   // START
   show("add");
 })();
