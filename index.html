@@ -410,7 +410,7 @@ section{ display:none; }
       ${placeSorted.length ? placeSorted.map(([n,k]) => `• ${n}: ${k}`).join("<br>") : "<small>No data yet.</small>"}
     `;
 
-  // --- Bars version ---
+// --- Bars version ---
 if(monthSorted.length){
   const maxMonth = Math.max(...monthSorted.map(([_,n]) => n));
 
