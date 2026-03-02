@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="af">
+<html>
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>FishLog</title>
 
 <style>
@@ -23,7 +23,7 @@ body{
   padding:20px;
 }
 
-h2{ margin-top:0; }
+h2{ margin:0 0 12px; }
 
 button{
   background: transparent;
@@ -45,9 +45,8 @@ button:active{ transform: scale(0.98); }
   border-radius:999px;
   border:1px solid var(--border);
   gap:6px;
-  margin-bottom:20px;
+  margin-bottom:16px;
 }
-
 .navbtn{
   border:none;
   background:transparent;
@@ -78,7 +77,7 @@ input, select{
   background: #0e1730;
   color: var(--text);
   margin-bottom:10px;
-  outline:none;
+  font-size: 15px;
 }
 
 label.small{
@@ -89,39 +88,50 @@ label.small{
   font-weight: 700;
 }
 
-#add .card{ max-width: 520px; }
-
+#add .card{ max-width: 560px; }
 section{ display:none; }
 
-.smallMuted{ color:var(--muted); font-size:12px; }
-hr.sep{
-  border:0;
-  border-top:1px solid var(--border);
-  margin:12px 0;
-}
-
-.thumbRow{
+.rowBtns{
   display:flex;
   gap:10px;
-  align-items:center;
   flex-wrap:wrap;
 }
+
 .thumb{
-  width:86px;
-  height:64px;
+  width:84px;
+  height:84px;
+  object-fit:cover;
   border-radius:12px;
   border:1px solid var(--border);
-  object-fit:cover;
   background:#0e1730;
 }
 
-.grid2{
-  display:grid;
-  grid-template-columns: 1fr;
-  gap:10px;
+/* photo modal */
+#photoModal{
+  position:fixed;
+  inset:0;
+  background: rgba(0,0,0,.6);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:16px;
+  z-index:999;
 }
-@media(min-width:720px){
-  .grid2{ grid-template-columns: 1fr 1fr; }
+#photoModal .inner{
+  background:#0e1730;
+  border:1px solid var(--border);
+  border-radius:18px;
+  max-width: 92vw;
+  max-height: 92vh;
+  padding: 12px;
+  box-shadow: 0 18px 40px rgba(0,0,0,.45);
+}
+#photoModal img{
+  max-width: 86vw;
+  max-height: 70vh;
+  display:block;
+  border-radius:14px;
+  border:1px solid var(--border);
 }
 </style>
 </head>
@@ -139,38 +149,26 @@ hr.sep{
     <h3 style="margin:0 0 10px">Add Catch</h3>
 
     <label class="small">Spesie</label>
-    <select id="species" autocomplete="off">
-      <option value="">Kies spesie…</option>
-      <option>Kaapse Kabeljou</option>
-      <option>Geelstert</option>
-      <option>Bonnie</option>
-      <option>Rooi Roman</option>
-      <option>Snapper</option>
-      <option>Silver (Bastermeid)</option>
-      <option>Rooi Steenbras</option>
-      <option>Yellow Belly (Rockod)</option>
-      <option>Garrick (Leervis)</option>
-      <option>Elf (Shad)</option>
-    </select>
+    <input id="species" placeholder="bv. Kaapse Kabeljou" autocomplete="off">
 
     <label class="small">Plek</label>
     <input id="place" placeholder="bv. Stilbaai / Die Punt" autocomplete="off">
 
     <label class="small">Koördinate</label>
-    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+    <div style="display:flex; gap:10px; align-items:center;">
       <button type="button" onclick="getGPS()">Kry GPS</button>
-      <input id="coords" placeholder="-34.37, 20.85" readonly autocomplete="off" style="flex:1; min-width:200px;">
+      <input id="coords" placeholder="-34.370000, 20.850000" readonly autocomplete="off" style="margin:0;">
     </div>
 
     <label class="small">Lengte (cm)</label>
     <input id="length" placeholder="bv. 65" inputmode="numeric" autocomplete="off">
 
     <label class="small">Foto</label>
-    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+    <div class="rowBtns" style="margin-bottom:10px;">
       <button type="button" onclick="document.getElementById('photoCamera').click()">📷 Kamera</button>
       <button type="button" onclick="document.getElementById('photoGallery').click()">🖼 Gallery</button>
-      <span id="photoHint" class="smallMuted"></span>
     </div>
+
     <input id="photoCamera" type="file" accept="image/*" capture="environment" style="display:none;">
     <input id="photoGallery" type="file" accept="image/*" style="display:none;">
 
@@ -179,23 +177,25 @@ hr.sep{
 </section>
 
 <section id="log">
-  <h3 style="margin:0 0 8px">Catch Log</h3>
+  <h3>Catch Log</h3>
 
-  <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
-    <button onclick="exportCSV()">Export CSV</button>
+  <div class="rowBtns" style="margin-bottom:12px;">
     <button onclick="clearAll()">Clear all</button>
-  </div>
-
-  <!-- STATS -->
-  <div class="grid2">
-    <div class="card" id="statsBox"></div>
-    <div class="card" id="speciesBox"></div>
-    <div class="card" id="spotBox"></div>
-    <div class="card" id="barsBox"></div>
   </div>
 
   <div id="list"></div>
 </section>
+
+<!-- photo modal -->
+<div id="photoModal" onclick="closePhoto()">
+  <div class="inner" onclick="event.stopPropagation()">
+    <div class="rowBtns" style="justify-content:space-between; margin-bottom:10px;">
+      <b>Foto</b>
+      <button type="button" onclick="closePhoto()">Close</button>
+    </div>
+    <img id="photoModalImg" alt="Catch photo">
+  </div>
+</div>
 
 <script>
 (() => {
@@ -207,20 +207,23 @@ hr.sep{
   const place   = el("place");
   const coords  = el("coords");
   const length  = el("length");
+  const list    = el("list");
 
-  const list = el("list");
-
-  const statsBox   = el("statsBox");
-  const speciesBox = el("speciesBox");
-  const spotBox    = el("spotBox");
-  const barsBox    = el("barsBox");
-
-  const photoCamera = el("photoCamera");
+  const photoCamera  = el("photoCamera");
   const photoGallery = el("photoGallery");
-  const photoHint = el("photoHint");
+
+  function esc(s){
+    return String(s ?? "")
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#39;");
+  }
 
   function getAll() {
-    return JSON.parse(localStorage.getItem(KEY) || "[]");
+    try { return JSON.parse(localStorage.getItem(KEY) || "[]"); }
+    catch { return []; }
   }
 
   function saveAll(data) {
@@ -228,11 +231,8 @@ hr.sep{
   }
 
   function setActive(id){
-    const bAdd = el("btnAdd");
-    const bLog = el("btnLog");
-    if(!bAdd || !bLog) return;
-    bAdd.classList.toggle("active", id === "add");
-    bLog.classList.toggle("active", id === "log");
+    el("btnAdd").classList.toggle("active", id === "add");
+    el("btnLog").classList.toggle("active", id === "log");
   }
 
   function show(id) {
@@ -242,7 +242,53 @@ hr.sep{
     if (id === "log") loadLog();
   }
 
-  // ---------- GPS ----------
+  function fileToDataUrl(file){
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result || ""));
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function clearInputs(){
+    species.value = "";
+    place.value = "";
+    coords.value = "";
+    length.value = "";
+    if (photoCamera) photoCamera.value = "";
+    if (photoGallery) photoGallery.value = "";
+  }
+
+  async function saveCatch() {
+    const data = getAll();
+
+    // photo (take the newest selected from either input)
+    let file = null;
+    if (photoCamera?.files?.[0]) file = photoCamera.files[0];
+    if (photoGallery?.files?.[0]) file = photoGallery.files[0];
+
+    let photoDataUrl = "";
+    if (file) {
+      try { photoDataUrl = await fileToDataUrl(file); }
+      catch { photoDataUrl = ""; }
+    }
+
+    data.push({
+      id: Date.now(),
+      species: species.value.trim(),
+      place: place.value.trim(),
+      coords: coords.value.trim(),
+      length: length.value.trim(),
+      date: new Date().toLocaleDateString(),
+      photo: photoDataUrl
+    });
+
+    saveAll(data);
+    clearInputs();
+    show("log");
+  }
+
   function getGPS(){
     if(!navigator.geolocation){
       alert("GPS nie beskikbaar nie.");
@@ -255,110 +301,67 @@ hr.sep{
         const lon = pos.coords.longitude.toFixed(6);
         coords.value = lat + ", " + lon;
       },
-      () => {
-        alert("Kon nie ligging kry nie. Maak seker Location is aan.");
-      },
+      () => alert("Kon nie ligging kry nie. Maak seker Location is aan."),
       { enableHighAccuracy: true, timeout: 10000 }
     );
   }
 
-  // ---------- PHOTO HELPERS ----------
-  function fileToDataUrl(file){
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(String(reader.result || ""));
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
+  function loadLog(){
+    list.innerHTML = "";
+    const data = getAll();
+
+    if(!data.length){
+      list.innerHTML = `<div class="card"><small>No catches yet.</small></div>`;
+      return;
+    }
+
+    // newest first
+    const sorted = [...data].sort((a,b) => Number(b.id||0) - Number(a.id||0));
+
+    sorted.forEach(c => {
+      const safeSpecies = esc(c.species);
+      const safePlace   = esc(c.place);
+      const safeLen     = esc(c.length);
+      const safeDate    = esc(c.date);
+
+      const hasCoords = String(c.coords || "").trim().length > 0;
+      const coordShow = esc(c.coords || "");
+      const coordEnc  = encodeURIComponent(String(c.coords || ""));
+
+      const hasPhoto = !!(c.photo && String(c.photo).startsWith("data:image/"));
+      const thumb = hasPhoto ? `<img class="thumb" src="${esc(c.photo)}" alt="thumb">` : "";
+
+      list.innerHTML += `
+        <div class="card">
+          <b>${safeSpecies || "—"}</b><br>
+          ${safePlace || "—"} • ${safeLen || "—"}cm<br>
+          <small>${safeDate}</small><br><br>
+
+          ${hasCoords ? `
+            <small>📍 ${coordShow}</small><br>
+            <div class="rowBtns" style="margin:8px 0 12px;">
+              <button onclick="openMap('${coordEnc}')">Maps</button>
+              <button onclick="directionsTo('${coordEnc}')">Directions</button>
+            </div>
+          ` : ``}
+
+          ${hasPhoto ? `
+            <div class="rowBtns" style="align-items:center; margin:8px 0 12px;">
+              ${thumb}
+              <button onclick="viewPhoto(${c.id})">View photo</button>
+            </div>
+          ` : ``}
+
+          <div class="rowBtns">
+            <button onclick="editCatch(${c.id})">Edit</button>
+            <button onclick="deleteCatch(${c.id})">Delete</button>
+            <button onclick="shareCatch(${c.id})">Share</button>
+          </div>
+        </div>
+      `;
     });
   }
 
-  let pendingPhoto = ""; // dataURL
-
-  async function onPickPhoto(from){
-    try{
-      const input = from === "camera" ? photoCamera : photoGallery;
-      const file = input && input.files && input.files[0];
-      if(!file){
-        pendingPhoto = "";
-        if(photoHint) photoHint.textContent = "";
-        return;
-      }
-      pendingPhoto = await fileToDataUrl(file);
-      if(photoHint) photoHint.textContent = "Foto gekies ✅";
-    }catch(e){
-      pendingPhoto = "";
-      if(photoHint) photoHint.textContent = "";
-      alert("Kon nie foto lees nie.");
-    }
-  }
-
-  if(photoCamera){
-    photoCamera.addEventListener("change", () => onPickPhoto("camera"));
-  }
-  if(photoGallery){
-    photoGallery.addEventListener("change", () => onPickPhoto("gallery"));
-  }
-
-  // ---------- SAVE ----------
-  function saveCatch() {
-    const data = getAll();
-
-    const newCatch = {
-      id: Date.now(),
-      species: (species.value || "").trim(),
-      place: (place.value || "").trim(),
-      coords: (coords.value || "").trim(),
-      length: (length.value || "").trim(),
-      dateISO: new Date().toISOString(),
-      date: new Date().toLocaleDateString(),
-      photo: pendingPhoto || ""
-    };
-
-    data.push(newCatch);
-    saveAll(data);
-
-    // Clear fields
-    species.value = "";
-    place.value = "";
-    coords.value = "";
-    length.value = "";
-
-    pendingPhoto = "";
-    if(photoHint) photoHint.textContent = "";
-
-    const cam = document.getElementById("photoCamera");
-    const gal = document.getElementById("photoGallery");
-    if (cam) cam.value = "";
-    if (gal) gal.value = "";
-
-    show("log");
-  }
-
-  // ---------- MAPS ----------
-  function openMap(coord){
-    // coord like "-34.123, 21.456"
-    const q = encodeURIComponent(coord);
-    // works for Google Maps web + opens app often
-    window.open("https://www.google.com/maps?q=" + q, "_blank");
-  }
-
-  function directionsTo(coord){
-    const q = encodeURIComponent(coord);
-    window.open("https://www.google.com/maps/dir/?api=1&destination=" + q, "_blank");
-  }
-
-  // ---------- VIEW PHOTO ----------
-  function viewPhoto(id){
-    const data = getAll();
-    const c = data.find(x => String(x.id) === String(id));
-    if(!c || !c.photo) return;
-    // open image in new tab
-    const w = window.open("", "_blank");
-    if(!w) return;
-    w.document.write(`<img src="${c.photo}" style="max-width:100%;height:auto;display:block;margin:0 auto;background:#000">`);
-  }
-
-  // ---------- EDIT / DELETE ----------
   function deleteCatch(id) {
     const ok = confirm("Delete hierdie vang?");
     if (!ok) return;
@@ -403,229 +406,10 @@ hr.sep{
     loadLog();
   }
 
-  // ---------- CSV EXPORT ----------
-  function exportCSV(){
-    const data = getAll();
-    if(!data.length){
-      alert("Geen data om te export nie.");
-      return;
-    }
-
-    const header = ["id","date","species","place","coords","length_cm","has_photo"];
-    const rows = data.map(c => ([
-      c.id,
-      c.date || "",
-      (c.species || "").replaceAll('"','""'),
-      (c.place || "").replaceAll('"','""'),
-      (c.coords || "").replaceAll('"','""'),
-      (c.length || "").replaceAll('"','""'),
-      c.photo ? "yes" : "no"
-    ]));
-
-    const csv = [header, ...rows]
-      .map(r => r.map(v => `"${String(v ?? "")}"`).join(","))
-      .join("\n");
-
-    const blob = new Blob([csv], {type:"text/csv;charset=utf-8"});
-    const url = URL.createObjectURL(blob);
-
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "fishlog.csv";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-
-    URL.revokeObjectURL(url);
-  }
-
-  // ---------- STATS ----------
-  function monthKey(dateISO){
-    // YYYY-MM
-    if(!dateISO) return "";
-    const d = new Date(dateISO);
-    if(isNaN(d.getTime())) return "";
-    const y = d.getFullYear();
-    const m = String(d.getMonth()+1).padStart(2,"0");
-    return `${y}-${m}`;
-  }
-
-  function computeStats(data){
-    const total = data.length;
-
-    // lengths numeric
-    const nums = data
-      .map(c => Number(String(c.length || "").replace(",", ".")))
-      .filter(n => Number.isFinite(n) && n > 0);
-
-    const avg = nums.length ? (nums.reduce((a,b)=>a+b,0) / nums.length) : 0;
-    const max = nums.length ? Math.max(...nums) : 0;
-
-    // last date
-    const last = data
-      .map(c => ({ id:c.id, iso:c.dateISO || "", date:c.date || "" }))
-      .sort((a,b) => String(b.iso).localeCompare(String(a.iso)))[0];
-
-    // counts by species/place
-    const bySpecies = new Map();
-    const byPlace = new Map();
-    const byMonth = new Map();
-
-    data.forEach(c => {
-      const s = (c.species || "").trim() || "(No species)";
-      const p = (c.place || "").trim() || "(No place)";
-      bySpecies.set(s, (bySpecies.get(s) || 0) + 1);
-      byPlace.set(p, (byPlace.get(p) || 0) + 1);
-
-      const mk = monthKey(c.dateISO) || "(unknown)";
-      byMonth.set(mk, (byMonth.get(mk) || 0) + 1);
-    });
-
-    const speciesSorted = [...bySpecies.entries()].sort((a,b)=>b[1]-a[1]);
-    const placeSorted   = [...byPlace.entries()].sort((a,b)=>b[1]-a[1]);
-    const monthSorted   = [...byMonth.entries()].sort((a,b)=>String(a[0]).localeCompare(String(b[0])));
-
-    return { total, avg, max, last, speciesSorted, placeSorted, monthSorted };
-  }
-
-  function renderStats(data){
-    if(!statsBox || !speciesBox || !spotBox || !barsBox) return;
-
-    const s = computeStats(data);
-
-    const avgTxt = s.avg ? s.avg.toFixed(1) + " cm" : "-";
-    const maxTxt = s.max ? s.max.toFixed(0) + " cm" : "-";
-    const lastTxt = s.last ? (s.last.date || "-") : "-";
-
-    statsBox.innerHTML = `
-      <b>Stats</b><hr class="sep">
-      <div><b>Total catches:</b> ${s.total}</div>
-      <div><b>Average length:</b> ${avgTxt}</div>
-      <div><b>Biggest length:</b> ${maxTxt}</div>
-      <div><b>Last catch:</b> ${lastTxt}</div>
-    `;
-
-    const topSpecies = s.speciesSorted[0] ? s.speciesSorted[0][0] : "-";
-    const speciesList = s.speciesSorted.length
-      ? s.speciesSorted.map(([name,n]) => `• ${name} (${n})`).join("<br>")
-      : "No data";
-
-    speciesBox.innerHTML = `
-      <b>Species</b><hr class="sep">
-      <div><b>Top species:</b> ${topSpecies}</div>
-      <div style="margin-top:8px"><b>By species:</b><br><br>${speciesList}</div>
-    `;
-
-    const topPlace = s.placeSorted[0] ? s.placeSorted[0][0] : "-";
-    const placeList = s.placeSorted.length
-      ? s.placeSorted.map(([name,n]) => `• ${name} (${n})`).join("<br>")
-      : "No data";
-
-    spotBox.innerHTML = `
-      <b>Spots</b><hr class="sep">
-      <div><b>Top spot:</b> ${topPlace}</div>
-      <div style="margin-top:8px"><b>By place:</b><br><br>${placeList}</div>
-    `;
-
-    // Bars per month
-    if(s.monthSorted.length){
-      const maxMonth = Math.max(...s.monthSorted.map(([,n])=>n));
-      const rows = s.monthSorted.map(([m,n]) => {
-        const w = maxMonth ? Math.round((n/maxMonth)*100) : 0;
-        return `
-          <div style="margin-bottom:8px">
-            <div style="display:flex; justify-content:space-between; gap:10px;">
-              <span>${m}</span><span>${n}</span>
-            </div>
-            <div style="background:#1a2745;border-radius:6px;overflow:hidden;height:8px;margin-top:4px;">
-              <div style="width:${w}%;background:var(--accent);height:100%;"></div>
-            </div>
-          </div>
-        `;
-      }).join("");
-
-      barsBox.innerHTML = `
-        <b>Per month</b><hr class="sep">
-        ${rows}
-      `;
-    }else{
-      barsBox.innerHTML = `
-        <b>Per month</b><hr class="sep">
-        <div class="smallMuted">No data</div>
-      `;
-    }
-  }
-
-  // ---------- LOG RENDER ----------
-  function esc(s){
-    return String(s || "")
-      .replaceAll("&","&amp;")
-      .replaceAll("<","&lt;")
-      .replaceAll(">","&gt;");
-  }
-
-  function loadLog(){
-    if(!list) return;
-
-    list.innerHTML = "";
-    const data = getAll();
-
-    renderStats(data);
-
-    if(data.length === 0){
-      list.innerHTML = `<div class="card"><small>No catches yet.</small></div>`;
-      return;
-    }
-
-    // newest first
-    const sorted = applySearchAndSort(data);
-    sorted.forEach(c => {
-      const safeSpecies = esc(c.species);
-      const safePlace   = esc(c.place);
-      const safeLen     = esc(c.length);
-      const safeDate    = esc(c.date);
-      const hasCoords   = (c.coords || "").trim().length > 0;
-      const coordShow   = esc(c.coords || "");
-
-      const hasPhoto = !!(c.photo && String(c.photo).startsWith("data:image"));
-      const thumb = hasPhoto ? `<img class="thumb" src="${c.photo}" alt="photo">` : "";
-
-      list.innerHTML += `
-        <div class="card">
-          <b>${safeSpecies || "(No species)"}</b><br>
-          ${safePlace || "(No place)"} • ${safeLen ? safeLen + "cm" : "-"}<br>
-          <small>${safeDate || ""}</small><br><br>
-
-          ${hasCoords ? `
-            <small>📍 ${coordShow}</small><br>
-            <div style="display:flex; gap:10px; flex-wrap:wrap; margin:8px 0 12px;">
-              <button onclick="openMap('${encodeURIComponent(c.coords)}')">Maps</button>
-              <button onclick="directionsTo('${encodeURIComponent(c.coords)}')">Directions</button>
-            </div>
-          ` : ``}
-
-          ${hasPhoto ? `
-            <div class="thumbRow" style="margin:8px 0 12px;">
-              ${thumb}
-              <button onclick="viewPhoto(${c.id})">View photo</button>
-            </div>
-          ` : ``}
-
-          <div style="display:flex; gap:10px; flex-wrap:wrap;">
-            <button onclick="editCatch(${c.id})">Edit</button>
-            <button onclick="deleteCatch(${c.id})">Delete</button>
-          </div>
-          <button onclick="shareCatch(${c.id})">Share</button>
-        </div>
-      `;
-    });
-  }
-
-  // IMPORTANT: decode in openMap/directionsTo from encoded coord string
   function openMap(encodedCoord){
     const coord = decodeURIComponent(encodedCoord || "");
     const q = encodeURIComponent(coord);
-    window.open("https://www.google.com/maps?q=" + q, "_blank");
+    window.open("https://www.google.com/maps/search/?api=1&query=" + q, "_blank");
   }
 
   function directionsTo(encodedCoord){
@@ -634,7 +418,47 @@ hr.sep{
     window.open("https://www.google.com/maps/dir/?api=1&destination=" + q, "_blank");
   }
 
-  // ---------- expose for onclick ----------
+  function viewPhoto(id){
+    const data = getAll();
+    const c = data.find(x => String(x.id) === String(id));
+    if(!c || !c.photo) return;
+    el("photoModalImg").src = c.photo;
+    el("photoModal").style.display = "flex";
+  }
+
+  function closePhoto(){
+    el("photoModal").style.display = "none";
+    el("photoModalImg").src = "";
+  }
+
+  async function shareCatch(id){
+    const data = getAll();
+    const c = data.find(x => String(x.id) === String(id));
+    if(!c) return;
+
+    const text =
+`FishLog Vang:
+Spesie: ${c.species || ""}
+Plek: ${c.place || ""}
+Lengte: ${c.length || ""}cm
+Koördinate: ${c.coords || ""}
+Datum: ${c.date || ""}`;
+
+    try{
+      if(navigator.share){
+        await navigator.share({ title: "FishLog", text });
+      } else if(navigator.clipboard){
+        await navigator.clipboard.writeText(text);
+        alert("Gekopieer!");
+      } else {
+        alert(text);
+      }
+    } catch {
+      // user cancelled share - ignore
+    }
+  }
+
+  // expose for onclick
   window.show = show;
   window.saveCatch = saveCatch;
   window.loadLog = loadLog;
@@ -645,9 +469,9 @@ hr.sep{
   window.openMap = openMap;
   window.directionsTo = directionsTo;
   window.viewPhoto = viewPhoto;
-  window.exportCSV = exportCSV;
-window.exportBackup = exportBackup;
-window.shareCatch = shareCatch;
+  window.closePhoto = closePhoto;
+  window.shareCatch = shareCatch;
+
   // START
   show("add");
 })();
