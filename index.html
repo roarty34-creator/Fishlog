@@ -32,11 +32,9 @@ button{
   border-radius: 999px;
   cursor: pointer;
   font-weight: 700;
-  transition: transform .06s ease, background .2s ease, border-color .2s ease;
 }
 
 button:hover{ border-color: var(--accent); }
-button:active{ transform: scale(0.98); }
 
 .topnav{
   display:inline-flex;
@@ -68,7 +66,6 @@ button:active{ transform: scale(0.98); }
   border-radius: 18px;
   padding: 14px;
   margin: 10px 0;
-  box-shadow: 0 10px 25px rgba(0,0,0,.25);
 }
 
 input{
@@ -89,13 +86,12 @@ label.small{
   font-weight: 700;
 }
 
-#add .card{ max-width: 520px; }
-
 section{ display:none; }
 </style>
 </head>
 
 <body>
+
 <h2>FishLog</h2>
 
 <div class="topnav">
@@ -105,199 +101,146 @@ section{ display:none; }
 
 <section id="add">
   <div class="card">
-    <h3 style="margin:0 0 10px">Add Catch</h3>
+    <h3>Add Catch</h3>
 
     <label class="small">Spesie</label>
-    <input id="species" placeholder="bv. Kaapse Kabeljou" autocomplete="off">
+    <input id="species" autocomplete="off">
 
     <label class="small">Plek</label>
-    <input id="place" placeholder="bv. Stilbaai / Die Punt" autocomplete="off">
+    <input id="place" autocomplete="off">
 
     <label class="small">Koördinate</label>
-<div style="display:flex; gap:10px;">
-  <button type="button" onclick="getGPS()">Kry GPS</button>
-  <input id="coords" placeholder="-34.37, 20.85" readonly autocomplete="off">
-</div>
+    <div style="display:flex; gap:10px;">
+      <button type="button" onclick="getGPS()">Kry GPS</button>
+      <input id="coords" readonly autocomplete="off">
+    </div>
 
-<label class="small">Lengte (cm)</label>
-<input id="length" placeholder="bv. 65" autocomplete="off">
+    <label class="small">Lengte (cm)</label>
+    <input id="length" autocomplete="off">
+
     <button class="navbtn active" style="margin-top:10px" onclick="saveCatch()">Save</button>
   </div>
 </section>
 
 <section id="log">
   <h3>Catch Log</h3>
-
-  <div style="display:flex; gap:10px; margin-bottom:12px;">
-    <button onclick="clearAll()">Clear all</button>
-  </div>
-
+  <button onclick="clearAll()">Clear all</button>
   <div id="list"></div>
 </section>
 
 <script>
 (() => {
-  const KEY = "fishlog";
 
-  const el = (id) => document.getElementById(id);
+const KEY = "fishlog";
 
-  const species = el("species");
-  const place   = el("place");
-  const coords  = el("coords");
-  const length  = el("length");
-  const list    = el("list");
+const el = id => document.getElementById(id);
+const species = el("species");
+const place = el("place");
+const coords = el("coords");
+const length = el("length");
+const list = el("list");
 
-  function getAll() {
-    return JSON.parse(localStorage.getItem(KEY) || "[]");
-  }
-
-  function saveAll(data) {
-    localStorage.setItem(KEY, JSON.stringify(data));
-  }
-
-  function setActive(id){
-    const bAdd = el("btnAdd");
-    const bLog = el("btnLog");
-    if(!bAdd || !bLog) return;
-    bAdd.classList.toggle("active", id === "add");
-    bLog.classList.toggle("active", id === "log");
-  }
- 
-function show(id) {
-  document.querySelectorAll("section").forEach(s => s.style.display = "none");
-  el(id).style.display = "block";
-  setActive(id);
-
-  if(id === "add"){
-    species.value = "";
-    place.value = "";
-    coords.value = "";
-    length.value = "";
-  }
-
-  if (id === "log") loadLog();
+function getAll(){
+  return JSON.parse(localStorage.getItem(KEY) || "[]");
 }
-  
-  function saveCatch() {
-    const data = getAll();
-    data.push({
-      id: Date.now(),
-      species: species.value.trim(),
-      place: place.value.trim(),
-      coords: coords.value.trim(),
-      length: length.value.trim(),
-      date: new Date().toLocaleDateString()
-    });
-    saveAll(data);
 
-    species.value = "";
-    place.value = "";
-    coords.value = "";
-    length.value = "";
+function saveAll(data){
+  localStorage.setItem(KEY, JSON.stringify(data));
+}
 
-    show("log");
+function show(id){
+  document.querySelectorAll("section").forEach(s => s.style.display="none");
+  el(id).style.display="block";
+
+  el("btnAdd").classList.toggle("active", id==="add");
+  el("btnLog").classList.toggle("active", id==="log");
+
+  if(id==="add"){
+    species.value="";
+    place.value="";
+    coords.value="";
+    length.value="";
   }
 
-  function getGPS(){
-    if(!navigator.geolocation){
-      alert("GPS nie beskikbaar nie.");
-      return;
-    }
+  if(id==="log") loadLog();
+}
 
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const lat = pos.coords.latitude.toFixed(6);
-        const lon = pos.coords.longitude.toFixed(6);
-        coords.value = lat + ", " + lon;
-      },
-      () => {
-        alert("Kon nie ligging kry nie. Maak seker Location is aan.");
-      },
-      { enableHighAccuracy: true, timeout: 10000 }
-    );
+function saveCatch(){
+  const data=getAll();
+
+  data.push({
+    id:Date.now(),
+    species:species.value.trim(),
+    place:place.value.trim(),
+    coords:coords.value.trim(),
+    length:length.value.trim(),
+    date:new Date().toLocaleDateString()
+  });
+
+  saveAll(data);
+  show("log");
+}
+
+function getGPS(){
+  if(!navigator.geolocation){
+    alert("GPS nie beskikbaar nie.");
+    return;
   }
 
-  function loadLog(){
-    list.innerHTML = "";
-    const data = getAll();
+  navigator.geolocation.getCurrentPosition(
+    pos=>{
+      const lat=pos.coords.latitude.toFixed(6);
+      const lon=pos.coords.longitude.toFixed(6);
+      coords.value=lat+", "+lon;
+    },
+    ()=>alert("Kon nie ligging kry nie."),
+    {enableHighAccuracy:true,timeout:10000}
+  );
+}
 
-    if(data.length === 0){
-      list.innerHTML = `<div class="card"><small>No catches yet.</small></div>`;
-      return;
-    }
+function loadLog(){
+  list.innerHTML="";
+  const data=getAll();
 
-    data.forEach(c => {
-      const safe = (x) => (x ?? "").toString().replaceAll("<","&lt;").replaceAll(">","&gt;");
-
-      list.innerHTML += `
-        <div class="card">
-          <b>${safe(c.species)}</b><br>
-          ${safe(c.place)} • ${safe(c.length)}cm<br>
-          <small>${safe(c.date)}</small><br>
-          <small>${safe(c.coords)}</small><br><br>
-
-          <button onclick="editCatch(${c.id})">Edit</button>
-          <button onclick="deleteCatch(${c.id})">Delete</button>
-        </div>
-      `;
-    });
+  if(data.length===0){
+    list.innerHTML=`<div class="card">No catches yet.</div>`;
+    return;
   }
 
-  function deleteCatch(id) {
-    const ok = confirm("Delete hierdie vang?");
-    if (!ok) return;
+  data.forEach(c=>{
+    list.innerHTML+=`
+      <div class="card">
+        <b>${c.species}</b><br>
+        ${c.place} • ${c.length}cm<br>
+        <small>${c.date}</small><br>
+        <small>📍 ${c.coords}</small><br><br>
+        <button onclick="deleteCatch(${c.id})">Delete</button>
+      </div>
+    `;
+  });
+}
 
-    const data = getAll().filter(c => String(c.id) !== String(id));
-    saveAll(data);
-    loadLog();
-  }
+function deleteCatch(id){
+  const data=getAll().filter(c=>String(c.id)!==String(id));
+  saveAll(data);
+  loadLog();
+}
 
-  function editCatch(id){
-    const data = getAll();
-    const idx = data.findIndex(c => String(c.id) === String(id));
-    if(idx === -1) return;
-
-    const c = data[idx];
-
-    const newSpecies = prompt("Species:", c.species || "");
-    if (newSpecies === null) return;
-
-    const newPlace = prompt("Place:", c.place || "");
-    if (newPlace === null) return;
-
-    const newCoords = prompt("Coords:", c.coords || "");
-    if (newCoords === null) return;
-
-    const newLength = prompt("Length (cm):", c.length || "");
-    if (newLength === null) return;
-
-    c.species = newSpecies.trim();
-    c.place = newPlace.trim();
-    c.coords = newCoords.trim();
-    c.length = newLength.trim();
-
-    saveAll(data);
-    loadLog();
-  }
-
-  function clearAll(){
-    const ok = confirm("Are you sure you want to delete ALL catches?");
-    if(!ok) return;
+function clearAll(){
+  if(confirm("Delete ALL catches?")){
     saveAll([]);
     loadLog();
   }
+}
 
-  // maak beskikbaar vir HTML onclick=""
-  window.show = show;
-  window.saveCatch = saveCatch;
-  window.loadLog = loadLog;
-  window.deleteCatch = deleteCatch;
-  window.editCatch = editCatch;
-  window.clearAll = clearAll;
-  window.getGPS = getGPS;
+window.show=show;
+window.saveCatch=saveCatch;
+window.deleteCatch=deleteCatch;
+window.clearAll=clearAll;
+window.getGPS=getGPS;
 
-  // START
-  show("add");
+show("add");
+
 })();
 </script>
 
