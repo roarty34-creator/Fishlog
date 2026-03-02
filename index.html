@@ -224,16 +224,17 @@ function saveCatch(){
   localStorage.setItem("lastSpecies", species.value);
 
   saveAll(data);
-
-  // maak net ander velde leeg
-  place.value = "";
-  coords.value = "";
-  length.value = "";
-  // clear inputs
+// clear inputs
 species.value = "";
 place.value = "";
 coords.value = "";
 length.value = "";
+
+const cam = document.getElementById("photoCamera");
+const gal = document.getElementById("photoGallery");
+if (cam) cam.value = "";
+if (gal) gal.value = "";
+  
 
 // as jy photo inputs het:
 const cam = document.getElementById("photoCamera");
@@ -245,7 +246,6 @@ if (gal) gal.value = "";
 show("log");
 }
   
-
   function getGPS(){
     if(!navigator.geolocation){
       alert("GPS nie beskikbaar nie.");
