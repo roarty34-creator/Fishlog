@@ -232,18 +232,15 @@ hr.sep{
       { enableHighAccuracy: true, timeout: 10000 }
     );
   }
+function openMap(coord){
+  const q = encodeURIComponent(coord);
+  location.href = "https://www.google.com/maps?q=" + q;
+}
 
-  function openMap(coord){
-    // coord = "-34.328159, 21.391153"
-    const q = encodeURIComponent(coord);
-    window.open("https://www.google.com/maps?q=" + q, "_blank");
-  }
-
-  function directionsTo(coord){
-    const q = encodeURIComponent(coord);
-    window.open("https://www.google.com/maps/dir/?api=1&destination=" + q, "_blank");
-  }
-
+function directionsTo(coord){
+  const q = encodeURIComponent(coord);
+  location.href = "https://www.google.com/maps/dir/?api=1&destination=" + q;
+}
   function deleteCatch(id){
     const ok = confirm("Delete hierdie vang?");
     if(!ok) return;
