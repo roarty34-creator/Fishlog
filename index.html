@@ -231,69 +231,27 @@ section{ display:none; }
     return;
   }
 
-  data.forEach(c => {
-    const safeSpecies = c.species || "";
-    const safePlace   = c.place || "";
-    const safeLen     = c.length || "";
-    const safeDate    = c.date || "";
-    const safeCoords  = c.coords || "";
+  data.forEach(c=>{
+  list.innerHTML += `
+    <div class="card">
+      <b>${c.species}</b><br>
+      ${c.place} • ${c.length}cm<br>
+      <small>${c.date}</small><br>
 
-    list.innerHTML += `
-      <div class="card">
-        <b>${safeSpecies}</b><br>
-        ${safePlace} • ${safeLen}cm<br>
-        <small>${safeDate}</small><br>
+      ${c.coords ? `
+        <small>📍 ${c.coords}</small><br>
+        <button onclick="openMap('${c.coords}')">Maps</button>
+        <button onclick="directionsTo('${c.coords}')">Directions</button>
+        <br><br>
+      ` : `<br>`}
 
-        ${safeCoords ? `
-          <small>📍 ${safeCoords}</small><br>
-          <button onclick="openMap(this.dataset.c)" data-c="${safeCoords}">Maps</button>
-          <button onclick="directionsTo(this.dataset.c)" data-c="${safeCoords}">Directions</button>
-          <br><br>
-        ` : `<br>`}
-
-        <button onclick="editCatch(${c.id})">Edit</button>
-        <button onclick="deleteCatch(${c.id})">Delete</button>
-      </div>
-    `;
-  });
-}function loadLog(){
-  list.innerHTML = "";
-  const data = getAll();
-
-  if(data.length === 0){
-    list.innerHTML = `<div class="card"><small>No catches yet.</small></div>`;
-    return;
+      <button onclick="editCatch(${c.id})">Edit</button>
+      <button onclick="deleteCatch(${c.id})">Delete</button>
+    </div>
+  `;
+});
   }
-
-  data.forEach(c => {
-    const safeSpecies = c.species || "";
-    const safePlace   = c.place || "";
-    const safeLen     = c.length || "";
-    const safeDate    = c.date || "";
-    const safeCoords  = c.coords || "";
-
-    list.innerHTML += `
-      <div class="card">
-        <b>${safeSpecies}</b><br>
-        ${safePlace} • ${safeLen}cm<br>
-        <small>${safeDate}</small><br>
-
-        ${safeCoords ? `
-          <small>📍 ${safeCoords}</small><br>
-          <button onclick="openMap(this.dataset.c)" data-c="${safeCoords}">Maps</button>
-          <button onclick="directionsTo(this.dataset.c)" data-c="${safeCoords}">Directions</button>
-          <br><br>
-        ` : `<br>`}
-
-        <button onclick="editCatch(${c.id})">Edit</button>
-        <button onclick="deleteCatch(${c.id})">Delete</button>
-      </div>
-    `;
-  });
-  
-  }
-
-  function deleteCatch(id) {
+function deleteCatch(id) {
     const ok = confirm("Delete hierdie vang?");
     if (!ok) return;
 
@@ -302,6 +260,7 @@ section{ display:none; }
     loadLog();
   }
 function editCatch(id){
+  alert("Edit klik werk");
   const data = getAll();
   const idx = data.findIndex(c => String(c.id) === String(id));
   if(idx === -1) return;
@@ -337,14 +296,13 @@ function editCatch(id){
 
   // maak beskikbaar vir HTML onclick=""
   window.show = show;
-  window.saveCatch = saveCatch;
-  window.loadLog = loadLog;
-  window.deleteCatch = deleteCatch;
-  window.clearAll = clearAll;
-  window.getGPS = getGPS;
-  window.openMap = openMap;
-  window.directionsTo = directionsTo;
+window.saveCatch = saveCatch;
+window.deleteCatch = deleteCatch;
 window.editCatch = editCatch;
+window.clearAll = clearAll;
+window.getGPS = getGPS;
+window.openMap = openMap;
+window.directionsTo = directionsTo;
   // START
   show("add");
 })();
