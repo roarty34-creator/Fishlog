@@ -215,23 +215,19 @@ function loadLog(){
   if(data.length===0){
     list.innerHTML=`<div class="card">No catches yet.</div>`;
     return;
-  }
 
-  data.forEach(c=>{
   data.forEach(c=>{
   list.innerHTML += `
     <div class="card">
       <b>${c.species}</b><br>
       ${c.place} • ${c.length}cm<br>
       <small>${c.date}</small><br>
-
       ${c.coords ? `
-        <small>📍 ${c.coords}</small><br>
-        <button onclick="openMap('${c.coords}')">Maps</button>
-        <button onclick="directionsTo('${c.coords}')">Directions</button>
-        <br><br>
-      ` : `<br>`}
-
+  <small>📍 ${c.coords}</small><br>
+  <button onclick="openMap('${c.coords}')">Maps</button>
+  <button onclick="directionsTo('${c.coords}')">Directions</button>
+  <br><br>
+` : `<br>`}
       <button onclick="deleteCatch(${c.id})">Delete</button>
     </div>
   `;
