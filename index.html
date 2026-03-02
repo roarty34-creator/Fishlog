@@ -1,1 +1,448 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>FishLog</title>
 
+<style>
+:root{
+  --bg:#0b1220;
+  --card:#101a2e;
+  --text:#e8eefc;
+  --muted:#9fb0d0;
+  --accent:#4f8cff;
+  --border:#20304d;
+}
+
+body{
+  margin:0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  background: radial-gradient(1200px 800px at 20% 0%, #142040 0%, var(--bg) 55%);
+  color:var(--text);
+  padding:20px;
+}
+
+h2{ margin-top:0; }
+
+button{
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 10px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 700;
+  transition: transform .06s ease, background .2s ease, border-color .2s ease;
+}
+
+button:hover{ border-color: var(--accent); }
+button:active{ transform: scale(0.98); }
+
+.topnav{
+  display:inline-flex;
+  background:#0e1730;
+  padding:6px;
+  border-radius:999px;
+  border:1px solid var(--border);
+  gap:6px;
+  margin-bottom:20px;
+}
+
+.navbtn{
+  border:none;
+  background:transparent;
+  padding:8px 18px;
+  border-radius:999px;
+  font-weight:700;
+  color:var(--text);
+}
+
+.navbtn.active{
+  background:var(--accent);
+  color:#071022;
+}
+
+.card{
+  background: linear-gradient(180deg, #122042 0%, var(--card) 100%);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 14px;
+  margin: 10px 0;
+  box-shadow: 0 10px 25px rgba(0,0,0,.25);
+}
+
+input{
+  width:100%;
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: #0e1730;
+  color: var(--text);
+  margin-bottom:10px;
+}
+
+label.small{
+  display:block;
+  margin: 10px 0 6px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+#add .card{ max-width: 560px; }
+
+section{ display:none; }
+
+hr.sep{
+  border:0;
+  border-top:1px solid var(--border);
+  margin:12px 0;
+  opacity:.6;
+}
+</style>
+</head>
+
+<body>
+<h2>FishLog</h2>
+
+<div class="topnav">
+  <button class="navbtn" id="btnAdd" onclick="show('add')">Add</button>
+  <button class="navbtn" id="btnLog" onclick="show('log')">Log</button>
+</div>
+
+<section id="add">
+  <div class="card">
+    <h3 style="margin:0 0 10px">Add Catch</h3>
+
+    <label class="small">Spesie</label>
+    <input id="species" placeholder="bv. Kaapse Kabeljou" autocomplete="off">
+
+    <label class="small">Plek</label>
+    <input id="place" placeholder="bv. Stilbaai / Die Punt" autocomplete="off">
+
+    <label class="small">Koördinate</label>
+    <div style="display:flex; gap:10px; align-items:center;">
+      <button type="button" onclick="getGPS()">Kry GPS</button>
+      <input id="coords" placeholder="-34.37, 20.85" readonly autocomplete="off">
+    </div>
+
+    <label class="small">Lengte (cm)</label>
+    <input id="length" placeholder="bv. 65" autocomplete="off">
+
+    <button class="navbtn active" style="margin-top:10px" onclick="saveCatch()">Save</button>
+  </div>
+</section>
+
+<section id="log">
+  <h3>Catch Log</h3>
+
+  <div style="display:flex; gap:10px; margin-bottom:12px; flex-wrap:wrap;">
+    <button onclick="clearAll()">Clear all</button>
+  </div>
+
+  <div class="card" id="statsBox"></div>
+  <div class="card" id="speciesBox"></div>
+  <div class="card" id="spotBox"></div>
+  <div class="card" id="monthBox"></div>
+
+  <div id="list"></div>
+</section>
+
+<script>
+(() => {
+  const KEY = "fishlog";
+
+  // optional: wys JS errors as alert (help met debug)
+  window.onerror = (msg) => { /* alert("JS error: " + msg); */ };
+
+  const el = (id) => document.getElementById(id);
+
+  const species = el("species");
+  const place   = el("place");
+  const coords  = el("coords");
+  const length  = el("length");
+  const list    = el("list");
+
+  const statsBox   = el("statsBox");
+  const speciesBox = el("speciesBox");
+  const spotBox    = el("spotBox");
+  const monthBox   = el("monthBox");
+
+  function getAll(){
+    return JSON.parse(localStorage.getItem(KEY) || "[]");
+  }
+
+  function saveAll(data){
+    localStorage.setItem(KEY, JSON.stringify(data));
+  }
+
+  function esc(s){
+    return String(s || "").replaceAll("<","&lt;").replaceAll(">","&gt;");
+  }
+
+  function setActive(id){
+    const bAdd = el("btnAdd");
+    const bLog = el("btnLog");
+    if(!bAdd || !bLog) return;
+    bAdd.classList.toggle("active", id === "add");
+    bLog.classList.toggle("active", id === "log");
+  }
+
+  function show(id){
+    document.querySelectorAll("section").forEach(s => s.style.display = "none");
+    el(id).style.display = "block";
+    setActive(id);
+    if(id === "log") loadLog();
+  }
+
+  function saveCatch(){
+    const data = getAll();
+    data.push({
+      id: Date.now(),
+      species: species.value.trim(),
+      place: place.value.trim(),
+      coords: coords.value.trim(),
+      length: length.value.trim(),
+      date: new Date().toLocaleDateString()
+    });
+    saveAll(data);
+
+    species.value = "";
+    place.value = "";
+    coords.value = "";   // ✅ GPS leeg na save
+    length.value = "";
+
+    show("log");
+  }
+
+  function getGPS(){
+    if(!navigator.geolocation){
+      alert("GPS nie beskikbaar nie.");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const lat = pos.coords.latitude.toFixed(6);
+        const lon = pos.coords.longitude.toFixed(6);
+        coords.value = lat + ", " + lon;
+      },
+      () => alert("Kon nie ligging kry nie. Maak seker Location is aan."),
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  }
+
+  function openMap(coord){
+    // coord = "-34.328159, 21.391153"
+    const q = encodeURIComponent(coord);
+    window.open("https://www.google.com/maps?q=" + q, "_blank");
+  }
+
+  function directionsTo(coord){
+    const q = encodeURIComponent(coord);
+    window.open("https://www.google.com/maps/dir/?api=1&destination=" + q, "_blank");
+  }
+
+  function deleteCatch(id){
+    const ok = confirm("Delete hierdie vang?");
+    if(!ok) return;
+    const data = getAll().filter(c => String(c.id) !== String(id));
+    saveAll(data);
+    loadLog();
+  }
+
+  function editCatch(id){
+    const data = getAll();
+    const idx = data.findIndex(c => String(c.id) === String(id));
+    if(idx === -1) return;
+
+    const c = data[idx];
+
+    const newSpecies = prompt("Spesie:", c.species || "");
+    if(newSpecies === null) return;
+
+    const newPlace = prompt("Plek:", c.place || "");
+    if(newPlace === null) return;
+
+    const newCoords = prompt("Koördinate:", c.coords || "");
+    if(newCoords === null) return;
+
+    const newLength = prompt("Lengte (cm):", c.length || "");
+    if(newLength === null) return;
+
+    c.species = newSpecies.trim();
+    c.place   = newPlace.trim();
+    c.coords  = newCoords.trim();
+    c.length  = newLength.trim();
+
+    saveAll(data);
+    loadLog();
+  }
+
+  function clearAll(){
+    const ok = confirm("Delete ALL catches?");
+    if(!ok) return;
+    saveAll([]);
+    loadLog();
+  }
+
+  function renderStats(data){
+    // guard
+    if(!statsBox || !speciesBox || !spotBox || !monthBox) return;
+
+    if(!data.length){
+      statsBox.innerHTML   = "<b>Stats</b><br><small>No data yet.</small>";
+      speciesBox.innerHTML = "<b>Species</b><br><small>No data yet.</small>";
+      spotBox.innerHTML    = "<b>Spots</b><br><small>No data yet.</small>";
+      monthBox.innerHTML   = "<b>Months</b><br><small>No data yet.</small>";
+      return;
+    }
+
+    // lengths numeric
+    const lengths = data
+      .map(c => Number(String(c.length || "").replace(",", ".")))
+      .filter(n => Number.isFinite(n));
+
+    const total = data.length;
+    const avg = lengths.length ? (lengths.reduce((a,b)=>a+b,0) / lengths.length) : 0;
+    const maxLen = lengths.length ? Math.max(...lengths) : 0;
+
+    // last catch date - just show last saved record
+    const last = data[data.length - 1];
+    const lastDate = esc(last.date || "");
+
+    statsBox.innerHTML = `
+      <b>Stats</b><br>
+      <b>Total catches:</b> ${total}<br>
+      <b>Average length:</b> ${lengths.length ? avg.toFixed(1) + " cm" : "-"}<br>
+      <b>Biggest length:</b> ${lengths.length ? maxLen.toFixed(1) + " cm" : "-"}<br>
+      <b>Last catch:</b> ${lastDate}
+    `;
+
+    // top species
+    const countBy = (key) => {
+      const m = new Map();
+      data.forEach(c => {
+        const v = String(c[key] || "").trim();
+        if(!v) return;
+        m.set(v, (m.get(v) || 0) + 1);
+      });
+      return [...m.entries()].sort((a,b)=>b[1]-a[1]);
+    };
+
+    const speciesSorted = countBy("species");
+    const placeSorted = countBy("place");
+
+    const topSpecies = speciesSorted.length ? speciesSorted[0][0] : "-";
+    const topPlace = placeSorted.length ? placeSorted[0][0] : "-";
+
+    speciesBox.innerHTML = `
+      <b>Top species:</b> ${esc(topSpecies)}<br>
+      <b>By species:</b><br><br>
+      ${speciesSorted.length ? speciesSorted.slice(0,8).map(([s,n]) => `${esc(s)} — ${n}`).join("<br>") : "<small>-</small>"}
+    `;
+
+    spotBox.innerHTML = `
+      <b>Top spot:</b> ${esc(topPlace)}<br>
+      <b>By place:</b><br><br>
+      ${placeSorted.length ? placeSorted.slice(0,8).map(([p,n]) => `${esc(p)} — ${n}`).join("<br>") : "<small>-</small>"}
+    `;
+
+    // month bars (based on c.date string; we'll group by YYYY-MM if possible)
+    const monthMap = new Map();
+    data.forEach(c => {
+      // try parse date; fallback to raw
+      const d = new Date(c.date);
+      let key = "";
+      if(!isNaN(d.getTime())){
+        key = d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0");
+      } else {
+        key = String(c.date || "unknown");
+      }
+      monthMap.set(key, (monthMap.get(key) || 0) + 1);
+    });
+
+    const monthSorted = [...monthMap.entries()].sort((a,b)=>a[0].localeCompare(b[0]));
+    const maxMonth = monthSorted.length ? Math.max(...monthSorted.map(([,n])=>n)) : 1;
+
+    const rows = monthSorted.map(([m,n]) => {
+      const w = Math.round((n / maxMonth) * 100);
+      return `
+        <div style="margin-bottom:8px;">
+          <div style="display:flex; justify-content:space-between; gap:10px;">
+            <span>${esc(m)}</span>
+            <span>${n}</span>
+          </div>
+          <div style="background:#1a2745; border-radius:6px; overflow:hidden; height:8px; margin-top:4px;">
+            <div style="width:${w}%; background:var(--accent); height:100%;"></div>
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    monthBox.innerHTML = `
+      <b>Months</b><br><br>
+      ${rows || "<small>-</small>"}
+    `;
+  }
+
+  function loadLog(){
+    list.innerHTML = "";
+    const data = getAll();
+
+    renderStats(data);
+
+    if(data.length === 0){
+      list.innerHTML = `<div class="card"><small>No catches yet.</small></div>`;
+      return;
+    }
+
+    data.forEach(c => {
+      const safeSpecies = esc(c.species);
+      const safePlace   = esc(c.place);
+      const safeLen     = esc(c.length);
+      const safeDate    = esc(c.date);
+      const safeCoords  = esc(c.coords);
+
+      const coord = String(c.coords || "").trim();
+      const coordEnc = encodeURIComponent(coord);
+
+      list.innerHTML += `
+        <div class="card">
+          <b>${safeSpecies || "•"}</b><br>
+          ${safePlace || ""} ${safePlace ? "•" : ""} ${safeLen ? safeLen + "cm" : "cm"}<br>
+          <small>${safeDate}</small><br>
+
+          ${coord ? `
+            <small>📍 ${safeCoords}</small><br>
+            <button onclick="openMap(decodeURIComponent('${coordEnc}'))">Maps</button>
+            <button onclick="directionsTo(decodeURIComponent('${coordEnc}'))">Directions</button>
+            <hr class="sep">
+          ` : `<br>`}
+
+          <button onclick="editCatch(${c.id})">Edit</button>
+          <button onclick="deleteCatch(${c.id})">Delete</button>
+        </div>
+      `;
+    });
+  }
+
+  // maak beskikbaar vir onclick=""
+  window.show = show;
+  window.saveCatch = saveCatch;
+  window.getGPS = getGPS;
+  window.loadLog = loadLog;
+  window.deleteCatch = deleteCatch;
+  window.editCatch = editCatch;
+  window.clearAll = clearAll;
+  window.openMap = openMap;
+  window.directionsTo = directionsTo;
+
+  // START
+  show("add");
+})();
+</script>
+
+</body>
+</html>
