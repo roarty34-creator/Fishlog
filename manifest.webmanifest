@@ -1,14 +1,20 @@
 {
-  "name": "Nicoleen Stilbaai",
-  "short_name": "Nicoleen Stilbaai",
-  "id": "/fishlog/?v=4",
-  "start_url": "/fishlog/?v=4",
-  "scope": "/fishlog/",
+  "name": "FishLog",
+  "short_name": "FishLog",
+  "start_url": ".",
   "display": "standalone",
   "background_color": "#0b1220",
   "theme_color": "#0b1220",
   "icons": [
-    { "src": "icon-192-v2.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "icon-512-v2.png", "sizes": "512x512", "type": "image/png" }
+    {
+      "src": "icon-192-v2.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512-v2.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
   ]
 }
