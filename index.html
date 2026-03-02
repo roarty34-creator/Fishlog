@@ -218,16 +218,19 @@ function loadLog(){
   }
 
   data.forEach(c=>{
+    const coord = c.coords || "";
+    const coordSafe = coord.replace(/'/g, "\\'");
+
     list.innerHTML += `
       <div class="card">
         <b>${c.species}</b><br>
         ${c.place} • ${c.length}cm<br>
         <small>${c.date}</small><br>
 
-        ${c.coords ? `
-          <small>📍 ${c.coords}</small><br>
-          <button onclick="openMap('${c.coords}')">Maps</button>
-          <button onclick="directionsTo('${c.coords}')">Directions</button>
+        ${coord ? `
+          <small>📍 ${coord}</small><br>
+          <button onclick="openMap('${coordSafe}')">Maps</button>
+          <button onclick="directionsTo('${coordSafe}')">Directions</button>
           <br><br>
         ` : `<br>`}
 
@@ -235,6 +238,7 @@ function loadLog(){
       </div>
     `;
   });
+}
 }
 
 function deleteCatch(id){
@@ -255,6 +259,7 @@ window.deleteCatch=deleteCatch;
 window.clearAll=clearAll;
 window.getGPS=getGPS;
 window.openMap = openMap;
+window.directionsTo = directionsTo;
 show("add");
 
 })();
