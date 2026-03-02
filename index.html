@@ -358,6 +358,10 @@ section{ display:none; }
     loadLog();
   }
 function loadStats(){
+  if(!statsBox || !speciesBox || !spotBox){
+  alert("Stats boxes missing in HTML (statsBox/speciesBox/spotBox).");
+  return;
+  }
   const data = getAll();
   const total = data.length;
 
