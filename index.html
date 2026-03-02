@@ -141,6 +141,7 @@ section{ display:none; }
   <div id="statsBox" class="card"></div>
   <div id="speciesBox" class="card"></div>
   <div id="spotBox" class="card"></div>
+  <div id="monthBox" class="card"></div>
 </section>
 
 <script>
@@ -158,6 +159,7 @@ section{ display:none; }
   const statsBox   = el("statsBox");
   const speciesBox = el("speciesBox");
   const spotBox    = el("spotBox");
+  const monthBox = el("monthBox");
 
   function getAll(){ return JSON.parse(localStorage.getItem(KEY) || "[]"); }
   function saveAll(data){ localStorage.setItem(KEY, JSON.stringify(data)); }
@@ -346,12 +348,23 @@ section{ display:none; }
 
   function loadStats(){
     // crash-proof
-    if(!statsBox || !speciesBox || !spotBox){
-      alert("Stats boxes missing (statsBox/speciesBox/spotBox).");
-      return;
+    if(!statsBox || !speciesBox || !spotBox || !monthBox){
+  alert("Stats boxes missing (statsBox/speciesBox/spotBox/monthBox).");
+  return;
     }
 
     const data = getAll();
+    // --- per month counts ---
+const monthCounts = {};
+data.forEach(c => {
+  // ons het nie ISO date nie, so gebruik "YYYY-MM" van vandag se jaar/maand as fallback
+  const d = new Date(c.id || Date.now()); // id is timestamp
+  const key = d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0");
+  monthCounts[key] = (monthCounts[key] || 0) + 1;
+});
+
+const monthSorted = Object.entries(monthCounts)
+  .sort((a,b)=> b[0].localeCompare(a[0])); // newest first
     const total = data.length;
 
     const lengths = data
@@ -400,6 +413,11 @@ section{ display:none; }
       <b>By place:</b><br><br>
       ${placeSorted.length ? placeSorted.map(([n,k]) => `• ${n}: ${k}`).join("<br>") : "<small>No data yet.</small>"}
     `;
+    monthBox.innerHTML = `
+  <b>Catches per month:</b><br><br>
+  ${monthSorted.length
+    ? monthSorted.map(([m,n]) => `• ${m}: ${n}`).join("<br>")
+    : "<small>No data yet.</small>"
   }
 
   // expose
