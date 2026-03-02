@@ -578,8 +578,7 @@ hr.sep{
     }
 
     // newest first
-    const sorted = [...data].sort((a,b)=> String(b.dateISO||"").localeCompare(String(a.dateISO||"")));
-
+    const sorted = applySearchAndSort(data);
     sorted.forEach(c => {
       const safeSpecies = esc(c.species);
       const safePlace   = esc(c.place);
@@ -616,6 +615,7 @@ hr.sep{
             <button onclick="editCatch(${c.id})">Edit</button>
             <button onclick="deleteCatch(${c.id})">Delete</button>
           </div>
+          <button onclick="shareCatch(${c.id})">Share</button>
         </div>
       `;
     });
@@ -646,7 +646,8 @@ hr.sep{
   window.directionsTo = directionsTo;
   window.viewPhoto = viewPhoto;
   window.exportCSV = exportCSV;
-
+window.exportBackup = exportBackup;
+window.shareCatch = shareCatch;
   // START
   show("add");
 })();
