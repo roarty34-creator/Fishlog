@@ -116,7 +116,17 @@ hr.sep{
     <h3 style="margin:0 0 10px">Add Catch</h3>
 
     <label class="small">Spesie</label>
-    <input id="species" placeholder="bv. Kaapse Kabeljou" autocomplete="off">
+    <select id="species" autocomplete="off">
+  <option value="">Kies spesie…</option>
+  <option>Kaapse Kabeljou</option>
+  <option>Geelstert</option>
+  <option>Bonnie</option>
+  <option>Rooi Roman</option>
+  <option>Snapper</option>
+  <option>Silver (Bastermeid)</option>
+  <option>Rooi Steenbras</option>
+  <option>Yellow Belly (Rockod)</option>
+    </select>
 
     <label class="small">Plek</label>
     <input id="place" placeholder="bv. Stilbaai / Die Punt" autocomplete="off">
@@ -196,25 +206,33 @@ hr.sep{
     if(id === "log") loadLog();
   }
 
-  function saveCatch(){
-    const data = getAll();
-    data.push({
-      id: Date.now(),
-      species: species.value.trim(),
-      place: place.value.trim(),
-      coords: coords.value.trim(),
-      length: length.value.trim(),
-      date: new Date().toLocaleDateString()
-    });
-    saveAll(data);
+function saveCatch(){
+  const data = getAll();
 
-    species.value = "";
-    place.value = "";
-    coords.value = "";   // ✅ GPS leeg na save
-    length.value = "";
+  const newCatch = {
+    id: Date.now(),
+    species: species.value.trim(),
+    place: place.value.trim(),
+    coords: coords.value.trim(),
+    length: length.value.trim(),
+    date: new Date().toLocaleDateString()
+  };
 
-    show("log");
-  }
+  data.push(newCatch);
+
+  // onthou laaste spesie
+  localStorage.setItem("lastSpecies", species.value);
+
+  saveAll(data);
+
+  // maak net ander velde leeg
+  place.value = "";
+  coords.value = "";
+  length.value = "";
+
+  loadLog();
+}
+  
 
   function getGPS(){
     if(!navigator.geolocation){
@@ -437,6 +455,10 @@ function directionsTo(coord){
   window.directionsTo = directionsTo;
 
   // START
+  const lastSpecies = localStorage.getItem("lastSpecies");
+if(lastSpecies){
+  species.value = lastSpecies;
+}
   show("add");
 })();
 </script>
