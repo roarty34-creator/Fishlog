@@ -224,12 +224,19 @@ function saveCatch(){
   localStorage.setItem("lastSpecies", species.value);
 
   saveAll(data);
-// clear inputs
+  // clear inputs
 species.value = "";
 place.value = "";
 coords.value = "";
 length.value = "";
 
+const cam = document.getElementById("photoCamera");
+const gal = document.getElementById("photoGallery");
+if (cam) cam.value = "";
+if (gal) gal.value = "";
+  
+loadLog();
+show("add");
 const cam = document.getElementById("photoCamera");
 const gal = document.getElementById("photoGallery");
 if (cam) cam.value = "";
