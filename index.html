@@ -229,6 +229,17 @@ function saveCatch(){
   place.value = "";
   coords.value = "";
   length.value = "";
+  // clear inputs
+species.value = "";
+place.value = "";
+coords.value = "";
+length.value = "";
+
+// as jy photo inputs het:
+const cam = document.getElementById("photoCamera");
+const gal = document.getElementById("photoGallery");
+if (cam) cam.value = "";
+if (gal) gal.value = "";
 
   loadLog();
 show("log");
