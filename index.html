@@ -179,9 +179,13 @@ section{ display:none; }
   }
 
   function setActive(id){
-    el("btnAdd").classList.toggle("active", id === "add");
-    el("btnLog").classList.toggle("active", id === "log");
-    el("btnStats").classList.toggle("active", id === "stats");
+  const bAdd = el("btnAdd");
+  const bLog = el("btnLog");
+  const bStats = el("btnStats");
+
+  if(bAdd) bAdd.classList.toggle("active", id === "add");
+  if(bLog) bLog.classList.toggle("active", id === "log");
+  if(bStats) bStats.classList.toggle("active", id === "stats");
   }
 
   function show(id){
