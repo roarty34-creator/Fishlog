@@ -202,6 +202,12 @@ function openMap(coordStr){
   const url = "https://www.google.com/maps?q=" + encodeURIComponent(coordStr);
   window.open(url, "_blank");
 }
+
+function directionsTo(coordStr){
+  if(!coordStr) return;
+  const url = "https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent(coordStr);
+  window.open(url, "_blank");
+}
 function loadLog(){
   list.innerHTML="";
   const data=getAll();
@@ -212,17 +218,24 @@ function loadLog(){
   }
 
   data.forEach(c=>{
-    list.innerHTML+=`
-      <div class="card">
-        <b>${c.species}</b><br>
-        ${c.place} • ${c.length}cm<br>
-        <small>${c.date}</small><br>
-        ${c.coords ? `<small>📍 ${c.coords}</small><br>
-<button onclick="openMap('${c.coords}')">Open in Google Maps</button><br><br>` : `<br>`}
-        <button onclick="deleteCatch(${c.id})">Delete</button>
-      </div>
-    `;
-  });
+  data.forEach(c=>{
+  list.innerHTML += `
+    <div class="card">
+      <b>${c.species}</b><br>
+      ${c.place} • ${c.length}cm<br>
+      <small>${c.date}</small><br>
+
+      ${c.coords ? `
+        <small>📍 ${c.coords}</small><br>
+        <button onclick="openMap('${c.coords}')">Maps</button>
+        <button onclick="directionsTo('${c.coords}')">Directions</button>
+        <br><br>
+      ` : `<br>`}
+
+      <button onclick="deleteCatch(${c.id})">Delete</button>
+    </div>
+  `;
+});
 }
 
 function deleteCatch(id){
