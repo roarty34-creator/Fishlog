@@ -1,5 +1,6 @@
-"name": "Nicoleen se FishLog",
-"short_name": "Nicoleen",
+{
+  "name": "Nicoleen",
+  "short_name": "Nicoleen",
   "start_url": "./?source=pwa",
   "display": "standalone",
   "background_color": "#0b1220",
