@@ -1,5 +1,5 @@
 
-const CACHE = "fishlog-v1";
+const CACHE = "fishlog-v3";
 const ASSETS = [
   "./",
   "./index.html",
