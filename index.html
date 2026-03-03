@@ -1,1 +1,627 @@
+<!DOCTYPE html>
+<html lang="af">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Nicoleen 🚤</title>
 
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#0b1220">
+
+  <style>
+    :root{
+      --bg:#0b1220;
+      --card:#101a2e;
+      --text:#e8eefc;
+      --muted:#a8b3d6;
+      --accent:#4f8cff;
+      --border:#20304d;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
+      background: radial-gradient(1200px 600px at 20% 0%, #0f1a35 0%, var(--bg) 60%);
+      color:var(--text);
+      padding:18px;
+    }
+    h1{margin:0 0 14px; font-size:40px; letter-spacing:.2px}
+    .topnav{display:flex; gap:10px; margin:10px 0 16px}
+    .navbtn{
+      border:1px solid var(--border);
+      background:rgba(16,26,46,.55);
+      color:var(--text);
+      padding:10px 14px;
+      border-radius:999px;
+      cursor:pointer;
+      font-weight:700;
+    }
+    .navbtn.active{background:rgba(79,140,255,.18); border-color:rgba(79,140,255,.6)}
+    .card{
+      background:rgba(16,26,46,.7);
+      border:1px solid rgba(32,48,77,.7);
+      border-radius:18px;
+      padding:16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.25);
+      margin:12px 0;
+    }
+    label.small{display:block; color:var(--muted); margin:12px 0 6px; font-size:14px}
+    input, select{
+      width:100%;
+      background:rgba(11,18,32,.55);
+      border:1px solid rgba(32,48,77,.9);
+      color:var(--text);
+      border-radius:14px;
+      padding:14px 14px;
+      outline:none;
+      font-size:16px;
+    }
+    select{padding-right:40px}
+    .row{display:flex; gap:10px; align-items:center}
+    .btn{
+      background:rgba(79,140,255,.18);
+      border:1px solid rgba(79,140,255,.6);
+      color:var(--text);
+      padding:12px 14px;
+      border-radius:14px;
+      cursor:pointer;
+      font-weight:800;
+      white-space:nowrap;
+    }
+    .btn.primary{background:var(--accent); border-color:var(--accent); color:#081226}
+    .btn.danger{background:rgba(255,90,90,.14); border-color:rgba(255,90,90,.6)}
+    .btn.ghost{background:rgba(16,26,46,.45); border-color:rgba(32,48,77,.8)}
+    .sectionTitle{margin:0 0 10px; font-size:26px}
+    .muted{color:var(--muted)}
+    .thumbRow{display:flex; gap:10px; align-items:center; margin-top:10px}
+    .thumb{
+      width:70px; height:70px; object-fit:cover;
+      border-radius:14px; border:1px solid rgba(32,48,77,.9);
+      background:#0a1020;
+    }
+    .chipRow{display:flex; gap:10px; flex-wrap:wrap; margin-top:10px}
+    .barWrap{background:#1a2745; border-radius:8px; overflow:hidden; height:10px; margin-top:6px}
+    .bar{height:10px; background:var(--accent); width:0%}
+    .modal{
+      position:fixed; inset:0; background:rgba(0,0,0,.7);
+      display:none; align-items:center; justify-content:center;
+      padding:16px;
+    }
+    .modal.show{display:flex}
+    .modalCard{
+      width:min(520px, 96vw);
+      background:rgba(16,26,46,.95);
+      border:1px solid rgba(32,48,77,.9);
+      border-radius:18px;
+      padding:12px;
+    }
+    .modalImg{width:100%; border-radius:14px; border:1px solid rgba(32,48,77,.9); background:#0a1020}
+    .smallBtns{display:flex; gap:10px; flex-wrap:wrap; margin-top:10px}
+    .hr{height:1px; background:rgba(32,48,77,.7); margin:14px 0}
+  </style>
+</head>
+
+<body>
+  <h1>Nicoleen 🚤</h1>
+
+  <div class="topnav">
+    <button class="navbtn active" id="btnAdd" onclick="show('add')">Add</button>
+    <button class="navbtn" id="btnLog" onclick="show('log')">Log</button>
+  </div>
+
+  <!-- ADD -->
+  <section id="add">
+    <div class="card">
+      <h3 class="sectionTitle">Add Catch</h3>
+
+      <label class="small">Spesie</label>
+      <select id="species">
+        <option value="">Kies spesie...</option>
+        <option>Kaapse Kabeljou</option>
+        <option>Geelstert</option>
+        <option>Bonnie</option>
+        <option>Rooi Roman</option>
+        <option>Snapper</option>
+        <option>Silver (Bastermeid)</option>
+        <option>Rooi Steenbras</option>
+        <option>Yellow Belly (Rockod)</option>
+        <option>Galjoen</option>
+        <option>Hottentot</option>
+      </select>
+
+      <label class="small">Plek</label>
+      <input id="place" placeholder="bv. Toets" autocomplete="off">
+
+      <label class="small">Koördinate</label>
+      <div class="row">
+        <button class="btn" type="button" onclick="getGPS()">Kry GPS</button>
+        <input id="coords" placeholder="bv. -34.36, 21.41" autocomplete="off">
+      </div>
+
+      <label class="small">Lengte (cm)</label>
+      <input id="length" inputmode="numeric" placeholder="bv. 80" autocomplete="off">
+
+      <label class="small">Foto</label>
+      <div class="row" style="flex-wrap:wrap;">
+        <button class="btn ghost" type="button" onclick="document.getElementById('photoCamera').click()">📷 Kamera</button>
+        <button class="btn ghost" type="button" onclick="document.getElementById('photoGallery').click()">🖼 Gallery</button>
+      </div>
+      <input id="photoCamera" type="file" accept="image/*" capture="environment" style="display:none;">
+      <input id="photoGallery" type="file" accept="image/*" style="display:none;">
+
+      <div class="hr"></div>
+
+      <button class="btn primary" type="button" onclick="saveCatch()">Save</button>
+    </div>
+
+    <div class="card">
+      <h3 class="sectionTitle">Backup</h3>
+      <div class="chipRow">
+        <button class="btn" type="button" onclick="exportCSV()">Export CSV</button>
+        <button class="btn" type="button" onclick="exportBackup()">Backup JSON</button>
+        <button class="btn" type="button" onclick="document.getElementById('importFile').click()">Import JSON</button>
+        <input id="importFile" type="file" accept="application/json" style="display:none;">
+        <button class="btn danger" type="button" onclick="clearAll()">Clear ALL</button>
+      </div>
+      <p class="muted" style="margin:10px 0 0;">CSV is vir Excel. JSON backup is vir terug restore.</p>
+    </div>
+  </section>
+
+  <!-- LOG -->
+  <section id="log" style="display:none;">
+    <div class="card">
+      <h3 class="sectionTitle">Stats</h3>
+      <div id="statsBox" class="muted"></div>
+      <div class="hr"></div>
+      <div id="speciesBox"></div>
+      <div class="hr"></div>
+      <div id="spotBox"></div>
+      <div class="hr"></div>
+      <div id="monthBox"></div>
+    </div>
+
+    <div id="list"></div>
+  </section>
+
+  <!-- PHOTO MODAL -->
+  <div class="modal" id="photoModal" onclick="closePhoto()">
+    <div class="modalCard" onclick="event.stopPropagation()">
+      <img id="modalImg" class="modalImg" alt="Foto">
+      <div class="smallBtns">
+        <button class="btn" type="button" onclick="closePhoto()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  (() => {
+    const KEY = "fishlog_catches_v1";
+
+    // elements
+    const species = document.getElementById("species");
+    const place   = document.getElementById("place");
+    const coords  = document.getElementById("coords");
+    const length  = document.getElementById("length");
+    const list    = document.getElementById("list");
+
+    const statsBox   = document.getElementById("statsBox");
+    const speciesBox = document.getElementById("speciesBox");
+    const spotBox    = document.getElementById("spotBox");
+    const monthBox   = document.getElementById("monthBox");
+
+    const camInput = document.getElementById("photoCamera");
+    const galInput = document.getElementById("photoGallery");
+    const importFile = document.getElementById("importFile");
+
+    // helpers
+    const esc = (s) => String(s ?? "")
+      .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;").replaceAll("'","&#39;");
+
+    function getAll(){
+      try { return JSON.parse(localStorage.getItem(KEY) || "[]") || []; }
+      catch { return []; }
+    }
+    function saveAll(arr){
+      localStorage.setItem(KEY, JSON.stringify(arr));
+    }
+
+    function show(which){
+      document.getElementById("add").style.display = (which==="add") ? "block" : "none";
+      document.getElementById("log").style.display = (which==="log") ? "block" : "none";
+
+      document.getElementById("btnAdd").classList.toggle("active", which==="add");
+      document.getElementById("btnLog").classList.toggle("active", which==="log");
+
+      if(which==="log") loadLog();
+    }
+
+    function fileToDataUrl(file){
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result || ""));
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function getPhotoDataUrl(){
+      const f1 = camInput?.files?.[0];
+      const f2 = galInput?.files?.[0];
+      const file = f1 || f2;
+      if(!file) return "";
+      try { return await fileToDataUrl(file); }
+      catch { return ""; }
+    }
+
+    function clearInputs(){
+      species.value = "";
+      place.value = "";
+      coords.value = "";
+      length.value = "";
+      if (camInput) camInput.value = "";
+      if (galInput) galInput.value = "";
+    }
+
+    async function saveCatch(){
+      const sp = species.value.trim();
+      const pl = place.value.trim();
+      const co = coords.value.trim();
+      const le = length.value.trim();
+
+      if(!sp){ alert("Kies asseblief 'n spesie."); return; }
+      if(!pl){ alert("Tik asseblief 'n plek."); return; }
+      if(!le){ alert("Tik asseblief 'n lengte."); return; }
+
+      const photo = await getPhotoDataUrl();
+
+      const data = getAll();
+      data.push({
+        id: Date.now(),
+        species: sp,
+        place: pl,
+        coords: co,
+        length: le,
+        date: new Date().toLocaleDateString("af-ZA"),
+        photo: photo
+      });
+      saveAll(data);
+
+      clearInputs();
+      loadLog();
+      show("log");
+    }
+
+    function deleteCatch(id){
+      const ok = confirm("Delete hierdie vang?");
+      if(!ok) return;
+      const data = getAll().filter(c => String(c.id) !== String(id));
+      saveAll(data);
+      loadLog();
+    }
+
+    function editCatch(id){
+      const data = getAll();
+      const idx = data.findIndex(c => String(c.id) === String(id));
+      if(idx === -1) return;
+      const c = data[idx];
+
+      const newSpecies = prompt("Spesie:", c.species || "");
+      if(newSpecies === null) return;
+
+      const newPlace = prompt("Plek:", c.place || "");
+      if(newPlace === null) return;
+
+      const newCoords = prompt("Koördinate:", c.coords || "");
+      if(newCoords === null) return;
+
+      const newLength = prompt("Lengte (cm):", c.length || "");
+      if(newLength === null) return;
+
+      c.species = newSpecies.trim();
+      c.place   = newPlace.trim();
+      c.coords  = newCoords.trim();
+      c.length  = newLength.trim();
+
+      saveAll(data);
+      loadLog();
+    }
+
+    function clearAll(){
+      const ok = confirm("Delete ALLES?");
+      if(!ok) return;
+      saveAll([]);
+      loadLog();
+      show("add");
+    }
+
+    function encodeForOnclick(s){
+      return encodeURIComponent(String(s||""));
+    }
+    function openMap(encodedCoord){
+      const coord = decodeURIComponent(encodedCoord || "");
+      const q = encodeURIComponent(coord);
+      window.open("https://www.google.com/maps/search/?api=1&query=" + q, "_blank");
+    }
+    function directionsTo(encodedCoord){
+      const coord = decodeURIComponent(encodedCoord || "");
+      const q = encodeURIComponent(coord);
+      window.open("https://www.google.com/maps/dir/?api=1&destination=" + q, "_blank");
+    }
+
+    function viewPhoto(id){
+      const data = getAll();
+      const c = data.find(x => String(x.id) === String(id));
+      if(!c || !c.photo) return;
+      document.getElementById("modalImg").src = c.photo;
+      document.getElementById("photoModal").classList.add("show");
+    }
+    function closePhoto(){
+      document.getElementById("photoModal").classList.remove("show");
+    }
+
+    async function shareCatch(id){
+      const data = getAll();
+      const c = data.find(x => String(x.id) === String(id));
+      if(!c) return;
+
+      const text =
+        `Spesie: ${c.species}\nPlek: ${c.place}\nLengte: ${c.length} cm\nDatum: ${c.date}` +
+        (c.coords ? `\nKoördinate: ${c.coords}` : "");
+
+      try{
+        if(navigator.share){
+          await navigator.share({ title: "Vang", text });
+        } else {
+          await navigator.clipboard.writeText(text);
+          alert("Gekopieer na clipboard ✅");
+        }
+      }catch(e){
+        // user cancelled share = fine
+      }
+    }
+
+    function getGPS(){
+      if(!navigator.geolocation){
+        alert("GPS nie beskikbaar op hierdie browser nie.");
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const lat = pos.coords.latitude.toFixed(6);
+          const lon = pos.coords.longitude.toFixed(6);
+          coords.value = `${lat}, ${lon}`;
+        },
+        () => alert("Kon nie GPS kry nie. Maak seker Location is aan en Chrome het toestemming."),
+        { enableHighAccuracy:true, timeout:15000 }
+      );
+    }
+
+    function exportCSV(){
+      const data = getAll();
+      const header = ["id","species","place","coords","length","date"];
+      const rows = data.map(c => [
+        c.id, c.species, c.place, c.coords, c.length, c.date
+      ].map(v => `"${String(v ?? "").replaceAll('"','""')}"`).join(","));
+      const csv = header.join(",") + "\n" + rows.join("\n");
+      downloadFile(csv, "fishlog.csv", "text/csv");
+    }
+
+    function exportBackup(){
+      const data = getAll();
+      const json = JSON.stringify({ version:1, exported:new Date().toISOString(), data }, null, 2);
+      downloadFile(json, "fishlog-backup.json", "application/json");
+    }
+
+    function downloadFile(content, filename, type){
+      const blob = new Blob([content], { type });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    importFile?.addEventListener("change", async () => {
+      const file = importFile.files?.[0];
+      if(!file) return;
+      try{
+        const txt = await file.text();
+        const obj = JSON.parse(txt);
+        const arr = Array.isArray(obj?.data) ? obj.data : (Array.isArray(obj) ? obj : null);
+        if(!arr){ alert("Import file lyk nie reg nie."); return; }
+        saveAll(arr);
+        alert("Import klaar ✅");
+        loadLog();
+        show("log");
+      }catch{
+        alert("Kon nie import nie.");
+      } finally {
+        importFile.value = "";
+      }
+    });
+
+    function calcStats(data){
+      const total = data.length;
+
+      const lengths = data
+        .map(c => parseFloat(String(c.length||"").replace(",", ".")))
+        .filter(n => Number.isFinite(n));
+
+      const avg = lengths.length ? (lengths.reduce((a,b)=>a+b,0)/lengths.length) : 0;
+      const max = lengths.length ? Math.max(...lengths) : 0;
+
+      const last = total ? data[data.length-1].date : "-";
+
+      // counts
+      const bySpecies = {};
+      const byPlace = {};
+      const byMonth = {};
+      data.forEach(c => {
+        const sp = String(c.species||"Onbekend");
+        const pl = String(c.place||"Onbekend");
+        bySpecies[sp] = (bySpecies[sp]||0)+1;
+        byPlace[pl] = (byPlace[pl]||0)+1;
+
+        // month from date af-ZA: YYYY/MM/DD or DD/MM/YYYY depends device; we do safe:
+        const d = String(c.date||"");
+        // try parse:
+        const parts = d.split(/[\/\-\.]/).map(x=>x.trim());
+        let monthKey = "Onbekend";
+        if(parts.length===3){
+          // if first is 4 digits => YYYY/MM/DD
+          if(parts[0].length===4) monthKey = `${parts[0]}-${parts[1].padStart(2,"0")}`;
+          else monthKey = `${parts[2]}-${parts[1].padStart(2,"0")}`;
+        }
+        byMonth[monthKey] = (byMonth[monthKey]||0)+1;
+      });
+
+      const topFrom = (obj) => {
+        const entries = Object.entries(obj).sort((a,b)=>b[1]-a[1]);
+        return entries.length ? entries[0][0] : "-";
+      };
+
+      return {
+        total,
+        avg: avg ? avg.toFixed(1) : "0",
+        max: max ? max.toFixed(0) : "0",
+        last,
+        bySpecies,
+        byPlace,
+        byMonth,
+        topSpecies: topFrom(bySpecies),
+        topPlace: topFrom(byPlace),
+      };
+    }
+
+    function renderTopList(title, obj){
+      const entries = Object.entries(obj).sort((a,b)=>b[1]-a[1]).slice(0,8);
+      if(!entries.length) return `<b>${esc(title)}:</b> -`;
+      return `
+        <b>${esc(title)}:</b><br><br>
+        ${entries.map(([k,v]) => `• ${esc(k)} — <b>${v}</b>`).join("<br>")}
+      `;
+    }
+
+    function renderBars(title, obj){
+      const entries = Object.entries(obj).sort((a,b)=>b[1]-a[1]).slice(0,10);
+      if(!entries.length) return `<b>${esc(title)}:</b> -`;
+      const max = Math.max(...entries.map(e=>e[1]));
+      return `
+        <b>${esc(title)}:</b><br><br>
+        ${entries.map(([k,v]) => {
+          const pct = max ? Math.round((v/max)*100) : 0;
+          return `
+            <div style="margin-bottom:10px;">
+              <div style="display:flex; justify-content:space-between; gap:10px;">
+                <span>${esc(k)}</span>
+                <span><b>${v}</b></span>
+              </div>
+              <div class="barWrap"><div class="bar" style="width:${pct}%"></div></div>
+            </div>
+          `;
+        }).join("")}
+      `;
+    }
+
+    function loadLog(){
+      list.innerHTML = "";
+      const data = getAll();
+
+      // stats boxes
+      const s = calcStats(data);
+      statsBox.innerHTML = `
+        <b>Total catches:</b> ${s.total}<br>
+        <b>Average length:</b> ${esc(s.avg)} cm<br>
+        <b>Biggest length:</b> ${esc(s.max)} cm<br>
+        <b>Last catch:</b> ${esc(s.last)}
+      `;
+
+      speciesBox.innerHTML = renderTopList("Top species", s.bySpecies);
+      spotBox.innerHTML = renderTopList("Top spots", s.byPlace);
+      monthBox.innerHTML = renderBars("Catches per month", s.byMonth);
+
+      if(data.length === 0){
+        list.innerHTML = `<div class="card">No catches yet.</div>`;
+        return;
+      }
+
+      // newest first
+      const sorted = [...data].sort((a,b)=>Number(b.id)-Number(a.id));
+
+      sorted.forEach(c => {
+        const safeSpecies = esc(c.species);
+        const safePlace = esc(c.place);
+        const safeLen = esc(c.length);
+        const safeDate = esc(c.date);
+
+        const hasCoords = !!(c.coords && String(c.coords).trim());
+        const coordEncoded = encodeForOnclick(c.coords || "");
+        const coordShow = esc(c.coords || "");
+
+        const hasPhoto = !!(c.photo && String(c.photo).startsWith("data:image/"));
+        const thumb = hasPhoto ? `<img class="thumb" src="${c.photo}" alt="Foto">` : "";
+
+        list.innerHTML += `
+          <div class="card">
+            <b>${safeSpecies}</b><br>
+            ${safePlace} • ${safeLen} cm<br>
+            <small class="muted">${safeDate}</small><br>
+
+            ${hasCoords ? `
+              <div style="margin-top:10px;">
+                <small>📍 ${coordShow}</small><br>
+                <div class="chipRow" style="margin-top:8px;">
+                  <button class="btn" onclick="openMap('${coordEncoded}')">Maps</button>
+                  <button class="btn" onclick="directionsTo('${coordEncoded}')">Directions</button>
+                </div>
+              </div>
+            ` : ``}
+
+            ${hasPhoto ? `
+              <div class="thumbRow">
+                ${thumb}
+                <button class="btn" onclick="viewPhoto(${c.id})">View photo</button>
+              </div>
+            ` : ``}
+
+            <div class="chipRow" style="margin-top:12px;">
+              <button class="btn" onclick="editCatch(${c.id})">Edit</button>
+              <button class="btn danger" onclick="deleteCatch(${c.id})">Delete</button>
+              <button class="btn" onclick="shareCatch(${c.id})">Share</button>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    // --- expose for onclick ---
+    window.show = show;
+    window.saveCatch = saveCatch;
+    window.loadLog = loadLog;
+    window.deleteCatch = deleteCatch;
+    window.editCatch = editCatch;
+    window.clearAll = clearAll;
+    window.getGPS = getGPS;
+    window.openMap = openMap;
+    window.directionsTo = directionsTo;
+    window.viewPhoto = viewPhoto;
+    window.closePhoto = closePhoto;
+    window.exportCSV = exportCSV;
+    window.exportBackup = exportBackup;
+    window.shareCatch = shareCatch;
+
+    // start
+    show("add");
+
+    // PWA service worker
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./sw.js").catch(()=>{});
+    }
+  })();
+  </script>
+</body>
+</html>
