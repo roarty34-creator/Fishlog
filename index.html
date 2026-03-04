@@ -217,24 +217,22 @@ let html=""
 
 data.forEach((c,i)=>{
 
-html+=`
-<div style="border-bottom:1px solid #333;padding:8px">
+list.innerHTML += `
+  <div class="card">
+    <div class="entryTitle">${title}</div>
 
-<b>${c.species}</b><br>
+    <div class="entryMeta">
+      ${place ? place + " • " : ""}${len ? len + " cm • " : ""}${date}
+    </div>
 
-${c.place || ""}<br>
+    ${c.photo ? `<img src="${c.photo}" style="width:100%;border-radius:12px;margin-top:8px">` : ""}
 
-${c.length || ""} cm<br>
-
-${c.date}
-
-${c.photo ? `<img class="catchPhoto" src="${c.photo}">` : ""}
-
-<br>
-
-<button onclick="deleteCatch(${i})">Delete</button>
-
-</div>
+    <div class="chipRow">
+      ${hasCoords ? `<button class="smallBtn" onclick="navigateToCoords('${c.coords}')">📍 Nav</button>` : ""}
+      <button class="smallBtn danger" onclick="deleteCatch('${c.id}')">🗑 Delete</button>
+    </div>
+  </div>
+`;
 `
 
 })
