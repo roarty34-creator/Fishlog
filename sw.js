@@ -1,4 +1,4 @@
-const CACHE = "nicoleen-fishlog-v1";
+const CACHE = "fishlog-v2";
 const ASSETS = [
   "./",
   "./index.html",
