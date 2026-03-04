@@ -128,10 +128,20 @@ margin-top:8px;
 <!-- STATS -->
 <section id="stats">
 
-<div class="card">
-<h3>Stats</h3>
-<div id="statsBox"></div>
-</div>
+  <div class="card">
+    <h3>Stats</h3>
+    <div id="statsBox"></div>
+  </div>
+
+  <div class="card">
+    <h3>Top Spots (Top 5)</h3>
+    <div id="spotsBox"></div>
+  </div>
+
+  <div class="card">
+    <h3>Vangs per Maand</h3>
+    <canvas id="monthChart" width="320" height="180" style="width:100%;background:#0e1730;border-radius:12px;"></canvas>
+  </div>
 
 </section>
 
@@ -255,6 +265,7 @@ ${c.photo?`<img src="${c.photo}">`:""}
 <button onclick="directions('${c.coords}')">Directions</button>
 
 <button onclick="deleteCatch(${c.id})">Delete</button>
+${extraInfoHtml(c)}
 
 </div>
 
@@ -299,39 +310,150 @@ window.open("https://www.google.com/maps/dir/?api=1&destination="+c)
 }
 
 function renderStats(){
+  const data = getAll();
 
-const data=getAll()
+  // Basiese counts
+  let kabeljou=0, geelstert=0;
+  data.forEach(c=>{
+    if(c.species==="Kaapse Kabeljou") kabeljou++;
+    if(c.species==="Geelstert") geelstert++;
+  });
 
-let kabeljou=0
-let geelstert=0
+  // Top spots
+  const spotCount = {};
+  data.forEach(c=>{
+    const p = (c.place || "").trim();
+    if(!p) return;
+    spotCount[p] = (spotCount[p]||0) + 1;
+  });
+  const topSpots = Object.entries(spotCount)
+    .sort((a,b)=>b[1]-a[1])
+    .slice(0,5);
 
-data.forEach(c=>{
+  // Per month counts
+  const monthCount = {};
+  data.forEach(c=>{
+    const d = (c.date || "").slice(0,7); // YYYY-MM
+    if(!d) return;
+    monthCount[d] = (monthCount[d]||0) + 1;
+  });
+  const months = Object.keys(monthCount).sort(); // old->new
 
-if(c.species==="Kaapse Kabeljou") kabeljou++
-if(c.species==="Geelstert") geelstert++
+  // Output boxes
+  statsBox.innerHTML = `
+    Kabeljou: ${kabeljou}<br>
+    Geelstert: ${geelstert}<br>
+    Total: ${data.length}
+  `;
 
-})
+  const spotsBox = document.getElementById("spotsBox");
+  if(!topSpots.length){
+    spotsBox.innerHTML = "Geen plek data nog nie.";
+  } else {
+    spotsBox.innerHTML = topSpots.map(([p,n],i)=>`${i+1}. ${p} — ${n}`).join("<br>");
+  }
 
-statsBox.innerHTML=`
-Kabeljou: ${kabeljou}<br>
-Geelstert: ${geelstert}<br>
-Total: ${data.length}
-`
-
+  drawMonthChart(months.map(m=>({m, n: monthCount[m]})));
 }
 
-let map
-let heat
+// Simple bar chart (canvas)
+function drawMonthChart(rows){
+  const canvas = document.getElementById("monthChart");
+  if(!canvas) return;
+  const ctx = canvas.getContext("2d");
 
-function initMap(){
+  // clear
+  ctx.clearRect(0,0,canvas.width,canvas.height);
 
-if(map) return
+  if(!rows.length){
+    ctx.fillText("Geen data nog nie.", 10, 20);
+    return;
+  }
 
-map=L.map("map").setView([-34.37,20.85],10)
+  const max = Math.max(...rows.map(r=>r.n), 1);
+  const pad = 18;
+  const w = canvas.width, h = canvas.height;
+  const barW = Math.max(10, (w - pad*2) / rows.length - 6);
 
-L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map)
+  rows.forEach((r, i)=>{
+    const x = pad + i*(barW+6);
+    const barH = Math.round((r.n / max) * (h - pad*2 - 18));
+    const y = h - pad - barH;
 
+    // bar (default canvas color)
+    ctx.fillRect(x, y, barW, barH);
+
+    // labels
+    ctx.font = "10px system-ui";
+    ctx.fillText(String(r.n), x, y - 4);
+    ctx.fillText(r.m.slice(5), x, h - 6); // MM
+  });
 }
+
+// Moon phase (0=new, 0.5=full)
+function moonPhaseFraction(isoDate){
+  // Simple approximation (good enough for logbook)
+  const d = new Date(isoDate || new Date().toISOString().slice(0,10));
+  const knownNewMoon = new Date("2000-01-06T18:14:00Z").getTime();
+  const synodic = 29.530588853 * 24*60*60*1000;
+  const phase = ((d.getTime() - knownNewMoon) % synodic) / synodic;
+  return (phase + 1) % 1;
+}
+function moonLabel(frac){
+  if(frac < 0.06 || frac > 0.94) return "🌑 New";
+  if(frac < 0.25) return "🌒 Waxing";
+  if(frac < 0.31) return "🌓 First Q";
+  if(frac < 0.50) return "🌔 Waxing";
+  if(frac < 0.56) return "🌕 Full";
+  if(frac < 0.75) return "🌖 Waning";
+  if(frac < 0.81) return "🌗 Last Q";
+  return "🌘 Waning";
+}
+
+// Distance (km) between 2 coords
+function haversineKm(lat1, lon1, lat2, lon2){
+  const R = 6371;
+  const toRad = (x)=>x*Math.PI/180;
+  const dLat = toRad(lat2-lat1);
+  const dLon = toRad(lon2-lon1);
+  const a = Math.sin(dLat/2)**2 +
+    Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
+  return 2*R*Math.asin(Math.sqrt(a));
+}
+
+// Add this inside your loadLog() card (optional)
+// Show moon + distance if coords exists
+function extraInfoHtml(c){
+  const hasCoords = c.coords && String(c.coords).includes(",");
+  let html = "";
+
+  // moon
+  const frac = moonPhaseFraction(c.date);
+  html += `<br><small>${moonLabel(frac)}</small>`;
+
+  // distance (asks GPS live)
+  if(hasCoords){
+    html += `<br><button onclick="distanceTo('${c.coords}')">📏 Distance</button>`;
+  }
+  return html;
+}
+
+function distanceTo(coordStr){
+  if(!navigator.geolocation){
+    alert("GPS nie beskikbaar nie.");
+    return;
+  }
+  const parts = String(coordStr).split(",");
+  const lat2 = parseFloat(parts[0]);
+  const lon2 = parseFloat(parts[1]);
+
+  navigator.geolocation.getCurrentPosition(pos=>{
+    const lat1 = pos.coords.latitude;
+    const lon1 = pos.coords.longitude;
+    const km = haversineKm(lat1, lon1, lat2, lon2);
+    alert("Afstand na spot: " + km.toFixed(2) + " km");
+  }, ()=>alert("Kon nie jou ligging kry nie."));
+                                         }
 
 function renderMap(){
 
