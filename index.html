@@ -358,6 +358,45 @@
   }
 
   // ---------- Helpers ----------
+  // --- helpers ---
+function speciesIcon(name){
+  const s = (name || "").toLowerCase();
+  if(s.includes("kabel")) return "🐟";
+  if(s.includes("geelstert") || s.includes("yellowtail")) return "💛🐟";
+  if(s.includes("bonnie") || s.includes("bonito")) return "⚡🐟";
+  if(s.includes("roman")) return "🔴🐟";
+  if(s.includes("galjoen")) return "🪨🐟";
+  if(s.includes("hottentot")) return "🌊🐟";
+  return "🎣";
+}
+
+// Moon phase from date (0..7) 0=new, 4=full
+function moonPhaseEmoji(dateStr){
+  if(!dateStr) return "";
+  const d = new Date(dateStr);
+  if(isNaN(d)) return "";
+  const lp = 2551443; // lunar period in seconds
+  const newMoon = new Date(Date.UTC(2001,0,24,13,0,0)).getTime(); // reference new moon
+  const phase = ((d.getTime() - newMoon) / 1000) % lp;
+  const frac = (phase < 0 ? (phase + lp) : phase) / lp;
+  const idx = Math.round(frac * 8) % 8;
+
+  const arr = ["🌑","🌒","🌓","🌔","🌕","🌖","🌗","🌘"];
+  return arr[idx];
+}
+
+function navigateToCoords(coords){
+  if(!coords) return;
+  // accepts "-34.32, 21.39" or "-34.32 21.39"
+  const clean = String(coords).trim().replace(/\s+/g, ",");
+  const parts = clean.split(",").map(x => x.trim()).filter(Boolean);
+  if(parts.length < 2) return;
+
+  const lat = parts[0], lng = parts[1];
+  // Google Maps directions
+  const url = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(lat + "," + lng)}&travelmode=driving`;
+  window.open(url, "_blank");
+}
   function esc(s){
     return String(s ?? "").replace(/[&<>"']/g, m => ({
       "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
@@ -809,6 +848,7 @@
   setToday();
   renderLog();
   renderStats();
+  window.navigateToCoords = navigateToCoords;
 </script>
 </body>
   </html>
