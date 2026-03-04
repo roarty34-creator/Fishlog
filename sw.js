@@ -1,4 +1,4 @@
-const CACHE = "fishlog-v3";
+const CACHE = "fishlog-v1";
 
 const ASSETS = [
   "./",
@@ -28,10 +28,12 @@ self.addEventListener("activate", e => {
 
 self.addEventListener("fetch", e => {
 
-  // laat map tiles en CDN scripts direk deurgaan
+  const url = e.request.url;
+
+  // laat map tiles en CDN deurgaan
   if (
-    e.request.url.includes("tile.openstreetmap.org") ||
-    e.request.url.includes("unpkg.com")
+    url.includes("tile.openstreetmap.org") ||
+    url.includes("unpkg.com")
   ) {
     return;
   }
@@ -39,4 +41,5 @@ self.addEventListener("fetch", e => {
   e.respondWith(
     caches.match(e.request).then(r => r || fetch(e.request))
   );
+
 });
