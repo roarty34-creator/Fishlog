@@ -8,7 +8,8 @@
   <!-- PWA -->
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#0b1220">
-
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <style>
     :root{
       --bg:#0b1220;
@@ -191,15 +192,21 @@
     <div class="card">
       <h3 class="sectionTitle">Stats</h3>
       <div id="statsBox" class="muted"></div>
+      
       <div class="hr"></div>
       <div id="speciesBox"></div>
       <div class="hr"></div>
       <div id="spotBox"></div>
       <div class="hr"></div>
       <div id="monthBox"></div>
-    </div>
+</div>
 
-    <div id="list"></div>
+<div class="card" style="margin-top:14px;">
+  <h3 style="margin:0 0 10px;">Map</h3>
+  <div id="map" style="height:320px; border-radius:16px; overflow:hidden;"></div>
+</div>
+
+<div id="list"></div>
   </section>
 
   <!-- PHOTO MODAL -->
@@ -255,8 +262,11 @@ const rig = document.getElementById("rig");
       document.getElementById("btnAdd").classList.toggle("active", which==="add");
       document.getElementById("btnLog").classList.toggle("active", which==="log");
 
-      if(which==="log") loadLog();
-    }
+   if(which==="log") {
+  loadLog();
+    refreshMapAfterLog();
+      } 
+}
 
     function fileToDataUrl(file){
       return new Promise((resolve, reject) => {
@@ -527,6 +537,56 @@ const rig = document.getElementById("rig");
         ${entries.map(([k,v]) => `• ${esc(k)} — <b>${v}</b>`).join("<br>")}
       `;
     }
+    let mapInstance = null;
+let mapMarkers = [];
+
+function renderMap(){
+  const data = getAll().filter(c => c.coords && String(c.coords).includes(","));
+
+  // maak map net 1 keer
+  if(!mapInstance){
+    mapInstance = L.map("map", { zoomControl:true });
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 18,
+      attribution: "&copy; OpenStreetMap"
+    }).addTo(mapInstance);
+  }
+
+  // clear ou markers
+  mapMarkers.forEach(m => m.remove());
+  mapMarkers = [];
+
+  if(!data.length){
+    mapInstance.setView([-34.4, 21.4], 9); // default area (kan jy verander)
+    return;
+  }
+
+  const bounds = [];
+
+  data.forEach(c => {
+    const parts = String(c.coords).split(",").map(x => parseFloat(x.trim()));
+    if(parts.length !== 2 || isNaN(parts[0]) || isNaN(parts[1])) return;
+
+    const lat = parts[0], lng = parts[1];
+    bounds.push([lat, lng]);
+
+    const label = `${c.species || ""} • ${c.place || ""} • ${c.length || ""}cm • ${c.date || ""}`;
+    const m = L.marker([lat, lng]).addTo(mapInstance).bindPopup(label);
+    mapMarkers.push(m);
+  });
+
+  if(bounds.length){
+    mapInstance.fitBounds(bounds, { padding:[20,20] });
+  }
+}
+
+function refreshMapAfterLog(){
+  // klein timeout sodat die section klaar wys voordat Leaflet size bereken
+  setTimeout(() => {
+    if(mapInstance) mapInstance.invalidateSize();
+    renderMap();
+  }, 200);
+}
 
     function renderBars(title, obj){
       const entries = Object.entries(obj).sort((a,b)=>b[1]-a[1]).slice(0,10);
