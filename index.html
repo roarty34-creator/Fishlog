@@ -546,10 +546,21 @@ function renderMap(){
   // maak map net 1 keer
   if(!mapInstance){
     mapInstance = L.map("map", { zoomControl:true });
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      maxZoom: 18,
-      attribution: "&copy; OpenStreetMap"
-    }).addTo(mapInstance);
+    const street = L.tileLayer(
+ "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+ { maxZoom: 18, attribution: "&copy; OpenStreetMap" }
+);
+
+const satellite = L.tileLayer(
+ "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+ { attribution: "Tiles © Esri" }
+);
+
+street.addTo(mapInstance);
+
+L.control.layers(
+ { "Street": street, "Satellite": satellite }
+).addTo(mapInstance);
   }
 
   // clear ou markers
@@ -570,9 +581,12 @@ function renderMap(){
     const lat = parts[0], lng = parts[1];
     bounds.push([lat, lng]);
 
-    const label = `${c.species || ""} • ${c.place || ""} • ${c.length || ""}cm • ${c.date || ""}`;
-    const m = L.marker([lat, lng]).addTo(mapInstance).bindPopup(label);
-    mapMarkers.push(m);
+    const label = `${c.species || ""} • ${c.place || ""}`;
+
+const m = L.marker([lat, lng]).addTo(mapInstance)
+  .bindPopup(`<b>${c.species}</b><br>${c.place || ""}<br>${c.length} cm`);
+
+mapMarkers.push(m);
   });
 
   if(bounds.length){
