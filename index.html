@@ -385,13 +385,8 @@
       alert("Saved ✅");
       clearForm();
     }
-    function getGPS(){
+   function getGPS(){
   const coordsEl = document.getElementById("coords");
-
-  if(!coordsEl){
-    alert("Coords input (id='coords') nie gevind nie.");
-    return;
-  }
 
   if(!navigator.geolocation){
     alert("GPS nie beskikbaar op hierdie browser nie.");
@@ -405,11 +400,11 @@
       coordsEl.value = `${lat}, ${lng}`;
     },
     (err) => {
-      alert("GPS error: " + err.code + " - " + (err.message || "unknown"));
+      alert("GPS error: " + err.message);
     },
-    { enableHighAccuracy:true, timeout:15000, maximumAge:0 }
+    { enableHighAccuracy:true }
   );
-    }
+   }
 
     // ---------- stats helpers ----------
     function esc(s){
@@ -658,6 +653,14 @@
     }
 
     // start
+    
+    window.showTab = showTab;
+window.saveCatch = saveCatch;
+window.deleteCatch = deleteCatch;
+window.exportCSV = exportCSV;
+window.resetLog = resetLog;
+
+window.getGPS = getGPS;
     showTab("add");
   </script>
 </body>
