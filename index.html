@@ -1,11 +1,14 @@
+
 <!DOCTYPE html>
 <html lang="af">
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+
 <title>FishLog</title>
 
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <style>
@@ -19,10 +22,16 @@ color:white;
 
 h2{
 text-align:center;
+margin-top:10px;
+}
+
+.topnav{
+text-align:center;
+margin:10px;
 }
 
 button{
-padding:10px;
+padding:10px 14px;
 margin:5px;
 border:none;
 border-radius:8px;
@@ -32,8 +41,8 @@ color:white;
 
 .card{
 background:#111827;
-padding:15px;
 margin:10px;
+padding:15px;
 border-radius:12px;
 }
 
@@ -55,17 +64,18 @@ border-radius:12px;
 img{
 width:100%;
 border-radius:10px;
-margin-top:8px;
+margin-top:10px;
 }
 
 </style>
+
 </head>
 
 <body>
 
 <h2>FishLog 🎣</h2>
 
-<div style="text-align:center">
+<div class="topnav">
 
 <button onclick="show('add')">Add</button>
 <button onclick="show('log')">Log</button>
@@ -128,7 +138,7 @@ margin-top:8px;
 <script>
 
 let map
-let markers = []
+let markers=[]
 
 function show(tab){
 
@@ -138,26 +148,33 @@ document.getElementById("mapSection").style.display="none"
 document.getElementById("stats").style.display="none"
 
 if(tab==="add") document.getElementById("add").style.display="block"
-if(tab==="log") document.getElementById("log").style.display="block"
-if(tab==="map") document.getElementById("mapSection").style.display="block"
-if(tab==="stats") document.getElementById("stats").style.display="block"
+if(tab==="log"){
+document.getElementById("log").style.display="block"
+renderLog()
+}
 
-if(tab==="map") renderMap()
-if(tab==="log") renderLog()
-if(tab==="stats") renderStats()
+if(tab==="map"){
+document.getElementById("mapSection").style.display="block"
+renderMap()
+
+setTimeout(()=>{
+if(map) map.invalidateSize()
+},200)
+}
+
+if(tab==="stats"){
+document.getElementById("stats").style.display="block"
+renderStats()
+}
 
 }
 
 function getAll(){
-
-return JSON.parse(localStorage.getItem("fishlog") || "[]")
-
+return JSON.parse(localStorage.getItem("fishlog")||"[]")
 }
 
 function saveAll(data){
-
 localStorage.setItem("fishlog",JSON.stringify(data))
-
 }
 
 function saveCatch(){
@@ -175,33 +192,27 @@ if(photoInput.files[0]){
 const reader=new FileReader()
 
 reader.onload=function(){
-
 photo=reader.result
-finishSave()
-
+finish()
 }
 
 reader.readAsDataURL(photoInput.files[0])
 
 }else{
-
-finishSave()
-
+finish()
 }
 
-function finishSave(){
+function finish(){
 
 const data=getAll()
 
 data.push({
-
 species,
 place,
 length,
 coords,
 photo,
 date:new Date().toISOString().slice(0,10)
-
 })
 
 saveAll(data)
@@ -215,7 +226,6 @@ alert("Catch saved")
 function renderLog(){
 
 const list=document.getElementById("list")
-
 list.innerHTML=""
 
 const data=getAll().reverse()
@@ -230,7 +240,7 @@ list.innerHTML+=`
 
 ${c.place} • ${c.length}cm<br>
 
-${c.date}<br>
+${c.date}
 
 ${c.photo?`<img src="${c.photo}">`:""}
 
@@ -249,9 +259,7 @@ if(!map){
 map=L.map("map").setView([-34.37,20.85],10)
 
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
-
 maxZoom:19
-
 }).addTo(map)
 
 }
@@ -270,6 +278,8 @@ const parts=c.coords.split(",")
 const lat=parseFloat(parts[0])
 const lng=parseFloat(parts[1])
 
+if(isNaN(lat)||isNaN(lng))return
+
 const marker=L.marker([lat,lng]).addTo(map)
 
 marker.bindPopup(c.species+"<br>"+c.place)
@@ -285,21 +295,16 @@ function renderStats(){
 const data=getAll()
 
 let total=data.length
-
 let speciesCount={}
 
 data.forEach(c=>{
-
 speciesCount[c.species]=(speciesCount[c.species]||0)+1
-
 })
 
 let html="Total catches: "+total+"<br><br>"
 
 for(let s in speciesCount){
-
 html+=s+": "+speciesCount[s]+"<br>"
-
 }
 
 document.getElementById("statsBox").innerHTML=html
@@ -309,11 +314,8 @@ document.getElementById("statsBox").innerHTML=html
 function getGPS(){
 
 if(!navigator.geolocation){
-
 alert("GPS nie beskikbaar")
-
 return
-
 }
 
 navigator.geolocation.getCurrentPosition(
@@ -323,21 +325,4 @@ function(pos){
 const lat=pos.coords.latitude.toFixed(6)
 const lng=pos.coords.longitude.toFixed(6)
 
-document.getElementById("coords").value=lat+","+lng
-
-},
-
-function(){
-
-alert("Kon nie GPS kry nie")
-
-}
-
-)
-
-}
-
-</script>
-
-</body>
-</html>
+document.get
