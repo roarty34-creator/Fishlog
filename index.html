@@ -837,8 +837,19 @@ function navigateToCoords(coords){
       heatPts.push([lat,lng,w]);
     });
 
-    heatLayer = L.heatLayer(heatPts, { radius: 22, blur: 18, maxZoom: 17 });
-    heatLayer.addTo(mapInstance);
+    heatLayer = L.heatLayer(heatPts, {
+  radius: 35,
+  blur: 25,
+  maxZoom: 17,
+  minOpacity: 0.5,
+  gradient: {
+    0.2: "blue",
+    0.4: "lime",
+    0.6: "yellow",
+    0.8: "orange",
+    1.0: "red"
+  }
+});
 
     mapInstance.fitBounds(bounds, { padding:[20,20] });
   }
