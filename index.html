@@ -1,752 +1,370 @@
 <!DOCTYPE html>
 <html lang="af">
 <head>
-  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Fish Log</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FishLog</title>
 
-  <!-- Leaflet -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
 
-  <style>
-    :root{
-      --bg:#0b1220;
-      --card:#101a2e;
-      --border:rgba(32,48,77,.9);
-      --text:#e8eefc;
-      --muted:#b8c4e8;
-      --btn:#1a2a4a;
-      --btn2:#223a66;
-      --danger:#4a1a1a;
-      --danger2:#662222;
-      --accent:#6ea0ff;
-      --radius:18px;
-    }
-    body{
-      margin:0;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      background:var(--bg);
-      color:var(--text);
-    }
-    .wrap{
-      max-width:720px;
-      margin:0 auto;
-      padding:14px;
-    }
-    h1{
-      margin:4px 0 10px;
-      font-size:22px;
-      font-weight:800;
-      letter-spacing:.2px;
-    }
-    .topbar{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      margin-bottom:10px;
-    }
-    .topActions{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-      justify-content:flex-end;
-    }
-    .topnav{
-      display:flex;
-      gap:10px;
-      margin:10px 0 14px;
-    }
-    .navbtn{
-      flex:1;
-      padding:10px 12px;
-      border-radius:999px;
-      border:1px solid var(--border);
-      background:transparent;
-      color:var(--text);
-      font-weight:700;
-    }
-    .navbtn.active{
-      background:rgba(110,160,255,.15);
-      border-color:rgba(110,160,255,.55);
-    }
-    .card{
-      background:rgba(16,26,46,.95);
-      border:1px solid var(--border);
-      border-radius:var(--radius);
-      padding:12px;
-      margin-bottom:12px;
-      box-shadow:0 10px 25px rgba(0,0,0,.22);
-    }
-    .sectionTitle{
-      margin:0 0 10px;
-      font-size:16px;
-      letter-spacing:.2px;
-    }
-    label.small{
-      display:block;
-      font-size:12px;
-      color:var(--muted);
-      margin:10px 0 6px;
-      font-weight:700;
-    }
-    input, select{
-      width:100%;
-      padding:12px 12px;
-      border-radius:14px;
-      border:1px solid var(--border);
-      background:#0d172b;
-      color:var(--text);
-      outline:none;
-      font-size:14px;
-    }
-    .row2{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:10px;
-    }
-    .btnRow{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      margin-top:12px;
-    }
-    .btn{
-      padding:10px 12px;
-      border-radius:14px;
-      border:1px solid var(--border);
-      background:var(--btn);
-      color:var(--text);
-      font-weight:800;
-    }
-    .btn:hover{ background:var(--btn2); }
-    .danger{
-      background:var(--danger);
-      border-color:rgba(255,120,120,.35);
-    }
-    .danger:hover{ background:var(--danger2); }
+<style>
+body{
+margin:0;
+font-family:system-ui;
+background:#0b1220;
+color:#e8eefc;
+padding:18px;
+}
 
-    .muted{ color:var(--muted); font-size:13px; line-height:1.35; }
-    .hr{
-      height:1px;
-      background:rgba(32,48,77,.7);
-      margin:10px 0;
-    }
+.card{
+background:#101a2e;
+border-radius:16px;
+padding:14px;
+margin:10px 0;
+}
 
-    /* list cards */
-    .entryTitle{
-      font-weight:900;
-      margin:0 0 6px;
-      font-size:15px;
-    }
-    .entryMeta{
-      color:var(--muted);
-      font-size:13px;
-      margin-bottom:10px;
-    }
-    .chipRow{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      margin-top:10px;
-    }
+button{
+padding:10px 14px;
+border-radius:999px;
+border:1px solid #20304d;
+background:#0e1730;
+color:white;
+cursor:pointer;
+}
 
-    /* map */
-    #map{
-      height:320px;
-      border-radius:14px;
-      border:1px solid var(--border);
-      overflow:hidden;
-    }
+input,select{
+width:100%;
+padding:10px;
+border-radius:12px;
+border:1px solid #20304d;
+background:#0e1730;
+color:white;
+margin-bottom:10px;
+}
 
-    /* simple bars */
-    .bar{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      margin:8px 0;
-    }
-    .barName{
-      width:120px;
-      color:var(--muted);
-      font-size:13px;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      white-space:nowrap;
-    }
-    .barTrack{
-      flex:1;
-      height:12px;
-      background:rgba(110,160,255,.12);
-      border:1px solid rgba(110,160,255,.18);
-      border-radius:999px;
-      overflow:hidden;
-    }
-    .barFill{
-      height:100%;
-      background:rgba(110,160,255,.75);
-      width:0%;
-    }
-    .barVal{
-      width:30px;
-      text-align:right;
-      color:var(--muted);
-      font-size:13px;
-    }
+#map{
+height:350px;
+border-radius:16px;
+margin-top:10px;
+}
 
-    .hide{ display:none; }
-
-    /* small helper for Leaflet text */
-    .leaflet-control-layers{
-      border-radius:12px !important;
-      overflow:hidden;
-      border:1px solid rgba(32,48,77,.75) !important;
-      background:rgba(12,20,36,.9) !important;
-      color:var(--text) !important;
-    }
-  </style>
+img{
+width:100%;
+border-radius:12px;
+margin-top:8px;
+}
+</style>
 </head>
 
 <body>
-  <div class="wrap">
 
-    <div class="topbar">
-      <h1>Fish Log 🎣</h1>
-      <div class="topActions">
-        <button class="btn danger" type="button" onclick="resetLog()">🗑 Reset Fish Log</button>
-        <button class="btn" type="button" onclick="exportCSV()">⬇ Export CSV</button>
-      </div>
-    </div>
+<h2>FishLog 🎣</h2>
 
-    <div class="topnav">
-      <button id="btnAdd" class="navbtn active" type="button" onclick="showTab('add')">Add</button>
-      <button id="btnLog" class="navbtn" type="button" onclick="showTab('log')">Log</button>
-    </div>
+<div>
+<button onclick="show('add')">Add</button>
+<button onclick="show('log')">Log</button>
+<button onclick="show('map')">Map</button>
+<button onclick="show('stats')">Stats</button>
+</div>
 
-    <!-- ADD -->
-    <section id="add">
-      <div class="card">
-        <h3 class="sectionTitle">Map</h3>
+<!-- ADD -->
+<section id="add">
 
-        <label class="small">Spesie</label>
-        <select id="species">
-  <option value="">Kies spesie...</option>
-  <option>Kaapse Kabeljou</option>
-  <option>Geelstert</option>
-  <option>Bonnie</option>
-  <option>Rooi Roman</option>
-  <option>Snapper</option>
-  <option>Silver (Bastermeid)</option>
-  <option>Rooi Steenbras</option>
-  <option>Yellow Belly (Rockod)</option>
-  <option>Galjoen</option>
-  <option>Hottentot</option>
-        </select>
-        <label class="small">Plek / Spot</label>
-       <input id="place" placeholder="bv. Stilbaai - Point" />
-        <label class="small">Koördinate</label>
-<input id="coords" placeholder="-34.328084, 21.391195">
+<div class="card">
 
-<button type="button" class="btn" onclick="gpsAndSave()">📍 GPS + Save Catch</button>
+<label>Spesie</label>
+<select id="species">
+<option value="">Kies spesie...</option>
+<option>Kaapse Kabeljou</option>
+<option>Geelstert</option>
+<option>Bonnie</option>
+<option>Rooi Roman</option>
+<option>Snapper</option>
+<option>Galjoen</option>
+<option>Hottentot</option>
+</select>
 
-        <div class="row2">
-          <div>
-     <label class="small">Lengte (cm)</label>
-<input id="length" type="number">
+<label>Plek</label>
+<input id="place">
 
-<label class="small">Datum</label>
-<input id="date" type="date">
+<label>Koördinate</label>
+<input id="coords" readonly>
 
-<label class="small">Photo</label>
-<input id="photo" type="file" accept="image/*" capture="environment">       
+<button onclick="getGPS()">📍 Kry GPS</button>
+<button onclick="gpsAndSave()">📍 GPS + Save</button>
 
-        
+<label>Lengte (cm)</label>
+<input id="length">
 
-        <div class="btnRow">
-          <button class="btn" type="button" onclick="saveCatch()">💾 Save</button>
-          <button class="btn" type="button" onclick="fillToday()">📅 Today</button>
-          <button class="btn" type="button" onclick="clearForm()">🧽 Clear</button>
-        </div>
+<label>Foto</label>
+<input id="photo" type="file" accept="image/*">
 
-        <p class="muted" style="margin-top:10px;">
-          Tip: vir coords gebruik net “lat,lng” soos <b>-34.328084, 21.391195</b>
-        </p>
-      </div>
-    </section>
+<button onclick="saveCatch()">Save</button>
 
-    <!-- LOG -->
-    <section id="log" class="hide">
-      <div class="card">
-        <h3 class="sectionTitle">Stats</h3>
-        <div id="statsBox" class="muted"></div>
+</div>
 
-        <div class="hr"></div>
-        <div id="speciesBox"></div>
+</section>
 
-        <div class="hr"></div>
-        <div id="spotBox"></div>
+<!-- LOG -->
+<section id="log">
 
-        <div class="hr"></div>
-        <div id="monthBox"></div>
-      </div>
+<div class="card">
+<button onclick="resetLog()">Reset All Data</button>
+</div>
 
-      <div class="card">
-        <h3 class="sectionTitle">Map</h3>
-        <div id="map"></div>
-        <p class="muted" style="margin:10px 0 0;">
-          Kaart wys net catches wat coords het.
-        </p>
-      </div>
+<div id="list"></div>
 
-      <div id="list"></div>
-    </section>
+</section>
 
-  </div>
+<!-- MAP -->
+<section id="mapSection">
 
-  <script>
-    // ---------- storage ----------
-    const KEY = "FISH_LOG_V1";
+<div id="map"></div>
 
-    function getAll(){
-      try{
-        return JSON.parse(localStorage.getItem(KEY) || "[]");
-      }catch(e){
-        return [];
-      }
-    }
-    function saveAll(arr){
-      localStorage.setItem(KEY, JSON.stringify(arr));
-    }
+</section>
 
-    // ---------- tabs ----------
-    function showTab(which){
-      document.getElementById("add").classList.toggle("hide", which !== "add");
-      document.getElementById("log").classList.toggle("hide", which !== "log");
+<!-- STATS -->
+<section id="stats">
 
-      document.getElementById("btnAdd").classList.toggle("active", which === "add");
-      document.getElementById("btnLog").classList.toggle("active", which === "log");
+<div class="card">
+<h3>Stats</h3>
+<div id="statsBox"></div>
+</div>
 
-      if(which === "log"){
-        loadLog();
-        // IMPORTANT for Leaflet sizing when it was hidden:
-        setTimeout(() => {
-          renderMap();
-          if(mapInstance) mapInstance.invalidateSize();
-        }, 50);
-      }
-    }
+</section>
 
-    // ---------- add catch ----------
-    function fillToday(){
-      const d = new Date();
-      const yyyy = d.getFullYear();
-      const mm = String(d.getMonth()+1).padStart(2,"0");
-      const dd = String(d.getDate()).padStart(2,"0");
-      document.getElementById("date").value = `${yyyy}-${mm}-${dd}`;
-    }
-    fillToday();
+<script>
 
-    function clearForm(){
-      document.getElementById("species").value = "";
-      document.getElementById("place").value = "";
-      document.getElementById("length").value = "";
-      document.getElementById("coords").value = "";
-      fillToday();
-    }
+const KEY="fishlog"
 
-    function saveCatch(){
-      const species = document.getElementById("species").value.trim();
-      const place = document.getElementById("place").value.trim();
-      const length = Number(document.getElementById("length").value || 0);
-      const date = document.getElementById("date").value || "";
-      const coords = document.getElementById("coords").value.trim();
-
-      if(!species){
-        alert("Sit asseblief 'n spesie in.");
-        return;
-      }
-      if(!date){
-        alert("Kies asseblief 'n datum.");
-        return;
-      }
-
-      const item = {
-        id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random(),
-        species,
-        place,
-        length: Number.isFinite(length) ? length : 0,
-        date,
-        coords
-      };
-
-      const data = getAll();
-      data.push(item);
-      saveAll(data);
-
-      alert("Saved ✅");
-      clearForm();
-    }
-   function getGPS(){
-  const coordsEl = document.getElementById("coords");
-
-  if(!navigator.geolocation){
-    alert("GPS nie beskikbaar op hierdie browser nie.");
-    return;
-  }
-
-  navigator.geolocation.getCurrentPosition(
-    (pos) => {
-      const lat = pos.coords.latitude.toFixed(6);
-      const lng = pos.coords.longitude.toFixed(6);
-      coordsEl.value = `${lat}, ${lng}`;
-    },
-    (err) => {
-      alert("GPS error: " + err.message);
-    },
-    { enableHighAccuracy:true }
-  );
-   }
-    function gpsAndSave(){
-  // as coords al ingevul is, save net
-  const coordsEl = document.getElementById("coords");
-  if(coordsEl && coordsEl.value.trim()){
-    saveCatch();
-    return;
-  }
-
-  // anders: kry GPS, en as dit klaar is, save
-  if(!navigator.geolocation){
-    alert("GPS is nie beskikbaar op hierdie toestel/browser nie.");
-    return;
-  }
-
-  navigator.geolocation.getCurrentPosition(
-    (pos) => {
-      const lat = pos.coords.latitude.toFixed(6);
-      const lng = pos.coords.longitude.toFixed(6);
-      if(coordsEl) coordsEl.value = `${lat}, ${lng}`;
-      saveCatch();
-    },
-    (err) => {
-      alert("Kon nie GPS kry nie. Sit coords handmatig in, of gee Location permission.");
-    },
-    { enableHighAccuracy:true, timeout:15000, maximumAge:0 }
-  );
-    }
-
-    // ---------- stats helpers ----------
-    function esc(s){
-      return String(s ?? "").replace(/[&<>"']/g, m => ({
-        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-      }[m]));
-    }
-
-    function calcStats(data){
-      const total = data.length;
-      const lengths = data.map(x => Number(x.length)||0).filter(x => x>0);
-      const avg = lengths.length ? (lengths.reduce((a,b)=>a+b,0)/lengths.length) : 0;
-      const max = lengths.length ? Math.max(...lengths) : 0;
-
-      const last = [...data].sort((a,b)=> (b.date||"").localeCompare(a.date||""))[0];
-      return {
-        total,
-        avg: avg ? avg.toFixed(1) : "0",
-        max: max ? String(max) : "0",
-        lastDate: last?.date || "-"
-      };
-    }
-
-    function topCount(data, field){
-      const map = {};
-      data.forEach(x=>{
-        const k = (x[field] || "").trim();
-        if(!k) return;
-        map[k] = (map[k]||0) + 1;
-      });
-      return Object.entries(map).sort((a,b)=>b[1]-a[1]).slice(0,6);
-    }
-
-    function monthCount(data){
-      const map = {};
-      data.forEach(x=>{
-        if(!x.date) return;
-        const ym = x.date.slice(0,7);
-        map[ym] = (map[ym]||0) + 1;
-      });
-      return Object.entries(map).sort((a,b)=>a[0].localeCompare(b[0]));
-    }
-
-    function renderBars(title, entries){
-      if(!entries.length){
-        return `<div class="muted"><b>${esc(title)}:</b> geen data</div>`;
-      }
-      const max = Math.max(...entries.map(e=>e[1]));
-      const rows = entries.map(([name,val])=>{
-        const pct = max ? Math.round((val/max)*100) : 0;
-        return `
-          <div class="bar">
-            <div class="barName">${esc(name)}</div>
-            <div class="barTrack"><div class="barFill" style="width:${pct}%"></div></div>
-            <div class="barVal">${val}</div>
-          </div>
-        `;
-      }).join("");
-      return `<div><div class="muted"><b>${esc(title)}:</b></div>${rows}</div>`;
-    }
-
-    // ---------- log rendering ----------
-    function loadLog(){
-      const list = document.getElementById("list");
-      const statsBox = document.getElementById("statsBox");
-      const speciesBox = document.getElementById("speciesBox");
-      const spotBox = document.getElementById("spotBox");
-      const monthBox = document.getElementById("monthBox");
-
-      list.innerHTML = "";
-      const data = getAll();
-
-      const s = calcStats(data);
-      statsBox.innerHTML = `
-        <b>Total catches:</b> ${s.total}<br>
-        <b>Average length:</b> ${s.avg} cm<br>
-        <b>Biggest length:</b> ${s.max} cm<br>
-        <b>Last catch:</b> ${esc(s.lastDate)}
-      `;
-
-      speciesBox.innerHTML = renderBars("Top species", topCount(data,"species"));
-      spotBox.innerHTML = renderBars("Top spots", topCount(data,"place"));
-      monthBox.innerHTML = renderBars("Catches per month", monthCount(data));
-
-      if(!data.length){
-        list.innerHTML = `<div class="card"><div class="muted">Geen catches nog nie. Gaan Add toe en voeg een by.</div></div>`;
-        // still render map (will show default view)
-        renderMap();
-        return;
-      }
-
-      const sorted = [...data].sort((a,b)=> (b.date||"").localeCompare(a.date||""));
-
-      sorted.forEach(c=>{
-        const hasCoords = !!(c.coords && String(c.coords).includes(","));
-        const coordsShow = hasCoords ? esc(c.coords) : "";
-        const title = esc(c.species || "Catch");
-        const place = esc(c.place || "");
-        const len = Number(c.length)||0;
-        const date = esc(c.date || "");
-
-        list.innerHTML += `
-           <div class="card">
-  <div class="entryTitle">${title}</div>
-
-  <div class="entryMeta">
-    ${place ? place + " • " : ""}${len ? len + " cm • " : ""}${date}
-  </div>
-
-  ${c.photo ? `<img src="${c.photo}" style="width:100%;border-radius:12px;margin-top:8px">` : ""}
-
-  <div class="chipRow">
-          
-            <div class="chipRow">
-              ${hasCoords ? `<button class="btn" type="button" onclick="openMap('${escJS(c.coords)}')">Maps</button>` : ``}
-              <button class="btn danger" type="button" onclick="deleteCatch('${escJS(c.id)}')">Delete</button>
-              ${hasCoords ? `
-  <button class="smallBtn" onclick="navigateTo('${esc(c.coords)}')">📍 Navigate</button>
-` : ""}
-            </div>
-          </div>
-        `;
-      });
-
-      // IMPORTANT: call once after list renders
-      renderMap();
-    }
-
-    function escJS(s){
-      return String(s ?? "").replace(/\\/g,"\\\\").replace(/'/g,"\\'").replace(/\n/g,"\\n");
-    }
-
-    function deleteCatch(id){
-      if(!confirm("Delete hierdie catch?")) return;
-      const data = getAll().filter(x => x.id !== id);
-      saveAll(data);
-      loadLog();
-    }
-
-    function openMap(coords){
-      // open in Google Maps
-      const parts = String(coords).split(",").map(x=>x.trim());
-      if(parts.length !== 2) return;
-      const lat = parts[0], lng = parts[1];
-      const url = `https://www.google.com/maps?q=${encodeURIComponent(lat+","+lng)}`;
-      window.open(url, "_blank");
-    }
-function navigateTo(coords){
-  const q = String(coords || "").trim();
-  if(!q) return;
-  const url = "https://www.google.com/maps?q=" + encodeURIComponent(q);
-  window.open(url, "_blank");
-    }
-    // ---------- reset ----------
-    function resetLog(){
-      if(confirm("Delete ALL fish log data?")){
-        localStorage.removeItem(KEY);
-        alert("Alles is skoon ✅");
-        // refresh UI
-        showTab("add");
-      }
-    }
-
-    // ---------- export CSV ----------
-    function exportCSV(){
-      const data = getAll();
-      if(!data.length){
-        alert("Geen data om te export nie.");
-        return;
-      }
-      const rows = [
-        ["species","place","length_cm","date","coords"]
-      ];
-      data.forEach(c=>{
-        rows.push([
-          c.species||"",
-          c.place||"",
-          String(c.length||""),
-          c.date||"",
-          c.coords||""
-        ]);
-      });
-
-      const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(",")).join("\n");
-      const blob = new Blob([csv], {type:"text/csv;charset=utf-8"});
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = "fish-log.csv";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-    }
-    function navigateTo(coords){
-  const q = String(coords || "").trim();
-  if(!q) return;
-
-  const url = "https://www.google.com/maps?q=" + encodeURIComponent(q);
-  window.open(url, "_blank");
-    }
-function getGPS(){
-  const coordsEl = document.getElementById("coords"); // jou input id moet coords wees
-
-  if(!coordsEl){
-    alert('Ek kry nie die "coords" veld nie. Maak seker jou input het id="coords".');
-    return;
-  }
-
-  if(!navigator.geolocation){
-    alert("GPS nie beskikbaar op hierdie browser nie.");
-    return;
-  }
-
-  navigator.geolocation.getCurrentPosition(
-    (pos) => {
-      const lat = pos.coords.latitude.toFixed(6);
-      const lng = pos.coords.longitude.toFixed(6);
-      coordsEl.value = `${lat}, ${lng}`;
-    },
-    (err) => {
-      alert("GPS error: " + err.message);
-    },
-    { enableHighAccuracy: true, timeout: 15000 }
-  );
+function getAll(){
+return JSON.parse(localStorage.getItem(KEY)||"[]")
 }
-    // ---------- Leaflet map ----------
-    let mapInstance = null;
-    let mapMarkers = [];
-    let layerControlAdded = false;
-  
 
-    function renderMap(){
-      const mapEl = document.getElementById("map");
-      if(!mapEl) return;
+function saveAll(d){
+localStorage.setItem(KEY,JSON.stringify(d))
+}
 
-      // create map once
-      if(!mapInstance){
-        mapInstance = L.map("map", { zoomControl:true });
+function show(id){
 
-        const street = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-          maxZoom: 19,
-          attribution: "&copy; OpenStreetMap"
-        });
+document.querySelectorAll("section").forEach(s=>s.style.display="none")
 
-        const satellite = L.tileLayer(
-          "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-          { attribution: "Tiles &copy; Esri" }
-        );
+if(id==="map"){
+document.getElementById("mapSection").style.display="block"
+initMap()
+renderMap()
+}else{
+document.getElementById(id).style.display="block"
+}
 
-        street.addTo(mapInstance);
+if(id==="log") loadLog()
+if(id==="stats") renderStats()
 
-        if(!layerControlAdded){
-          L.control.layers(
-            { "Street": street, "Satellite": satellite },
-            {},
-            { collapsed:true }
-          ).addTo(mapInstance);
-          layerControlAdded = true;
-        }
-      }
+}
 
-      // clear markers
-      mapMarkers.forEach(m => m.remove());
-      mapMarkers = [];
+function getGPS(){
 
-      const data = getAll().filter(c => c.coords && String(c.coords).includes(","));
+navigator.geolocation.getCurrentPosition(pos=>{
 
-      if(!data.length){
-        mapInstance.setView([-34.4, 21.4], 9); // area-ish default
-        return;
-      }
+coords.value=pos.coords.latitude.toFixed(6)+","+pos.coords.longitude.toFixed(6)
 
-      const bounds = [];
-      data.forEach(c=>{
-        const parts = String(c.coords).split(",").map(x=>x.trim());
-        if(parts.length !== 2) return;
-        const lat = parseFloat(parts[0]);
-        const lng = parseFloat(parts[1]);
-        if(!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+})
 
-        bounds.push([lat,lng]);
+}
 
-        const label = `${c.species || ""}${c.place ? " • "+c.place : ""}`;
-        const popup = `<b>${esc(c.species||"")}</b><br>${esc(c.place||"")}<br>${esc(c.length||"")} cm<br>${esc(c.date||"")}`;
+function gpsAndSave(){
 
-        const m = L.marker([lat,lng]).addTo(mapInstance).bindPopup(popup);
-        mapMarkers.push(m);
-      });
+navigator.geolocation.getCurrentPosition(pos=>{
 
-      if(bounds.length){
-        mapInstance.fitBounds(bounds, { padding:[20,20] });
-      }
-    }
+coords.value=pos.coords.latitude.toFixed(6)+","+pos.coords.longitude.toFixed(6)
 
-    // start
-    
-    window.showTab = showTab;
-window.saveCatch = saveCatch;
-window.deleteCatch = deleteCatch;
-window.exportCSV = exportCSV;
-window.resetLog = resetLog;
+saveCatch()
 
-window.getGPS = getGPS;
-    window.gpsAndSave = gpsAndSave;
-    window.navigateTo = navigateTo;  
-    if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.getRegistrations().then(regs => {
-    regs.forEach(r => r.unregister());
-  });
-    }// 👈 SIT HIER
-    showTab("add");
-  </script>
+})
+
+}
+
+function saveCatch(){
+
+const file=document.getElementById("photo").files[0]
+
+const reader=new FileReader()
+
+reader.onload=function(){
+
+const data=getAll()
+
+data.push({
+
+id:Date.now(),
+
+species:species.value,
+
+place:place.value,
+
+coords:coords.value,
+
+length:length.value,
+
+photo:reader.result,
+
+date:new Date().toISOString().slice(0,10)
+
+})
+
+saveAll(data)
+
+species.value=""
+place.value=""
+coords.value=""
+length.value=""
+document.getElementById("photo").value=""
+
+show("log")
+
+}
+
+if(file) reader.readAsDataURL(file)
+else reader.onload()
+
+}
+
+function loadLog(){
+
+list.innerHTML=""
+
+const data=getAll().reverse()
+
+data.forEach(c=>{
+
+list.innerHTML+=`
+
+<div class="card">
+
+<b>${c.species}</b><br>
+${c.place} • ${c.length}cm<br>
+${c.date}
+
+${c.photo?`<img src="${c.photo}">`:""}
+
+<br>
+
+<button onclick="openMap('${c.coords}')">Maps</button>
+<button onclick="directions('${c.coords}')">Directions</button>
+
+<button onclick="deleteCatch(${c.id})">Delete</button>
+
+</div>
+
+`
+
+})
+
+}
+
+function deleteCatch(id){
+
+const data=getAll().filter(c=>c.id!==id)
+
+saveAll(data)
+
+loadLog()
+
+}
+
+function resetLog(){
+
+if(confirm("Delete alles?")){
+
+localStorage.clear()
+
+loadLog()
+
+}
+
+}
+
+function openMap(c){
+
+window.open("https://maps.google.com/?q="+c)
+
+}
+
+function directions(c){
+
+window.open("https://www.google.com/maps/dir/?api=1&destination="+c)
+
+}
+
+function renderStats(){
+
+const data=getAll()
+
+let kabeljou=0
+let geelstert=0
+
+data.forEach(c=>{
+
+if(c.species==="Kaapse Kabeljou") kabeljou++
+if(c.species==="Geelstert") geelstert++
+
+})
+
+statsBox.innerHTML=`
+Kabeljou: ${kabeljou}<br>
+Geelstert: ${geelstert}<br>
+Total: ${data.length}
+`
+
+}
+
+let map
+let heat
+
+function initMap(){
+
+if(map) return
+
+map=L.map("map").setView([-34.37,20.85],10)
+
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map)
+
+}
+
+function renderMap(){
+
+if(!map) return
+
+const data=getAll()
+
+const pts=[]
+
+data.forEach(c=>{
+
+if(!c.coords) return
+
+const p=c.coords.split(",")
+
+const lat=parseFloat(p[0])
+const lng=parseFloat(p[1])
+
+L.marker([lat,lng]).addTo(map)
+
+pts.push([lat,lng,0.5])
+
+})
+
+if(heat) map.removeLayer(heat)
+
+heat=L.heatLayer(pts).addTo(map)
+
+}
+
+show("add")
+
+</script>
+
 </body>
-  </html>
+</html>
