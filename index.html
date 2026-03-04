@@ -728,42 +728,137 @@ function navigateToCoords(coords){
     html += `</div>`;
     box.innerHTML = html;
   }
+  function monthKey(dateStr){
+  // verwag "YYYY-MM-DD" of iets soortgelyk
+  if(!dateStr) return "";
+  return String(dateStr).slice(0,7); // "2026-03"
+}
 
-  function renderStats(){
-    const data = getAll();
+function dayName(dateStr){
+  if(!dateStr) return "";
+  const d = new Date(dateStr);
+  if(isNaN(d)) return "";
+  const names = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  return names[d.getDay()];
+}
 
-    const total = data.length;
-    const lengths = data.map(c=>Number(c.length)||0).filter(n=>n>0);
-    const avg = lengths.length ? Math.round(lengths.reduce((a,b)=>a+b,0)/lengths.length) : 0;
-    const max = lengths.length ? Math.max(...lengths) : 0;
-    const last = data.slice().sort((a,b)=> (b.date||"").localeCompare(a.date||""))[0]?.date || "-";
+function inc(obj, key, by=1){
+  if(!key) return;
+  obj[key] = (obj[key] || 0) + by;
+}
 
-    document.getElementById("stTotal").textContent = String(total);
-    document.getElementById("stAvg").textContent = `${avg} cm`;
-    document.getElementById("stMax").textContent = `${max} cm`;
-    document.getElementById("stLast").textContent = last;
+function topN(counts, n=5){
+  const arr = Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+  return arr.slice(0,n);
+}
 
-    const bySpecies = countBy(data, c=>c.species);
-    const bySpots = countBy(data, c=>c.place || "(no place)");
-    const byMonths = countBy(data, c=>monthKey(c.date));
+function renderMiniBars(title, pairs){
+  // pairs = [["Kabeljou", 5], ["Geelstert", 3] ...]
+  if(!pairs.length) return "";
+  const max = Math.max(...pairs.map(p=>p[1]), 1);
+  let html = `<div class="card"><div class="sectionTitle">${title}</div>`;
+  pairs.forEach(([label,val])=>{
+    const w = Math.round((val/max)*100);
+    html += `
+      <div class="row">
+        <div class="muted" style="width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${label}</div>
+        <div style="flex:1;background:rgba(255,255,255,.08);border-radius:10px;overflow:hidden">
+          <div style="width:${w}%;height:12px;background:rgba(120,160,255,.9)"></div>
+        </div>
+        <div class="muted" style="width:26px;text-align:right">${val}</div>
+      </div>
+    `;
+  });
+  html += `</div>`;
+  return html;
+}
+function renderStats(){
+  const data = getAll();
+  const total = data.length;
 
-    renderBars("Top species:", bySpecies, "barSpecies", 6);
-    renderBars("Top spots:", bySpots, "barSpots", 6);
-    renderBars("Catches per month:", byMonths, "barMonths", 8);
+  const bySpecies = {};
+  const bySpot = {};
+  const byMonth = {};          // overall per maand
+  const speciesMonth = {};     // per spesie -> per maand
+  const speciesDay = {};       // per spesie -> dagnaam
 
-    const pick = document.getElementById("speciesMonthPick").value;
-    const filtered = data.filter(c=>c.species === pick);
-    const byMonthsSpecies = countBy(filtered, c=>monthKey(c.date));
-    renderBars(`Per month for: ${pick}`, byMonthsSpecies, "barMonthsSpecies", 10);
-  }
+  let sumLen = 0;
+  let maxLen = 0;
+  let lastDate = "";
 
-  // ---------- Map + Heatmap ----------
-  let mapInstance = null;
-  let markerLayer = null;
-  let heatLayer = null;
+  data.forEach(c=>{
+    const sp = (c.species || "").trim() || "Unknown";
+    const spot = (c.place || "").trim() || "Unknown";
+    const len = Number(c.length) || 0;
+    const d = (c.date || "").trim();
 
-  function renderMap(forceRecreate=false){
-    const data = getAll().filter(c=>Number.isFinite(c.lat) && Number.isFinite(c.lng));
+    inc(bySpecies, sp, 1);
+    inc(bySpot, spot, 1);
+
+    const mk = monthKey(d);
+    inc(byMonth, mk, 1);
+
+    if(!speciesMonth[sp]) speciesMonth[sp] = {};
+    inc(speciesMonth[sp], mk, 1);
+
+    const dn = dayName(d);
+    if(!speciesDay[sp]) speciesDay[sp] = {};
+    inc(speciesDay[sp], dn, 1);
+
+    sumLen += len;
+    if(len > maxLen) maxLen = len;
+    if(d && (!lastDate || d > lastDate)) lastDate = d;
+  });
+
+  const avgLen = total ? Math.round((sumLen/total)*10)/10 : 0;
+
+  // TOPs
+  const topSpecies = topN(bySpecies, 6);
+  const topSpots = topN(bySpot, 5);
+  const topMonths = topN(byMonth, 6);
+
+  // Beste maand per spesie (top 3 spesies)
+  const top3Species = topSpecies.slice(0,3).map(x=>x[0]);
+  let bestTimeHTML = `<div class="card"><div class="sectionTitle">Best fishing time</div>`;
+
+  top3Species.forEach(sp=>{
+    const m = topN(speciesMonth[sp] || {}, 1)[0];
+    const d = topN(speciesDay[sp] || {}, 1)[0];
+    bestTimeHTML += `
+      <div style="margin-top:10px">
+        <div style="font-weight:700">${sp}</div>
+        <div class="muted">
+          Best month: ${m ? m[0] + " (" + m[1] + ")" : "—"} •
+          Best day: ${d ? d[0] + " (" + d[1] + ")" : "—"}
+        </div>
+      </div>
+    `;
+  });
+
+  bestTimeHTML += `</div>`;
+
+  // Skryf na jou stats box/area
+  // 🔥 BELANGRIK: maak seker jou HTML het 'n element met id="statsBox" of verander hier onder na jou regte id
+  const box = document.getElementById("statsBox") || document.getElementById("stats") || document.getElementById("statsContent");
+  if(!box) return;
+
+  box.innerHTML = `
+    <div class="card">
+      <div class="sectionTitle">Summary</div>
+      <div class="muted">Total catches: ${total}</div>
+      <div class="muted">Average length: ${avgLen} cm</div>
+      <div class="muted">Biggest length: ${maxLen} cm</div>
+      <div class="muted">Last catch: ${lastDate || "—"}</div>
+    </div>
+
+    ${renderMiniBars("Top species", topSpecies)}
+    ${renderMiniBars("Top spots", topSpots)}
+    ${renderMiniBars("Catches per month", topMonths)}
+
+    ${bestTimeHTML}
+  `;
+                }
+
 
     const mapEl = document.getElementById("map");
     if(!mapEl) return;
