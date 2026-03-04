@@ -543,59 +543,59 @@ const rig = document.getElementById("rig");
 let mapMarkers = [];
 
 function renderMap(){
-  const data = getAll().filter(c => c.coords && String(c.coords).includes(","));
+  const data = getAll().filter(c => c.coords);
 
-  // maak map net 1 keer
   if(!mapInstance){
     mapInstance = L.map("map", { zoomControl:true });
-    const street = L.tileLayer(
-"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-{ maxZoom: 18, attribution: "© OpenStreetMap" }
-);
 
-const satellite = L.tileLayer(
-"https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-{ attribution: "Tiles © Esri" }
-);
+    const street = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 18,
+      attribution: "&copy; OpenStreetMap"
+    });
 
-street.addTo(mapInstance);
+    const satellite = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
+      attribution: "Tiles © Esri"
+    });
 
-L.control.layers(
-{
- "Map": street,
- "Satellite": satellite
-}
-).addTo(mapInstance);
-  // clear ou markers
+    street.addTo(mapInstance);
+
+    L.control.layers(
+      { "Map": street, "Satellite": satellite },
+      {}
+    ).addTo(mapInstance);
+  }
+
+  // clear markers
   mapMarkers.forEach(m => m.remove());
   mapMarkers = [];
 
   if(!data.length){
-    mapInstance.setView([-34.4, 21.4], 9); // default area (kan jy verander)
+    mapInstance.setView([-34.4, 21.4], 10);
     return;
   }
 
   const bounds = [];
 
   data.forEach(c => {
-    const parts = String(c.coords).split(",").map(x => parseFloat(x.trim()));
-    if(parts.length !== 2 || isNaN(parts[0]) || isNaN(parts[1])) return;
+    const parts = String(c.coords).split(",");
+    if(parts.length !== 2) return;
 
-    const lat = parts[0], lng = parts[1];
+    const lat = parseFloat(parts[0]);
+    const lng = parseFloat(parts[1]);
+    if(Number.isNaN(lat) || Number.isNaN(lng)) return;
+
     bounds.push([lat, lng]);
 
     const label = `${c.species || ""} • ${c.place || ""}`;
-
-const m = L.marker([lat, lng]).addTo(mapInstance)
-  .bindPopup(`<b>${c.species}</b><br>${c.place || ""}<br>${c.length} cm`);
-
-mapMarkers.push(m);
+    const m = L.marker([lat, lng]).addTo(mapInstance).bindPopup(label);
+    mapMarkers.push(m);
   });
 
   if(bounds.length){
-    mapInstance.fitBounds(bounds, { padding:[20,20] });
+    mapInstance.fitBounds(bounds, { padding: [20,20] });
   }
 }
+</script>
 
 function refreshMapAfterLog(){
   // klein timeout sodat die section klaar wys voordat Leaflet size bereken
