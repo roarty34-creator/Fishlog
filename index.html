@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FishLog</title>
 
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <style>
 
@@ -15,11 +15,12 @@ font-family:Arial;
 margin:0;
 background:#0b1320;
 color:white;
+padding:10px;
 }
 
 h2{
 text-align:center;
-margin-top:10px;
+margin-top:5px;
 }
 
 .topnav{
@@ -31,9 +32,10 @@ button{
 padding:10px;
 margin:5px;
 border:none;
-border-radius:8px;
+border-radius:10px;
 background:#1f7ae0;
 color:white;
+font-weight:bold;
 }
 
 .card{
@@ -48,13 +50,19 @@ width:100%;
 padding:8px;
 margin-top:8px;
 margin-bottom:8px;
-border-radius:6px;
+border-radius:8px;
 border:none;
 }
 
 #map{
 height:400px;
 border-radius:10px;
+}
+
+.catchPhoto{
+width:100%;
+border-radius:10px;
+margin-top:8px;
 }
 
 </style>
@@ -70,6 +78,8 @@ border-radius:10px;
 <button onclick="show('map')">Map</button>
 <button onclick="show('stats')">Stats</button>
 </div>
+
+<!-- ADD -->
 
 <div id="add" class="card">
 
@@ -90,22 +100,42 @@ border-radius:10px;
 
 <input id="coords" placeholder="GPS coords">
 
-<button onclick="getGPS()">Get GPS</button>
+<button onclick="getGPS()">📍 Get GPS</button>
+
+<input type="file" id="photo" accept="image/*">
 
 <button onclick="saveCatch()">Save Catch</button>
 
 </div>
 
+<!-- LOG -->
+
 <div id="log" class="card" style="display:none">
+
 <h3>Log</h3>
+
 <div id="logList"></div>
+
 </div>
 
-<div id="map" class="card" style="display:none"></div>
+<!-- MAP -->
+
+<div id="mapView" class="card" style="display:none">
+
+<h3>Map</h3>
+
+<div id="map"></div>
+
+</div>
+
+<!-- STATS -->
 
 <div id="stats" class="card" style="display:none">
+
 <h3>Stats</h3>
+
 <div id="statsText"></div>
+
 </div>
 
 <script>
@@ -115,42 +145,49 @@ let markers=[]
 
 function show(id){
 
-  document.getElementById("add").style.display="none"
-  document.getElementById("log").style.display="none"
-  document.getElementById("map").style.display="none"
-  document.getElementById("stats").style.display="none"
+document.getElementById("add").style.display="none"
+document.getElementById("log").style.display="none"
+document.getElementById("mapView").style.display="none"
+document.getElementById("stats").style.display="none"
 
-  document.getElementById(id).style.display="block"
+if(id==="map"){
+document.getElementById("mapView").style.display="block"
+renderMap()
+setTimeout(()=>{if(map) map.invalidateSize()},200)
+}
+else{
+document.getElementById(id).style.display="block"
+}
 
-  if(id==="log") renderLog()
-  if(id==="stats") renderStats()
+if(id==="log") renderLog()
+if(id==="stats") renderStats()
 
-  if(id==="map"){
-    renderMap()
-    setTimeout(()=>{ if(map) map.invalidateSize() }, 200)
-  }
 }
 
 function getAll(){
-
 return JSON.parse(localStorage.getItem("fishlog")||"[]")
-
 }
 
 function saveAll(data){
-
 localStorage.setItem("fishlog",JSON.stringify(data))
-
 }
 
-function saveCatch(){
+async function saveCatch(){
 
 const species=document.getElementById("species").value
 const place=document.getElementById("place").value
 const length=document.getElementById("length").value
 const coords=document.getElementById("coords").value
 
-if(!species)return alert("Kies spesie")
+if(!species) return alert("Kies spesie")
+
+let photo=""
+
+const file=document.getElementById("photo").files[0]
+
+if(file){
+photo=await toBase64(file)
+}
 
 const data=getAll()
 
@@ -159,12 +196,16 @@ species,
 place,
 length,
 coords,
+photo,
 date:new Date().toLocaleDateString()
 })
 
 saveAll(data)
 
 alert("Saved")
+
+renderLog()
+renderStats()
 
 }
 
@@ -174,14 +215,25 @@ const data=getAll()
 
 let html=""
 
-data.forEach(c=>{
+data.forEach((c,i)=>{
 
 html+=`
 <div style="border-bottom:1px solid #333;padding:8px">
+
 <b>${c.species}</b><br>
-${c.place}<br>
-${c.length} cm<br>
+
+${c.place || ""}<br>
+
+${c.length || ""} cm<br>
+
 ${c.date}
+
+${c.photo ? `<img class="catchPhoto" src="${c.photo}">` : ""}
+
+<br>
+
+<button onclick="deleteCatch(${i})">Delete</button>
+
 </div>
 `
 
@@ -191,11 +243,23 @@ document.getElementById("logList").innerHTML=html
 
 }
 
-function renderStats(){
+function deleteCatch(i){
 
 const data=getAll()
 
-let total=data.length
+data.splice(i,1)
+
+saveAll(data)
+
+renderLog()
+renderStats()
+renderMap()
+
+}
+
+function renderStats(){
+
+const data=getAll()
 
 let species={}
 
@@ -203,12 +267,10 @@ data.forEach(c=>{
 species[c.species]=(species[c.species]||0)+1
 })
 
-let html="Total catches: "+total+"<br><br>"
+let html="Total catches: "+data.length+"<br><br>"
 
 for(let s in species){
-
 html+=s+" : "+species[s]+"<br>"
-
 }
 
 document.getElementById("statsText").innerHTML=html
@@ -219,7 +281,7 @@ function renderMap(){
 
 if(!map){
 
-map=L.map("map").setView([-34.37,20.85],10)
+map=L.map("map").setView([-34.37,21.43],10)
 
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
 maxZoom:19
@@ -234,7 +296,7 @@ const data=getAll()
 
 data.forEach(c=>{
 
-if(!c.coords)return
+if(!c.coords) return
 
 const parts=c.coords.split(",")
 
@@ -264,6 +326,22 @@ const lat=pos.coords.latitude
 const lng=pos.coords.longitude
 
 document.getElementById("coords").value=lat+","+lng
+
+})
+
+}
+
+function toBase64(file){
+
+return new Promise((resolve,reject)=>{
+
+const reader=new FileReader()
+
+reader.readAsDataURL(file)
+
+reader.onload=()=>resolve(reader.result)
+
+reader.onerror=error=>reject(error)
 
 })
 
