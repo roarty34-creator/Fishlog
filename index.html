@@ -189,10 +189,10 @@
     <input id="place" placeholder="bv. Stilbaai - Point" />
 
     <label class="small">Coordinates</label>
-    <input id="coords" placeholder="-34.328084, 21.391195" />
+    <input id="coords" placeholder="-34.328084, 21.391195">
 
     <div class="pillRow" style="margin-top:10px">
-      <button class="btn ok smallBtn" type="button" onclick="getGPS()">📍 Use my location</button>
+    <button type="button" class="btn" onclick="getGPS()">📍 Use my location</button>
       <span class="muted" id="gpsStatus"></span>
     </div>
 
@@ -486,27 +486,27 @@ function navigateToCoords(coords){
 
   // ---------- GPS ----------
   function getGPS(){
-    const status = document.getElementById("gpsStatus");
-    status.textContent = "Getting GPS…";
+  if(!navigator.geolocation){
+    alert("GPS is nie beskikbaar op hierdie toestel/browser nie.");
+    return;
+  }
 
-    if(!("geolocation" in navigator)){
-      status.textContent = "No GPS on this device/browser.";
-      return;
-    }
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      const lat = pos.coords.latitude.toFixed(6);
+      const lng = pos.coords.longitude.toFixed(6);
 
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const lat = pos.coords.latitude;
-        const lng = pos.coords.longitude;
-        document.getElementById("coords").value = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
-        status.textContent = "GPS OK ✅";
-      },
-      (err) => {
-        // Common: permission denied, timeout, unavailable
-        status.textContent = "GPS failed ❌ (Check permissions / Location ON)";
-      },
-      { enableHighAccuracy:true, timeout:12000, maximumAge:0 }
-    );
+      const coordsInput = document.getElementById("coords");
+      if(coordsInput) coordsInput.value = `${lat}, ${lng}`;
+
+      alert("GPS gekry ✅");
+    },
+    (err) => {
+      // 1 = permission denied, 2 = position unavailable, 3 = timeout
+      alert("GPS error: " + err.message);
+    },
+    { enableHighAccuracy:true, timeout:15000, maximumAge:0 }
+  );
   }
 
   // ---------- Save Catch ----------
@@ -952,9 +952,12 @@ function renderStats(){
   // ---------- Init ----------
   document.getElementById("date").addEventListener("change", updateMoonField);
   setToday();
-  renderLog();
-  renderStats();
-  window.navigateToCoords = navigateToCoords;
+renderLog();
+renderStats();
+
+window.navigateToCoords = navigateToCoords;
+window.getGPS = getGPS;
+
 </script>
 </body>
-  </html>
+</html>
