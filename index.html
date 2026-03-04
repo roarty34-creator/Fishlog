@@ -259,13 +259,13 @@ ${c.date}
 
 ${c.photo?`<img src="${c.photo}">`:""}
 
+${extraInfoHtml(c)}
+
 <br>
 
 <button onclick="openMap('${c.coords}')">Maps</button>
 <button onclick="directions('${c.coords}')">Directions</button>
-
 <button onclick="deleteCatch(${c.id})">Delete</button>
-${extraInfoHtml(c)}
 
 </div>
 
