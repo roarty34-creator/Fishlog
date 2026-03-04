@@ -104,7 +104,9 @@
 
 <body>
   <h1>Nicoleen 🚤</h1>
-
+<button onclick="resetLog()" style="margin-bottom:12px;background:#7a1f2a;color:white;border:none;padding:10px 14px;border-radius:10px;">
+🗑 Reset Fish Log
+</button>
   <div class="topnav">
     <button class="navbtn active" id="btnAdd" onclick="show('add')">Add</button>
     <button class="navbtn" id="btnLog" onclick="show('log')">Log</button>
@@ -719,7 +721,14 @@ function refreshMapAfterLog(){
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("./sw.js").catch(()=>{});
     }
-  })();
+})();
+
+function resetLog(){
+ if(confirm("Delete ALL fish log data?")){
+  localStorage.clear();
+  location.reload();
+ }
+}
   </script>
 </body>
 </html>
