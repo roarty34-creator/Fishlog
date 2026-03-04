@@ -547,22 +547,23 @@ function renderMap(){
   if(!mapInstance){
     mapInstance = L.map("map", { zoomControl:true });
     const street = L.tileLayer(
- "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
- { maxZoom: 18, attribution: "&copy; OpenStreetMap" }
+"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+{ maxZoom: 18, attribution: "© OpenStreetMap" }
 );
 
 const satellite = L.tileLayer(
- "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
- { attribution: "Tiles © Esri" }
+"https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+{ attribution: "Tiles © Esri" }
 );
 
 street.addTo(mapInstance);
 
 L.control.layers(
- { "Street": street, "Satellite": satellite }
+{
+ "Map": street,
+ "Satellite": satellite
+}
 ).addTo(mapInstance);
-  }
-
   // clear ou markers
   mapMarkers.forEach(m => m.remove());
   mapMarkers = [];
