@@ -142,6 +142,35 @@ margin-top:8px;
 
 let map
 let markers=[]
+  function getMoonPhase(date){
+  const lp = 2551443;
+  const new_moon = new Date(1970,0,7,20,35,0);
+
+  const phase = ((date.getTime() - new_moon.getTime())/1000) % lp;
+  const moon = Math.floor(phase / (24*3600)) + 1;
+
+  if(moon < 2) return "New Moon";
+  if(moon < 7) return "Waxing";
+  if(moon < 9) return "First Quarter";
+  if(moon < 15) return "Waxing Gibbous";
+  if(moon < 17) return "Full Moon";
+  if(moon < 22) return "Waning";
+  if(moon < 24) return "Last Quarter";
+  return "Waning Crescent";
+}
+
+function getTideType(phase){
+
+  if(phase === "New Moon" || phase === "Full Moon"){
+    return "Spring Tide";
+  }
+
+  if(phase === "First Quarter" || phase === "Last Quarter"){
+    return "Neap Tide";
+  }
+
+  return "Normal Tide";
+}
 
 function show(id){
 
@@ -173,7 +202,10 @@ localStorage.setItem("fishlog",JSON.stringify(data))
 }
 
 async function saveCatch(){
-
+  const now = new Date()
+const moon = getMoonPhase(now)
+const tide = getTideType(moon)
+  
 const species=document.getElementById("species").value
 const place=document.getElementById("place").value
 const length=document.getElementById("length").value
@@ -189,15 +221,22 @@ if(file){
 photo=await toBase64(file)
 }
 
-const data=getAll()
+const date = document.getElementById("date").value
+const d = date ? new Date(date) : new Date()
 
+const moon = getMoonPhase(d)
+const tide = getTideType(moon)
+
+const data = getAll()
 data.push({
-species,
-place,
-length,
-coords,
-photo,
-date:new Date().toLocaleDateString()
+  species,
+  place,
+  length,
+  coords,
+  photo,
+  date,
+  moon,
+  tide
 })
 
 saveAll(data)
