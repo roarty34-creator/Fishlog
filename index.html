@@ -115,17 +115,20 @@ let markers=[]
 
 function show(id){
 
-document.getElementById("add").style.display="none"
-document.getElementById("log").style.display="none"
-document.getElementById("map").style.display="none"
-document.getElementById("stats").style.display="none"
+  document.getElementById("add").style.display="none"
+  document.getElementById("log").style.display="none"
+  document.getElementById("map").style.display="none"
+  document.getElementById("stats").style.display="none"
 
-document.getElementById(id).style.display="block"
+  document.getElementById(id).style.display="block"
 
-if(id==="log") renderLog()
-if(id==="stats") renderStats()
-if(id==="map") renderMap()
+  if(id==="log") renderLog()
+  if(id==="stats") renderStats()
 
+  if(id==="map"){
+    renderMap()
+    setTimeout(()=>{ if(map) map.invalidateSize() }, 200)
+  }
 }
 
 function getAll(){
