@@ -536,14 +536,23 @@
         const date = esc(c.date || "");
 
         list.innerHTML += `
-          <div class="card">
-            <div class="entryTitle">${title}</div>
-            <div class="entryMeta">${place ? place + " • " : ""}${len ? (len+" cm • ") : ""}${date}</div>
-            ${hasCoords ? `<div class="muted">📍 ${coordsShow}</div>` : `<div class="muted">Geen coords</div>`}
+           <div class="card">
+  <div class="entryTitle">${title}</div>
 
+  <div class="entryMeta">
+    ${place ? place + " • " : ""}${len ? len + " cm • " : ""}${date}
+  </div>
+
+  ${c.photo ? `<img src="${c.photo}" style="width:100%;border-radius:12px;margin-top:8px">` : ""}
+
+  <div class="chipRow">
+          
             <div class="chipRow">
               ${hasCoords ? `<button class="btn" type="button" onclick="openMap('${escJS(c.coords)}')">Maps</button>` : ``}
               <button class="btn danger" type="button" onclick="deleteCatch('${escJS(c.id)}')">Delete</button>
+              ${hasCoords ? `
+  <button class="smallBtn" onclick="navigateTo('${esc(c.coords)}')">📍 Navigate</button>
+` : ""}
             </div>
           </div>
         `;
@@ -572,7 +581,12 @@
       const url = `https://www.google.com/maps?q=${encodeURIComponent(lat+","+lng)}`;
       window.open(url, "_blank");
     }
-
+function navigateTo(coords){
+  const q = String(coords || "").trim();
+  if(!q) return;
+  const url = "https://www.google.com/maps?q=" + encodeURIComponent(q);
+  window.open(url, "_blank");
+    }
     // ---------- reset ----------
     function resetLog(){
       if(confirm("Delete ALL fish log data?")){
@@ -612,6 +626,13 @@
       a.click();
       a.remove();
     }
+    function navigateTo(coords){
+  const q = String(coords || "").trim();
+  if(!q) return;
+
+  const url = "https://www.google.com/maps?q=" + encodeURIComponent(q);
+  window.open(url, "_blank");
+    }
 function getGPS(){
   const coordsEl = document.getElementById("coords"); // jou input id moet coords wees
 
@@ -641,6 +662,7 @@ function getGPS(){
     let mapInstance = null;
     let mapMarkers = [];
     let layerControlAdded = false;
+  
 
     function renderMap(){
       const mapEl = document.getElementById("map");
@@ -715,6 +737,7 @@ window.resetLog = resetLog;
 
 window.getGPS = getGPS;
     window.gpsAndSave = gpsAndSave;
+    window.navigateTo = navigateTo;   // 👈 SIT HIER
     showTab("add");
   </script>
 </body>
