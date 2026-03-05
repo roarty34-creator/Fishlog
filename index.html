@@ -423,6 +423,30 @@ reader.onerror=error=>reject(error)
 })
 
 }
+function getGPS(){
+
+  if(!navigator.geolocation){
+    alert("GPS word nie ondersteun op hierdie toestel nie");
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    function(position){
+      const lat = position.coords.latitude.toFixed(6)
+      const lon = position.coords.longitude.toFixed(6)
+
+      document.getElementById("coords").value = lat + "," + lon
+    },
+    function(error){
+      alert("Kon nie GPS kry nie")
+    },
+    {
+      enableHighAccuracy:true,
+      timeout:10000
+    }
+  )
+
+}
 
 </script>
 
