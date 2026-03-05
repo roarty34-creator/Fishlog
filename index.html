@@ -140,7 +140,7 @@ margin-top:8px;
 
 <input id="coords" placeholder="GPS coordinates">
 
-<button onclick="getGPS()">📍 Get GPS</button>
+<button type="button" onclick="getGPS()">📍 Get GPS</button>
 
 <input type="file" id="photo" accept="image/*" capture="environment">
 
@@ -179,6 +179,33 @@ margin-top:8px;
 </div>
 
 <script>
+function getGPS(){
+  if(!navigator.geolocation){
+    alert("GPS word nie ondersteun op hierdie browser nie");
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    function(position){
+      const lat = position.coords.latitude;
+      const lng = position.coords.longitude;   // ✅ reg
+
+      document.getElementById("coords").value = lat + "," + lng;  // ✅ reg
+      alert("GPS OK: " + lat + "," + lng);
+    },
+    function(error){
+      alert("Kon nie GPS kry nie: " + error.message);
+    },
+    {
+      enableHighAccuracy:true,
+      timeout:10000,
+      maximumAge:0
+    }
+  );
+}
+
+window.getGPS = getGPS;  // ✅ opsioneel maar fine
+</script>
 
 let map
 let markers=[]
@@ -390,24 +417,8 @@ markers.push(m)
 
 }
 
-function getGPS(){
-alert("GPS pressed")
 
-if(!navigator.geolocation){
-alert("GPS nie beskikbaar")
-return
-}
 
-navigator.geolocation.getCurrentPosition(pos=>{
-
-const lat=pos.coords.latitude
-const lng=pos.coords.longitude
-
-document.getElementById("coords").value=lat+","+lng
-
-})
-
-}
 
 function toBase64(file){
 
@@ -424,20 +435,7 @@ reader.onerror=error=>reject(error)
 })
 
 }
-function getGPS(){
 
-  if(!navigator.geolocation){
-    alert("GPS word nie ondersteun op hierdie toestel nie");
-    return;
-  }
-
-  navigator.geolocation.getCurrentPosition(
-    function(position){
-      const lat = position.coords.latitude.toFixed(6)
-      const lon = position.coords.longitude.toFixed(6)
-
-      document.getElementById("coords").value = lat + "," + lon
-    },
     function(error){
       alert("Kon nie GPS kry nie")
     },
